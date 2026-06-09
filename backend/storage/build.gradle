@@ -35,9 +35,11 @@ tasks.register('prepareJooqDdl', Copy) {
         filter { line ->
             line
                     .replace('location geometry(Point, 4326)', 'location varchar(255)')
+                    .replace('route_line geometry(LineString, 4326)', 'route_line varchar(255)')
                     .replaceAll(/\bvector\s*\(\s*\d+\s*\)/, 'varchar(255)')
-                    .replaceAll(/create index (idx_.*_location) on (.*) using gist \(location\);/, '-- skipped for jOOQ code generation: create index $1 on $2 using gist (location);')
+                    .replaceAll(/create index (idx_.*) on (.*) using gist \((location|route_line)\);/, '-- skipped for jOOQ code generation: create index $1 on $2 using gist index;')
                     .replaceAll(/create index (idx_.*) on (.*) using (ivfflat|hnsw) \(.*\);/, '-- skipped for jOOQ code generation: vector ANN index')
+                    .replaceAll(/create unique index uk_friendships_user_pair_active .*/, '-- skipped for jOOQ code generation: expression partial unique index')
         }
     }
     into jooqDdlDir
