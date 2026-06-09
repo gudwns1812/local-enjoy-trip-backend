@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -lc 'repo=$(git rev-parse --show-toplevel 2>/dev/null || pwd); exec node \"$repo/.codex/hooks/load-backend-rule-docs.cjs\"'",
+            "statusMessage": "Loading backend CONSTITUTION.md and RULES.md"
+          }
+        ]
+      }
+    ]
+  }
+}

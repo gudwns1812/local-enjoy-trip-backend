@@ -1,0 +1,4 @@
+# Enables project-local Codex hook discovery from .codex/hooks.json.
+
+[features]
+hooks = true
