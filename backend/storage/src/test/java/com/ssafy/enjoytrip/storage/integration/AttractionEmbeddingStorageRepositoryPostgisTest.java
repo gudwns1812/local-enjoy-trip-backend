@@ -8,6 +8,7 @@ import com.ssafy.enjoytrip.repository.embedding.AttractionEmbeddingRepository;
 import com.ssafy.enjoytrip.storage.StorageConfiguration;
 import com.ssafy.enjoytrip.storage.testsupport.PostgisTestcontainersConfiguration;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ class AttractionEmbeddingStorageRepositoryPostgisTest {
     @Autowired
     private AttractionEmbeddingRepository repository;
 
+    @DisplayName("임베딩 대상 조회는 요청한 지역 쌍만 선택한다")
     @Test
     void findTargetsSelectsOnlyRequestedRegionPairs() {
         seedAttraction(10_010L, 32, 1);
@@ -63,6 +65,7 @@ class AttractionEmbeddingStorageRepositoryPostgisTest {
                 .doesNotContain(10_011L);
     }
 
+    @DisplayName("임베딩 저장은 pgvector 상태를 저장하고 이전 실패를 지운다")
     @Test
     void saveEmbeddedPersistsPgvectorStatusAndClearsPriorFailure() {
         seedAttraction(10_001L, 32, 1);
@@ -106,6 +109,7 @@ class AttractionEmbeddingStorageRepositoryPostgisTest {
         assertThat(record.get("embedding_text", String.class)).startsWith("[0.1,0.1");
     }
 
+    @DisplayName("성공 후 실패 저장은 오래된 pgvector와 embeddedAt을 지운다")
     @Test
     void saveFailedAfterPriorSuccessClearsStalePgvectorAndEmbeddedAt() {
         seedAttraction(10_002L, 37, 12);
@@ -146,6 +150,7 @@ class AttractionEmbeddingStorageRepositoryPostgisTest {
         assertThat(record.get("attempt_count", Integer.class)).isEqualTo(2);
     }
 
+    @DisplayName("pgvector 코사인 거리는 가장 가까운 임베딩을 먼저 정렬한다")
     @Test
     void pgvectorCosineDistanceRanksNearestEmbeddingFirst() {
         long nearAttractionId = 10_020L;

@@ -120,6 +120,8 @@ Migration 작성 시:
 
 테스트의 편의성을 위해 운영 코드를 오염시키거나 설계를 망가뜨리지 않는다.
 
+- **한글 DisplayName 필수**: JUnit 테스트 메서드를 작성하거나 수정할 때는 `@DisplayName`으로 테스트 의도와 검증 내용을 한글로 설명한다.
+  영어 메서드명만으로 테스트 의미를 추측하게 만들지 않는다.
 - **생성자 오염 금지**: 테스트에서 객체를 쉽게 생성하기 위해 운영 코드에 불필요한 생성자(예: 테스트 전용 파라미터 생성자 등)를 다수 선언하지 않는다.
 - **PSA 우선**: HTTP, MVC, Security, DB, Cache처럼 Spring이 Portable Service Abstraction과 테스트 지원을 제공하는 영역은
   `MockMvc`, `MockRestServiceServer`, `spring-security-test`, Testcontainers,

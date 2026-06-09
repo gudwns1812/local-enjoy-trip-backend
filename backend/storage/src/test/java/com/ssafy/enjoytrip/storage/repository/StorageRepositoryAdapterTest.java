@@ -19,6 +19,7 @@ import com.ssafy.enjoytrip.storage.jpa.NoticeJpaRepository;
 import com.ssafy.enjoytrip.storage.jpa.PlanItemJpaRepository;
 import com.ssafy.enjoytrip.storage.jpa.TravelPlanJpaRepository;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -44,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StorageRepositoryAdapterTest {
+    @DisplayName("게시글 어댑터는 최신순 전체 조회와 빈 updatedAt을 매핑한다")
     @Test
     void boardAdapterMapsFindAllInNewestFirstOrderAndBlankUpdatedAt() {
         BoardFakeJpaRepository fake = new BoardFakeJpaRepository();
@@ -60,6 +62,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("게시글 어댑터는 등록과 수정 및 삭제를 처리하고 누락 행을 보고한다")
     @Test
     void boardAdapterInsertsUpdatesDeletesAndReportsMissingRows() {
         BoardFakeJpaRepository fake = new BoardFakeJpaRepository();
@@ -81,6 +84,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("회원 어댑터는 조회와 부분 수정 규칙을 매핑한다")
     @Test
     void memberAdapterMapsLookupsAndPartialUpdateRules() {
         MemberFakeJpaRepository memberFake = new MemberFakeJpaRepository();
@@ -116,6 +120,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("회원 어댑터는 JPA 저장소의 중복 아이디 실패를 전파한다")
     @Test
     void memberAdapterPropagatesDuplicateUserIdFailureFromJpaRepository() {
         MemberFakeJpaRepository fake = new MemberFakeJpaRepository();
@@ -129,6 +134,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("공지 어댑터는 생성 ID와 수정 및 삭제와 누락 행을 매핑한다")
     @Test
     void noticeAdapterMapsGeneratedIdsUpdateDeleteAndMissingRows() {
         NoticeFakeJpaRepository fake = new NoticeFakeJpaRepository();
@@ -152,6 +158,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("핫플레이스 어댑터는 전체 조회와 사용자 필터를 수행하고 nullable 필드를 보존한다")
     @Test
     void hotplaceAdapterFindsAllFiltersByUserAndPreservesNullableFields() {
         HotplaceFakeJpaRepository fake = new HotplaceFakeJpaRepository();
@@ -171,6 +178,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("핫플레이스 어댑터는 등록과 삭제를 처리하고 누락 행을 보고한다")
     @Test
     void hotplaceAdapterInsertsDeletesAndReportsMissingRows() {
         HotplaceFakeJpaRepository fake = new HotplaceFakeJpaRepository();
@@ -187,6 +195,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("계획 어댑터는 전체 조회와 사용자 필터를 수행하고 nullable 경로 데이터를 보존한다")
     @Test
     void planAdapterFindsAllFiltersByUserAndPreservesNullableRouteData() {
         PlanFakeJpaRepository fake = new PlanFakeJpaRepository();
@@ -206,6 +215,7 @@ class StorageRepositoryAdapterTest {
         );
     }
 
+    @DisplayName("계획 어댑터는 등록과 삭제를 처리하고 누락 행을 보고한다")
     @Test
     void planAdapterInsertsDeletesAndReportsMissingRows() {
         PlanFakeJpaRepository fake = new PlanFakeJpaRepository();

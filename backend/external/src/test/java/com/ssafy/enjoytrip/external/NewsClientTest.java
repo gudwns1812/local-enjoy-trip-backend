@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.external;
 
 import com.ssafy.enjoytrip.external.ExternalClientTestSupport.FakeHttpClient;
 import com.ssafy.enjoytrip.domain.NewsItem;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NewsClientTest {
+    @DisplayName("뉴스 조회는 처음 성공한 피드를 사용하고 RSS 항목을 매핑한다")
     @Test
     void findNewsUsesFirstSuccessfulFeedAndMapsRssItems() {
         FakeHttpClient http = new FakeHttpClient()
@@ -42,6 +44,7 @@ class NewsClientTest {
         assertThat(http.requests()).hasSize(2);
     }
 
+    @DisplayName("뉴스 조회는 20개로 제한하고 긴 설명을 자른다")
     @Test
     void findNewsLimitsToTwentyItemsAndTruncatesLongDescriptions() {
         StringBuilder rss = new StringBuilder("<rss><channel>");
@@ -63,6 +66,7 @@ class NewsClientTest {
         assertThat(results.getFirst().summary()).hasSize(153).endsWith("...");
     }
 
+    @DisplayName("뉴스 조회는 피드 실패나 잘못된 XML이면 대체 결과를 반환한다")
     @Test
     void findNewsFallsBackWhenFeedsFailOrXmlIsMalformed() {
         FakeHttpClient http = new FakeHttpClient()

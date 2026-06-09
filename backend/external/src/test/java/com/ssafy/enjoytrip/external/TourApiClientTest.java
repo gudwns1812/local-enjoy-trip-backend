@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.external;
 
 import com.ssafy.enjoytrip.external.ExternalClientTestSupport.FakeHttpClient;
 import com.ssafy.enjoytrip.domain.Attraction;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TourApiClientTest {
+    @DisplayName("관광지 검색은 키워드가 비면 지역 기반 목록을 사용하고 XML 항목을 매핑한다")
     @Test
     void searchUsesAreaBasedListWhenKeywordIsBlankAndMapsXmlItems() throws Exception {
         FakeHttpClient http = new FakeHttpClient().enqueue(200, """
@@ -46,6 +48,7 @@ class TourApiClientTest {
                 .doesNotContain("keyword=");
     }
 
+    @DisplayName("관광지 검색은 키워드 엔드포인트를 사용하고 한글 키워드를 URL 인코딩한다")
     @Test
     void searchUsesKeywordEndpointAndUrlEncodesKoreanKeyword() throws Exception {
         FakeHttpClient http = new FakeHttpClient()
@@ -63,6 +66,7 @@ class TourApiClientTest {
                 .doesNotContain("contentTypeId=");
     }
 
+    @DisplayName("주변 관광지 검색은 위치 기반 요청을 만들고 잘못된 숫자는 기본값으로 처리한다")
     @Test
     void searchAroundBuildsLocationBasedRequestAndDefaultsMalformedNumbers() throws Exception {
         FakeHttpClient http = new FakeHttpClient().enqueue(200, """
@@ -94,6 +98,7 @@ class TourApiClientTest {
                 .contains("keyword=궁");
     }
 
+    @DisplayName("API 키가 없으면 어떤 HTTP 호출도 하기 전에 예외를 던진다")
     @Test
     void throwsWhenApiKeyIsMissingBeforeAnyHttpCall() {
         FakeHttpClient http = new FakeHttpClient();
@@ -106,6 +111,7 @@ class TourApiClientTest {
         assertThat(client.isConfigured()).isFalse();
     }
 
+    @DisplayName("HTTP 오류와 잘못된 XML은 IOException을 던진다")
     @Test
     void throwsIOExceptionForHttpErrorAndMalformedXml() {
         TourApiClient httpErrorClient = new TourApiClient(

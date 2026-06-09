@@ -1,6 +1,7 @@
 package com.ssafy.enjoytrip.service;
 
 import com.ssafy.enjoytrip.domain.Point;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ class RouteOptimizationServiceTest {
 
     @Nested
     class Parsing {
+        @DisplayName("파이프로 구분한 위도와 경도를 원래 순서 인덱스로 파싱한다")
         @Test
         void parsesPipeDelimitedLatitudeLongitudePairsWithOriginalIndexes() {
             List<Point> points = service.parsePoints("37.5665,126.9780 | 35.1796,129.0756");
@@ -27,6 +29,7 @@ class RouteOptimizationServiceTest {
             );
         }
 
+        @DisplayName("입력이 없으면 빈 목록을 반환하고 잘못된 좌표는 거부한다")
         @Test
         void returnsEmptyListForMissingInputAndRejectsMalformedCoordinates() {
             assertThat(service.parsePoints(null)).isEmpty();
@@ -39,6 +42,7 @@ class RouteOptimizationServiceTest {
 
     @Nested
     class Optimization {
+        @DisplayName("빈 경로와 단일 지점 경로를 처리한다")
         @Test
         void handlesEmptyAndSinglePointRoutes() {
             assertThat(service.optimizeOrder(null)).isEmpty();
@@ -46,6 +50,7 @@ class RouteOptimizationServiceTest {
             assertThat(service.optimizeOrder(List.of(new Point(37.5, 127.0, 0)))).containsExactly(0);
         }
 
+        @DisplayName("첫 지점에서 시작하는 순열과 거리 추정값을 반환한다")
         @Test
         void returnsPermutationStartingAtFirstPointAndDistanceEstimate() {
             List<Point> points = List.of(
@@ -67,6 +72,7 @@ class RouteOptimizationServiceTest {
 
     @Nested
     class Splitting {
+        @DisplayName("가장 큰 간격 기준 분할은 일수를 보정하고 일자별 거리를 반환한다")
         @Test
         void splitByLargestGapClampsDayCountAndReportsIntraDayDistances() {
             List<Point> orderedPoints = List.of(
@@ -82,6 +88,7 @@ class RouteOptimizationServiceTest {
             assertThat(result.dayDistances()).containsExactly(0.0, 0.0, 0.0);
         }
 
+        @DisplayName("경로 분할은 빈 입력과 단일 지점 입력을 처리한다")
         @Test
         void splitHandlesEmptyAndSinglePointInputs() {
             assertThat(service.splitByLargestGap(null, 2).days()).isEmpty();

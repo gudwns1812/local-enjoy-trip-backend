@@ -1,6 +1,7 @@
 package com.ssafy.enjoytrip.external;
 
 import com.ssafy.enjoytrip.domain.WeatherSummary;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -15,6 +16,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 class OpenWeatherMapWeatherRepositoryTest {
 
+    @DisplayName("API 키가 없으면 HTTP 호출 전에 실패한다")
     @Test
     void missingApiKeyFailsBeforeHttpCall() {
         RestClient.Builder builder = RestClient.builder();
@@ -27,6 +29,7 @@ class OpenWeatherMapWeatherRepositoryTest {
         server.verify();
     }
 
+    @DisplayName("현재 날씨와 예보 응답을 날씨 요약 행으로 매핑한다")
     @Test
     void mapsCurrentAndForecastResponsesToWeatherSummaryRows() {
         RestClient.Builder builder = RestClient.builder();
@@ -85,6 +88,7 @@ class OpenWeatherMapWeatherRepositoryTest {
         server.verify();
     }
 
+    @DisplayName("HTTP 실패는 제어된 실패로 처리한다")
     @Test
     void httpFailureIsControlledFailure() {
         RestClient.Builder builder = RestClient.builder();
@@ -102,6 +106,7 @@ class OpenWeatherMapWeatherRepositoryTest {
         server.verify();
     }
 
+    @DisplayName("잘못된 현재 날씨 JSON은 제어된 실패로 처리한다")
     @Test
     void malformedCurrentJsonIsControlledFailure() {
         RestClient.Builder builder = RestClient.builder();
@@ -123,6 +128,7 @@ class OpenWeatherMapWeatherRepositoryTest {
         server.verify();
     }
 
+    @DisplayName("예보 목록 누락은 core 대체 처리를 위한 제어된 실패로 처리한다")
     @Test
     void missingForecastListIsControlledFailureForCoreFallbackCompletion() {
         RestClient.Builder builder = RestClient.builder();

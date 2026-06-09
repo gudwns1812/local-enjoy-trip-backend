@@ -7,6 +7,7 @@ import com.ssafy.enjoytrip.domain.NewsItem;
 import com.ssafy.enjoytrip.repository.AttractionRepository;
 import com.ssafy.enjoytrip.repository.ChargerRepository;
 import com.ssafy.enjoytrip.repository.NewsRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class DbBackedTravelDataServicesTest {
         private final AttractionRepository repository = mock(AttractionRepository.class);
         private final AttractionService service = new AttractionService(repository);
 
+        @DisplayName("지역 검색을 저장소에 위임한다")
         @Test
         void delegatesAreaSearchToRepository() {
             Attraction attraction = attraction(1L, "경복궁");
@@ -38,6 +40,7 @@ class DbBackedTravelDataServicesTest {
             verify(repository).search(condition);
         }
 
+        @DisplayName("주변 검색을 저장소에 위임한다")
         @Test
         void delegatesAroundSearchToRepository() {
             Attraction attraction = attraction(2L, "한강공원");
@@ -64,6 +67,7 @@ class DbBackedTravelDataServicesTest {
         private final ChargerRepository repository = mock(ChargerRepository.class);
         private final EvChargerService service = new EvChargerService(repository);
 
+        @DisplayName("충전소 검색을 저장소에 위임한다")
         @Test
         void delegatesChargerSearchToRepository() {
             ChargerItem charger = new ChargerItem(
@@ -83,6 +87,7 @@ class DbBackedTravelDataServicesTest {
         private final NewsRepository repository = mock(NewsRepository.class);
         private final NewsService service = new NewsService(repository);
 
+        @DisplayName("뉴스 조회를 저장소에 위임한다")
         @Test
         void delegatesNewsLookupToRepository() {
             NewsItem news = new NewsItem("n1", "관광 뉴스", "https://example.com", "요약", "출처", "2026-05-15");

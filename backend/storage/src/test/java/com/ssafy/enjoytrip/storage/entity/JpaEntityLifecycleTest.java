@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JpaEntityLifecycleTest {
+    @DisplayName("인증 로그 PrePersist는 loggedAt을 초기화하고 테이블 매핑을 유지한다")
     @Test
     void authLogPrePersistInitializesLoggedAtAndKeepsTableMapping() {
         AuthLogEntity authLog = new AuthLogEntity("ssafy", "LOGIN");
@@ -31,6 +33,7 @@ class JpaEntityLifecycleTest {
         );
     }
 
+    @DisplayName("게시글 PrePersist와 PreUpdate는 createdAt을 덮어쓰지 않고 타임스탬프를 관리한다")
     @Test
     void boardPrePersistAndPreUpdateManageTimestampsWithoutOverwritingCreatedAt() {
         BoardPostEntity board = new BoardPostEntity("board-1", "Title", "content", "author");
@@ -52,6 +55,7 @@ class JpaEntityLifecycleTest {
         );
     }
 
+    @DisplayName("회원 수정은 null과 빈 패치 필드는 무시하고 updatedAt은 갱신한다")
     @Test
     void memberUpdateIgnoresNullAndBlankPatchFieldsButRefreshesUpdatedAt() {
         MemberEntity member = new MemberEntity("ssafy", "SSAFY", "ssafy@example.com", "secret");
@@ -72,6 +76,7 @@ class JpaEntityLifecycleTest {
         );
     }
 
+    @DisplayName("공지 PrePersist와 PreUpdate는 생성 및 수정 타임스탬프를 관리한다")
     @Test
     void noticePrePersistAndPreUpdateManageCreatedAndUpdatedTimestamps() {
         NoticeEntity notice = new NoticeEntity("Notice", "content", "admin");
@@ -90,6 +95,7 @@ class JpaEntityLifecycleTest {
         );
     }
 
+    @DisplayName("핫플레이스와 여행 계획은 nullable 텍스트 필드와 필수 컬럼을 보존한다")
     @Test
     void hotplaceAndTravelPlanPreserveNullableTextFieldsAndRequiredColumns() {
         HotplaceEntity hotplace = new HotplaceEntity("hot-1", "ssafy", "Cafe", "food",
@@ -114,6 +120,7 @@ class JpaEntityLifecycleTest {
         );
     }
 
+    @DisplayName("DB가 할당하는 엔티티 ID는 IDENTITY 전략을 사용한다")
     @Test
     void generatedIdsUseIdentityStrategyForDatabaseAssignedEntities() throws Exception {
         assertAll(

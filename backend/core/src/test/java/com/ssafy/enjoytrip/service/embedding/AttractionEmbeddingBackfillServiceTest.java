@@ -9,6 +9,7 @@ import com.ssafy.enjoytrip.domain.embedding.AttractionKeywordExpansion;
 import com.ssafy.enjoytrip.repository.embedding.AttractionEmbeddingGateway;
 import com.ssafy.enjoytrip.repository.embedding.AttractionEmbeddingRepository;
 import com.ssafy.enjoytrip.repository.embedding.AttractionKeywordExpansionGateway;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ class AttractionEmbeddingBackfillServiceTest {
             "proof"
     );
 
+    @DisplayName("재실행은 같은 sourceVersion으로 이미 임베딩된 대상을 게이트웨이 호출 없이 건너뛴다")
     @Test
     void rerunSkipsAlreadyEmbeddedSameSourceWithoutCallingGateway() {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 32, 1)));
@@ -59,6 +61,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertTrue(repository.embedded.isEmpty());
     }
 
+    @DisplayName("임베딩은 원문 관광지 텍스트 대신 확장된 로컬 키워드를 사용한다")
     @Test
     void embedsExpandedLocalLetterKeywordsInsteadOfRawAttractionText() {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 37, 12)));
@@ -82,6 +85,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertEquals("해질녘 전주천 산책\n시장 먹거리\n한옥마을 외곽 골목", gateway.lastSourceText);
     }
 
+    @DisplayName("실패 기록은 추적 가능한 관광지 ID와 실패 상세를 남긴다")
     @Test
     void recordsFailureWithTraceableAttractionIdAndFailureDetail() {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 32, 1)));
@@ -103,6 +107,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertEquals(1, repository.attempts.get(1L));
     }
 
+    @DisplayName("키워드 확장 실패는 임베딩 요청 전에 기록한다")
     @Test
     void recordsKeywordExpansionFailureBeforeEmbeddingRequest() {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 32, 1)));
@@ -125,6 +130,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertEquals("GMS_CHAT_HTTP_500", repository.failures.get(1L).code());
     }
 
+    @DisplayName("실패 후 성공은 같은 행을 갱신하고 실패 상태를 지운다")
     @Test
     void successAfterFailureUpdatesSameRowAndClearsFailure() {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 32, 1)));
@@ -146,6 +152,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertEquals(2, repository.attempts.get(1L));
     }
 
+    @DisplayName("dry-run은 게이트웨이를 호출하거나 행을 쓰지 않는다")
     @Test
     void dryRunDoesNotCallGatewayOrWriteRows() {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 32, 1)));
@@ -167,6 +174,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertTrue(repository.failures.isEmpty());
     }
 
+    @DisplayName("저장소가 표준 지역 선택자를 적용하면 비대상 행은 기록되지 않는다")
     @Test
     void nonTargetRowsAreNotWrittenWhenRepositoryAppliesCanonicalRegionSelector() {
         FakeRepository repository = new FakeRepository(List.of(

@@ -29,6 +29,7 @@ import com.ssafy.enjoytrip.service.command.PlanMutationCommand;
 import com.ssafy.enjoytrip.service.RouteOptimizationService;
 import com.ssafy.enjoytrip.service.WeatherService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -116,6 +117,7 @@ class ControllerBehaviorTest {
 
     @Nested
     class WeatherEndpoints {
+        @DisplayName("날씨 브리핑을 반환하고 서비스에 위임한다")
         @Test
         void returnsWeatherBriefingsAndDelegatesToService() throws Exception {
             when(weatherService.findWeatherBriefings()).thenReturn(List.of(
@@ -139,6 +141,7 @@ class ControllerBehaviorTest {
 
     @Nested
     class BoardEndpoints {
+        @DisplayName("게시글 생성은 값을 정리해 서비스에 전달한다")
         @Test
         void createTrimsAndPassesBoardPostToService() throws Exception {
             mockMvc.perform(post("/api/boards/posts")
@@ -154,6 +157,7 @@ class ControllerBehaviorTest {
             assertThat(captor.getValue()).isEqualTo(new BoardPost("b1", "title", "content", "ssafy", "", ""));
         }
 
+        @DisplayName("검증 실패와 액션 없음 및 서비스 예외 응답을 보고한다")
         @Test
         void reportsValidationActionNotFoundAndServiceExceptionCases() throws Exception {
             mockMvc.perform(post("/api/boards/posts").param("id", "b1"))
@@ -182,6 +186,7 @@ class ControllerBehaviorTest {
 
     @Nested
     class HotplaceEndpoints {
+        @DisplayName("사용자별 핫플레이스를 조회하고 좌표로 생성한다")
         @Test
         void findsHotplacesByUserAndCreatesWithCoordinates() throws Exception {
             when(hotplaceService.findHotplacesByUser("ssafy")).thenReturn(List.of(
@@ -212,6 +217,7 @@ class ControllerBehaviorTest {
             assertThat(captor.getValue().lng()).isEqualTo(129.118);
         }
 
+        @DisplayName("잘못된 좌표와 누락된 삭제 대상을 거부한다")
         @Test
         void rejectsInvalidCoordinatesAndMissingDeleteTarget() throws Exception {
             mockMvc.perform(post("/api/hotplaces/items")
@@ -234,6 +240,7 @@ class ControllerBehaviorTest {
 
     @Nested
     class PlanAndNoticeEndpoints {
+        @DisplayName("계획 조회는 정규화된 경로 항목만 반환하고 저장 JSON 대체 파싱을 하지 않는다")
         @Test
         void planFindReturnsOnlyNormalizedRouteItemsAndDoesNotParseStoredJsonFallback() throws Exception {
             when(planService.findPlansByUser("ssafy")).thenReturn(List.of(
@@ -254,6 +261,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.data.plans[1].routeItems", empty()));
         }
 
+        @DisplayName("없는 계획 삭제는 찾을 수 없음으로 응답한다")
         @Test
         void planDeleteMissingReturnsNotFound() throws Exception {
             doThrow(new CoreException(PLAN_NOT_FOUND)).when(planService).deletePlan("ssafy", "missing");
@@ -263,6 +271,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.error.message").value("Plan not found"));
         }
 
+        @DisplayName("표준 계획 생성은 인증 사용자 기준의 타입화된 경로 항목을 저장한다")
         @Test
         void canonicalPlanCreateStoresTypedRouteItemsFromAuthenticatedUser() throws Exception {
             mockMvc.perform(post("/api/plans/items")
@@ -294,6 +303,7 @@ class ControllerBehaviorTest {
             assertThat(commandCaptor.getValue().routeItems().getFirst().memo()).isEqualTo("lunch");
         }
 
+        @DisplayName("표준 계획 생성 검증 실패는 표준 잘못된 요청 응답을 사용한다")
         @Test
         void canonicalPlanCreateValidationFailureUsesStandardBadRequestEnvelope() throws Exception {
             mockMvc.perform(post("/api/plans/items")
@@ -312,6 +322,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.error.message").value("Invalid request"));
         }
 
+        @DisplayName("표준 계획 수정은 경로 항목 필드가 없으면 기존 항목을 유지한다")
         @Test
         void canonicalPlanUpdateKeepsRouteItemsWhenRouteItemsFieldIsAbsent() throws Exception {
             mockMvc.perform(put("/api/plans/p-route")
@@ -334,6 +345,7 @@ class ControllerBehaviorTest {
             assertThat(commandCaptor.getValue().routeItems()).isNull();
         }
 
+        @DisplayName("공지 생성과 수정 및 삭제의 검증 사례를 확인한다")
         @Test
         void noticeCreateUpdateAndDeleteValidationCases() throws Exception {
             mockMvc.perform(post("/api/notices/items")
@@ -360,6 +372,7 @@ class ControllerBehaviorTest {
 
     @Nested
     class MemberAuthEndpoints {
+        @DisplayName("로그인 실패와 로그아웃 검증 및 비밀번호 조회 종료를 확인한다")
         @Test
         void loginFailureLogoutValidationAndPasswordLookupGone() throws Exception {
             when(memberService.login("ssafy", "wrong")).thenReturn(null);
@@ -379,6 +392,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.error.code").value("GONE"));
         }
 
+        @DisplayName("내 정보 수정은 인증된 JWT 주체를 사용하고 없는 사용자를 처리한다")
         @Test
         void updateMeUsesAuthenticatedJwtSubjectAndHandlesMissingUser() throws Exception {
             when(memberService.update(any())).thenReturn(true);
@@ -403,6 +417,7 @@ class ControllerBehaviorTest {
 
     @Nested
     class ExternalAndHealthEndpoints {
+        @DisplayName("관광지와 충전소 컨트롤러는 정상 및 예외 사례를 변환한다")
         @Test
         void attractionAndChargerControllersTranslateNormalAndExceptionCases() throws Exception {
             mockMvc.perform(post("/api/attractions"))
@@ -444,6 +459,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.error.message").value("EV charger API call failed"));
         }
 
+        @DisplayName("관광지 참여와 태그 엔드포인트는 검증 후 위임한다")
         @Test
         void attractionEngagementAndTagEndpointsValidateAndDelegate() throws Exception {
             when(attractionService.existsById(1L)).thenReturn(true);
@@ -479,6 +495,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.data.tags[0].name").value("family"));
         }
 
+        @DisplayName("헬스 체크는 DB 상태를 보고하고 전역 핸들러는 예상 밖 예외를 잡는다")
         @Test
         void healthReportsDatabaseStatusAndGlobalHandlerCatchesUnexpectedExceptions() throws Exception {
             when(dbHealthRepository.isConnected()).thenReturn(true);
@@ -498,6 +515,7 @@ class ControllerBehaviorTest {
         }
     }
 
+    @DisplayName("경로 엔드포인트는 잘못된 입력을 거부한다")
     @Test
     void routeEndpointsRejectInvalidInput() throws Exception {
         mockMvc.perform(get("/api/route/optimize").param("points", "37.5|bad"))
@@ -509,6 +527,7 @@ class ControllerBehaviorTest {
                 .andExpect(jsonPath("$.error.message").value("Invalid request"));
     }
 
+    @DisplayName("컨트롤러 계약은 원시 Map 대신 DTO를 사용한다")
     @Test
     void controllerContractsUseDtoObjectsInsteadOfRawMaps() throws Exception {
         Path webPackage = Path.of("src/main/java/com/ssafy/enjoytrip/web");

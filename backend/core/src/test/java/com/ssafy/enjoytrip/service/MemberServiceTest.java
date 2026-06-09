@@ -3,6 +3,7 @@ package com.ssafy.enjoytrip.service;
 import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MemberServiceTest {
 
+    @DisplayName("회원가입은 비밀번호 인코딩 없이 중복 아이디나 이메일을 거부한다")
     @Test
     void signupRejectsDuplicateUserIdOrEmailWithoutEncodingPassword() {
         FakeMemberRepository repository = new FakeMemberRepository();
@@ -32,6 +34,7 @@ class MemberServiceTest {
         assertEquals(1, repository.members.size());
     }
 
+    @DisplayName("회원가입은 새 회원이면 인코딩된 비밀번호를 저장한다")
     @Test
     void signupStoresEncodedPasswordWhenMemberIsNew() {
         FakeMemberRepository repository = new FakeMemberRepository();
@@ -45,6 +48,7 @@ class MemberServiceTest {
         assertEquals(1, passwordCodec.encodeCalls);
     }
 
+    @DisplayName("로그인은 인증 실패 시 null을 반환하고 로그인 기록을 남기지 않는다")
     @Test
     void loginReturnsNullWhenPasswordDoesNotAuthenticateAndDoesNotWriteLog() {
         FakeMemberRepository repository = new FakeMemberRepository();
@@ -57,6 +61,7 @@ class MemberServiceTest {
         assertTrue(repository.authLogs.isEmpty());
     }
 
+    @DisplayName("로그인은 기존 평문 비밀번호를 업그레이드하고 로그인 기록을 남긴다")
     @Test
     void loginUpgradesLegacyPlainPasswordAndRecordsLogin() {
         FakeMemberRepository repository = new FakeMemberRepository();
@@ -72,6 +77,7 @@ class MemberServiceTest {
         assertEquals(1, passwordCodec.encodeCalls);
     }
 
+    @DisplayName("OAuth 로그인은 기존 이메일을 재사용하고 로그인 기록을 남긴다")
     @Test
     void loginWithOAuthReusesExistingEmailAndRecordsLogin() {
         FakeMemberRepository repository = new FakeMemberRepository();
@@ -85,6 +91,7 @@ class MemberServiceTest {
         assertEquals(List.of("existing:LOGIN"), repository.authLogs);
     }
 
+    @DisplayName("OAuth 회원가입은 정제된 회원을 만들고 로그인 기록을 남긴다")
     @Test
     void signupWithOAuthCreatesSanitizedMemberAndRecordsLogin() {
         FakeMemberRepository repository = new FakeMemberRepository();

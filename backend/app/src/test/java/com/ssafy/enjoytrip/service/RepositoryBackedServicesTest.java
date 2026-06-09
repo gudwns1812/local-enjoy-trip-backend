@@ -11,6 +11,7 @@ import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.repository.NoticeRepository;
 import com.ssafy.enjoytrip.repository.PlanRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ class RepositoryBackedServicesTest {
         private final BoardRepository repository = mock(BoardRepository.class);
         private final BoardService service = new BoardService(repository);
 
+        @DisplayName("CRUD 작업을 저장소에 위임한다")
         @Test
         void delegatesCrudToRepository() {
             BoardPost post = new BoardPost("b1", "title", "content", "author", "created", "updated");
@@ -51,6 +53,7 @@ class RepositoryBackedServicesTest {
             verify(repository).insert(post);
         }
 
+        @DisplayName("저장소 예외를 그대로 전파한다")
         @Test
         void propagatesRepositoryException() {
             BoardPost post = new BoardPost("b1", "title", "content", "author", "", "");
@@ -67,6 +70,7 @@ class RepositoryBackedServicesTest {
         private final HotplaceRepository repository = mock(HotplaceRepository.class);
         private final HotplaceService service = new HotplaceService(repository);
 
+        @DisplayName("목록 조회와 등록 및 삭제를 저장소에 위임한다")
         @Test
         void delegatesListInsertAndDelete() {
             Hotplace hotplace = new Hotplace("h1", "ssafy", "남산", "view", "2026-05-14", 37.55, 126.99, "night", "", "created");
@@ -88,6 +92,7 @@ class RepositoryBackedServicesTest {
         private final NoticeRepository repository = mock(NoticeRepository.class);
         private final NoticeService service = new NoticeService(repository);
 
+        @DisplayName("공지 CRUD를 위임하고 없는 공지는 false를 반환한다")
         @Test
         void delegatesCrudAndReturnsFalseForMissingNotice() {
             Notice notice = new Notice(1L, "공지", "내용", "admin", "created", "updated");
@@ -109,6 +114,7 @@ class RepositoryBackedServicesTest {
         private final PlanRepository repository = mock(PlanRepository.class);
         private final PlanService service = new PlanService(repository);
 
+        @DisplayName("전체 또는 사용자별 조회와 삭제를 저장소에 위임한다")
         @Test
         void delegatesReadByAllOrUserAndDelete() {
             TravelPlan plan = new TravelPlan("p1", "ssafy", "서울", "2026-05-14", "2026-05-15", 1000, "note", "[]", "created");
@@ -131,6 +137,7 @@ class RepositoryBackedServicesTest {
         private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         private final MemberService service = new MemberService(repository, new TestPasswordCodec(passwordEncoder));
 
+        @DisplayName("회원가입은 중복 사용자를 등록하지 않는다")
         @Test
         void signupDoesNotInsertDuplicateUser() {
             when(repository.existsByUserId("ssafy")).thenReturn(true);
@@ -141,6 +148,7 @@ class RepositoryBackedServicesTest {
             verify(repository, never()).insert(org.mockito.ArgumentMatchers.any());
         }
 
+        @DisplayName("로그인은 없는 회원과 빈 비밀번호 및 빈 저장 비밀번호를 거부한다")
         @Test
         void loginRejectsMissingMemberBlankPasswordAndBlankStoredPassword() {
             when(repository.findByUserId("missing")).thenReturn(null);
@@ -154,6 +162,7 @@ class RepositoryBackedServicesTest {
             verify(repository, never()).insertAuthLog(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
         }
 
+        @DisplayName("회원 수정은 값이 있는 비밀번호만 인코딩하고 빈 비밀번호는 비워 둔다")
         @Test
         void updateEncodesNonBlankPasswordAndLeavesBlankPasswordBlank() {
             when(repository.update(org.mockito.ArgumentMatchers.any())).thenReturn(true);
@@ -169,6 +178,7 @@ class RepositoryBackedServicesTest {
             assertThat(captor.getAllValues().getLast().password()).isEqualTo(" ");
         }
 
+        @DisplayName("로그아웃과 비밀번호 조회 및 삭제를 저장소에 위임한다")
         @Test
         void delegatesLogoutPasswordLookupAndDelete() {
             when(repository.findPassword("ssafy", "ssafy@example.com")).thenReturn("legacy-secret");

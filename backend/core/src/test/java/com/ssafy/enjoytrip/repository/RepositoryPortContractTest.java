@@ -10,6 +10,7 @@ import com.ssafy.enjoytrip.domain.TravelPlan;
 import com.ssafy.enjoytrip.domain.Attraction;
 import com.ssafy.enjoytrip.domain.AttractionSearchCondition;
 import com.ssafy.enjoytrip.domain.WeatherSummary;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -33,6 +34,7 @@ class RepositoryPortContractTest {
             "com.ssafy.enjoytrip.storage"
     );
 
+    @DisplayName("저장소 포트는 core repository 패키지의 인터페이스로 유지된다")
     @Test
     void repositoryPortsRemainInterfacesInCoreRepositoryPackage() {
         List.of(
@@ -53,6 +55,7 @@ class RepositoryPortContractTest {
         ));
     }
 
+    @DisplayName("게시글 저장소 계약은 BoardPost와 boolean 변경 결과를 사용한다")
     @Test
     void boardRepositoryContractUsesBoardPostAndBooleanMutationResult() throws Exception {
         assertListReturn(BoardRepository.class.getMethod("findAll"), BoardPost.class);
@@ -61,28 +64,33 @@ class RepositoryPortContractTest {
         assertMethod(BoardRepository.class, "delete", boolean.class, String.class);
     }
 
+    @DisplayName("관광지 저장소 계약은 DB 검색 입력과 도메인 모델을 사용한다")
     @Test
     void attractionRepositoryContractUsesDbSearchInputsAndDomainModel() throws Exception {
         assertListReturn(AttractionRepository.class.getMethod(
                 "search", AttractionSearchCondition.class), Attraction.class);
     }
 
+    @DisplayName("충전소 저장소 계약은 도메인 모델과 페이지 입력을 사용한다")
     @Test
     void chargerRepositoryContractUsesDomainModelAndPaginationInputs() throws Exception {
         assertListReturn(ChargerRepository.class.getMethod(
                 "findChargers", String.class, String.class, int.class, int.class), ChargerItem.class);
     }
 
+    @DisplayName("뉴스 저장소 계약은 도메인 모델을 사용한다")
     @Test
     void newsRepositoryContractUsesDomainModel() throws Exception {
         assertListReturn(NewsRepository.class.getMethod("findNews"), NewsItem.class);
     }
 
+    @DisplayName("날씨 저장소 계약은 도메인 모델을 사용한다")
     @Test
     void weatherRepositoryContractUsesDomainModel() throws Exception {
         assertListReturn(WeatherRepository.class.getMethod("findWeatherBriefings"), WeatherSummary.class);
     }
 
+    @DisplayName("핫플레이스 저장소 계약은 Hotplace와 사용자 범위 조회를 사용한다")
     @Test
     void hotplaceRepositoryContractUsesHotplaceAndUserScopedLookup() throws Exception {
         assertListReturn(HotplaceRepository.class.getMethod("findAll"), Hotplace.class);
@@ -91,6 +99,7 @@ class RepositoryPortContractTest {
         assertMethod(HotplaceRepository.class, "delete", boolean.class, String.class);
     }
 
+    @DisplayName("회원 저장소 계약은 인증 지원을 core 포트에 유지한다")
     @Test
     void memberRepositoryContractKeepsAuthenticationSupportInCorePort() throws Exception {
         assertListReturn(MemberRepository.class.getMethod("findAll"), Member.class);
@@ -105,6 +114,7 @@ class RepositoryPortContractTest {
         assertMethod(MemberRepository.class, "insertAuthLog", void.class, String.class, String.class);
     }
 
+    @DisplayName("공지 저장소 계약은 Long 식별자를 사용한다")
     @Test
     void noticeRepositoryContractUsesLongIdentifier() throws Exception {
         assertListReturn(NoticeRepository.class.getMethod("findAll"), Notice.class);
@@ -113,6 +123,7 @@ class RepositoryPortContractTest {
         assertMethod(NoticeRepository.class, "delete", boolean.class, Long.class);
     }
 
+    @DisplayName("계획 저장소 계약은 TravelPlan과 사용자 범위 조회를 사용한다")
     @Test
     void planRepositoryContractUsesTravelPlanAndUserScopedLookup() throws Exception {
         assertListReturn(PlanRepository.class.getMethod("findAll"), TravelPlan.class);
@@ -121,6 +132,7 @@ class RepositoryPortContractTest {
         assertMethod(PlanRepository.class, "delete", boolean.class, String.class);
     }
 
+    @DisplayName("저장소 포트는 app, external, storage 타입을 참조하지 않는다")
     @Test
     void repositoryPortsDoNotReferenceAppExternalOrStorageTypes() {
         List.of(

@@ -11,6 +11,7 @@ import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,6 +31,7 @@ class MemberServiceTest {
         service = new MemberService(repository, passwordCodec);
     }
 
+    @DisplayName("회원가입은 BCrypt 비밀번호를 저장한다")
     @Test
     void signupStoresBcryptPassword() {
         when(repository.existsByUserId("ssafy")).thenReturn(false);
@@ -45,6 +47,7 @@ class MemberServiceTest {
         assertThat(passwordEncoder.matches("secret", saved.password())).isTrue();
     }
 
+    @DisplayName("회원가입은 중복 이메일을 거부한다")
     @Test
     void signupRejectsDuplicateEmail() {
         when(repository.existsByUserId("ssafy")).thenReturn(false);
@@ -56,6 +59,7 @@ class MemberServiceTest {
         verify(repository, never()).insert(any());
     }
 
+    @DisplayName("로그인은 비밀번호가 일치하면 회원을 반환한다")
     @Test
     void loginReturnsMemberWhenPasswordMatches() {
         String encodedPassword = passwordEncoder.encode("secret");
@@ -69,6 +73,7 @@ class MemberServiceTest {
         verify(repository, never()).update(any());
     }
 
+    @DisplayName("로그인은 비밀번호가 일치하지 않으면 실패한다")
     @Test
     void loginFailsWhenPasswordDoesNotMatch() {
         Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", passwordEncoder.encode("secret"), "");
@@ -80,6 +85,7 @@ class MemberServiceTest {
         verify(repository, never()).insertAuthLog(any(), any());
     }
 
+    @DisplayName("로그인은 평문 비밀번호를 BCrypt로 마이그레이션한다")
     @Test
     void loginMigratesPlainTextPasswordToBcrypt() {
         Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", "");
@@ -94,6 +100,7 @@ class MemberServiceTest {
         verify(repository).insertAuthLog("ssafy", "LOGIN");
     }
 
+    @DisplayName("OAuth 로그인은 기존 이메일 회원을 재사용한다")
     @Test
     void oauthLoginReusesExistingEmail() {
         Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", passwordEncoder.encode("secret"), "");
@@ -106,6 +113,7 @@ class MemberServiceTest {
         verify(repository, never()).insert(any());
     }
 
+    @DisplayName("OAuth 로그인은 새 이메일이면 회원을 생성한다")
     @Test
     void oauthLoginCreatesMemberWhenEmailIsNew() {
         when(repository.findByEmail("new@example.com")).thenReturn(null);

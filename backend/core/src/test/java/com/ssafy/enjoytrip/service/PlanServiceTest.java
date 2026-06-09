@@ -18,10 +18,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class PlanServiceTest {
 
+    @DisplayName("계획 생성은 인증 사용자를 사용하고 경로 항목을 정규화한다")
     @Test
     void createPlanUsesAuthenticatedUserAndNormalizesRouteItems() {
         FakePlanRepository repository = new FakePlanRepository();
@@ -43,6 +45,7 @@ class PlanServiceTest {
         assertEquals(List.of(new PlanItem(null, "p1", 10L, 0, 2, "lunch", 120)), repository.savedItems);
     }
 
+    @DisplayName("경로 항목 없는 계획 수정은 기존 항목을 유지하고 빈 항목은 명시적으로 교체한다")
     @Test
     void updatePlanWithoutRouteItemsKeepsExistingItemsAndEmptyRouteItemsExplicitlyReplacesThem() {
         FakePlanRepository repository = new FakePlanRepository();
@@ -90,6 +93,7 @@ class PlanServiceTest {
         assertTrue(repository.savedItems.isEmpty());
     }
 
+    @DisplayName("계획 수정은 서비스 내부에서 소유권을 확인한다")
     @Test
     void updatePlanChecksOwnershipInsideService() {
         FakePlanRepository repository = new FakePlanRepository();
@@ -114,6 +118,7 @@ class PlanServiceTest {
         assertEquals(ACCESS_DENIED, exception.errorType());
     }
 
+    @DisplayName("없는 계획 삭제는 찾을 수 없음 예외를 발생시킨다")
     @Test
     void deleteMissingPlanRaisesNotFound() {
         PlanService service = new PlanService(new FakePlanRepository());
