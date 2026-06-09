@@ -1,6 +1,7 @@
 package com.ssafy.enjoytrip.batch;
 
 import com.ssafy.enjoytrip.domain.embedding.AttractionEmbeddingTargetRegion;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.io.ClassPathResource;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EmbeddingTargetRegionsTest {
+    @DisplayName("대상 지역 YAML은 증빙이 있는 강릉과 전주만 포함한다")
     @Test
     void targetRegionYamlContainsExactlyGangneungAndJeonjuWithProof() {
         Properties properties = yamlProperties();
@@ -29,6 +31,7 @@ class EmbeddingTargetRegionsTest {
         assertThat(properties.getProperty("enjoytrip.ai.embedding.target-regions.regions[2].sido-name")).isNull();
     }
 
+    @DisplayName("검증기는 표준 지역 쌍 밖의 지역을 거부한다")
     @Test
     void validatorRejectsAnyRegionOutsideCanonicalPair() {
         AttractionEmbeddingTargetRegionValidator validator = new AttractionEmbeddingTargetRegionValidator();

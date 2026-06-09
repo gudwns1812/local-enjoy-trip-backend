@@ -1,6 +1,7 @@
 package com.ssafy.enjoytrip.external.embedding;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpClient;
@@ -8,6 +9,7 @@ import java.net.http.HttpClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GmsAttractionKeywordExpansionGatewayTest {
+    @DisplayName("채팅 완료 키워드 JSON을 임베딩 입력으로 파싱한다")
     @Test
     void parsesChatCompletionKeywordJsonForEmbeddingInput() throws Exception {
         GmsKeywordExpansionProperties properties = new GmsKeywordExpansionProperties();

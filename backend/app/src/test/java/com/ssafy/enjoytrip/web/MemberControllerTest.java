@@ -10,6 +10,7 @@ import com.ssafy.enjoytrip.service.MemberService;
 import com.ssafy.enjoytrip.service.OAuthSignupTicketService;
 import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -45,6 +46,7 @@ class MemberControllerTest {
                 .build();
     }
 
+    @DisplayName("회원가입은 모든 필드를 요구한다")
     @Test
     void signupRequiresAllFields() throws Exception {
         mockMvc.perform(post("/api/members/signup")
@@ -53,6 +55,7 @@ class MemberControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @DisplayName("회원가입은 사용자가 이미 있으면 충돌로 응답한다")
     @Test
     void signupReturnsConflictWhenUserExists() throws Exception {
         when(memberService.existsByUserId("ssafy")).thenReturn(true);
@@ -65,6 +68,7 @@ class MemberControllerTest {
                 .andExpect(status().isConflict());
     }
 
+    @DisplayName("회원가입은 필드와 이메일 중복을 검증한다")
     @Test
     void signupValidatesFieldsAndEmailDuplicates() throws Exception {
         mockMvc.perform(post("/api/members/signup")
@@ -85,6 +89,7 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.error.message").value("Email already exists"));
     }
 
+    @DisplayName("로그인은 JWT 토큰을 반환한다")
     @Test
     void loginReturnsJwtToken() throws Exception {
         Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden", "2026-05-14 11:00:00");
@@ -102,6 +107,7 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.data.user.password").doesNotExist());
     }
 
+    @DisplayName("OAuth 회원가입은 티켓으로 회원을 만들고 JWT 토큰을 반환한다")
     @Test
     void oauthSignupCreatesMemberFromTicketAndReturnsJwtToken() throws Exception {
         Member member = new Member("google_123", "트래블러", "google@example.com", "hidden", "2026-05-14 11:00:00");
@@ -118,12 +124,14 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.data.user.name").value("트래블러"));
     }
 
+    @DisplayName("내 정보 조회는 인증을 요구한다")
     @Test
     void meRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/members/me"))
                 .andExpect(status().isUnauthorized());
     }
 
+    @DisplayName("내 정보 조회는 인증된 사용자를 반환한다")
     @Test
     void meReturnsAuthenticatedUser() throws Exception {
         Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden", "2026-05-14 11:00:00");
@@ -135,6 +143,7 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"));
     }
 
+    @DisplayName("내 정보 수정은 다른 사용자 토큰을 거부한다")
     @Test
     void updateRejectsDifferentUserToken() throws Exception {
         mockMvc.perform(put("/api/members/other")
@@ -143,6 +152,7 @@ class MemberControllerTest {
                 .andExpect(status().isForbidden());
     }
 
+    @DisplayName("회원 삭제는 다른 사용자 토큰을 거부한다")
     @Test
     void deleteRejectsDifferentUserToken() throws Exception {
         mockMvc.perform(delete("/api/members/other")

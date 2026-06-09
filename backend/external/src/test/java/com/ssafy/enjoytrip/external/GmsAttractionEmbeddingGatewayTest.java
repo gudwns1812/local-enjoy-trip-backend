@@ -5,6 +5,7 @@ import com.ssafy.enjoytrip.domain.embedding.AttractionEmbeddingGatewayException;
 import com.ssafy.enjoytrip.external.ExternalClientTestSupport.FakeHttpClient;
 import com.ssafy.enjoytrip.external.embedding.GmsAttractionEmbeddingGateway;
 import com.ssafy.enjoytrip.external.embedding.GmsEmbeddingProperties;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -13,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GmsAttractionEmbeddingGatewayTest {
+    @DisplayName("GMS 임베딩은 Bearer 키로 OpenAI 호환 요청을 보내고 벡터를 파싱한다")
     @Test
     void sendsOpenAiCompatibleGmsEmbeddingRequestWithBearerKeyAndParsesVector() {
         GmsEmbeddingProperties properties = properties();
@@ -31,6 +33,7 @@ class GmsAttractionEmbeddingGatewayTest {
         assertThat(http.requests().getFirst().headers().firstValue("Authorization")).contains("Bearer test-key");
     }
 
+    @DisplayName("GMS API 키가 없으면 실제 호출을 거부한다")
     @Test
     void refusesLiveCallWhenGmsApiKeyIsMissing() {
         GmsEmbeddingProperties properties = properties();

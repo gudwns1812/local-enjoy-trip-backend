@@ -29,6 +29,7 @@ import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.domain.Notice;
 import com.ssafy.enjoytrip.domain.TravelPlan;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -101,6 +102,7 @@ class ApiDocumentationTest {
                 .build();
     }
 
+    @DisplayName("헬스 API 문서를 검증한다")
     @Test
     void health() throws Exception {
         mockMvc.perform(get("/health"))
@@ -111,6 +113,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("경로 최적화 API 문서를 검증한다")
     @Test
     void routeOptimize() throws Exception {
         mockMvc.perform(get("/api/route/optimize")
@@ -122,6 +125,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("일자별 경로 분할 API 문서를 검증한다")
     @Test
     void routeSplitByDay() throws Exception {
         mockMvc.perform(get("/api/route/split-by-day")
@@ -134,6 +138,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("관광지 API 문서를 검증한다")
     @Test
     void attractions() throws Exception {
         when(attractionService.searchAttractions(new AttractionSearchCondition("1", "", "", "궁", "", "", "")))
@@ -151,6 +156,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("충전소 API 문서를 검증한다")
     @Test
     void chargers() throws Exception {
         when(chargerService.findChargers("", "서울", 1, 150)).thenReturn(List.of(
@@ -167,6 +173,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("뉴스 API 문서를 검증한다")
     @Test
     void news() throws Exception {
         when(newsService.findNews()).thenReturn(List.of(
@@ -181,6 +188,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("날씨 브리핑 API 문서를 검증한다")
     @Test
     void weatherBriefings() throws Exception {
         when(weatherService.findWeatherBriefings()).thenReturn(List.of(
@@ -195,6 +203,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("게시글 API 문서를 검증한다")
     @Test
     void boards() throws Exception {
         when(boardService.findAllPosts()).thenReturn(List.of(
@@ -209,6 +218,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("핫플레이스 API 문서를 검증한다")
     @Test
     void hotplaces() throws Exception {
         when(hotplaceService.findAllHotplaces()).thenReturn(List.of(
@@ -226,6 +236,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("여행 계획 API 문서를 검증한다")
     @Test
     void plans() throws Exception {
         when(planService.findAllPlans()).thenReturn(List.of(
@@ -243,6 +254,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("공지 API 문서를 검증한다")
     @Test
     void notices() throws Exception {
         when(noticeService.findAllNotices()).thenReturn(List.of(
@@ -257,6 +269,7 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @DisplayName("회원 API 문서를 검증한다")
     @Test
     void members() throws Exception {
         when(memberService.findAllUsers()).thenReturn(List.of(

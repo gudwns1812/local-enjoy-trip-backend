@@ -1,5 +1,6 @@
 package com.ssafy.enjoytrip.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
@@ -86,6 +87,7 @@ class DomainRecordContractTest {
             )
     );
 
+    @DisplayName("도메인 모델은 안정적인 record 컴포넌트를 노출한다")
     @Test
     void domainModelsExposeStableRecordComponents() {
         for (RecordSpec spec : DOMAIN_RECORDS) {
@@ -99,6 +101,7 @@ class DomainRecordContractTest {
         }
     }
 
+    @DisplayName("도메인 record는 얕은 불변성을 지키고 setter를 노출하지 않는다")
     @Test
     void domainRecordsAreShallowlyImmutableAndDoNotExposeSetters() {
         for (RecordSpec spec : DOMAIN_RECORDS) {
@@ -114,6 +117,7 @@ class DomainRecordContractTest {
         }
     }
 
+    @DisplayName("표준 생성자는 값과 생성된 record 메서드를 보존한다")
     @Test
     void canonicalConstructorsPreserveValuesAndGeneratedRecordMethods() throws Exception {
         for (RecordSpec spec : DOMAIN_RECORDS) {
@@ -132,6 +136,7 @@ class DomainRecordContractTest {
         }
     }
 
+    @DisplayName("표준 생성자는 참조 컴포넌트 null과 primitive 경계값을 허용한다")
     @Test
     void canonicalConstructorsAllowNullReferenceComponentsAndPrimitiveEdgeValues() {
         for (RecordSpec spec : DOMAIN_RECORDS) {

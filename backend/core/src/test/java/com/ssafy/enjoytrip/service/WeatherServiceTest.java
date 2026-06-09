@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.service;
 
 import com.ssafy.enjoytrip.domain.WeatherSummary;
 import com.ssafy.enjoytrip.repository.WeatherRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WeatherServiceTest {
 
+    @DisplayName("저장소가 빈 결과를 반환하면 기본 대체 날씨 행을 반환한다")
     @Test
     void returnsDefaultFallbackRowsWhenRepositoryReturnsEmpty() {
         WeatherService service = new WeatherService(() -> List.of());
@@ -19,6 +21,7 @@ class WeatherServiceTest {
         assertDefaultFallbackRows(result);
     }
 
+    @DisplayName("저장소가 예외를 던지면 기본 대체 날씨 행을 반환한다")
     @Test
     void returnsDefaultFallbackRowsWhenRepositoryThrows() {
         WeatherService service = new WeatherService(() -> {
@@ -30,6 +33,7 @@ class WeatherServiceTest {
         assertDefaultFallbackRows(result);
     }
 
+    @DisplayName("실제 날씨 행을 보존하고 누락된 기본 지역을 채운다")
     @Test
     void preservesLiveRowsAndFillsMissingDefaultRegions() {
         WeatherSummary liveSeoul = new WeatherSummary("서울", "비", 18, 80, null, null);
@@ -43,6 +47,7 @@ class WeatherServiceTest {
         assertEquals(new WeatherSummary("제주", "바람 강함", 23, 30, "05:35", "19:25"), result.get(2));
     }
 
+    @DisplayName("저장소가 모든 기본 지역을 반환하면 기본 정렬을 유지한다")
     @Test
     void keepsDefaultOrderingWhenRepositoryReturnsAllDefaultRegions() {
         WeatherRepository repository = () -> List.of(

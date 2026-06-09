@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.external;
 
 import com.ssafy.enjoytrip.external.ExternalClientTestSupport.FakeHttpClient;
 import com.ssafy.enjoytrip.domain.ChargerItem;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EvChargerClientTest {
+    @DisplayName("충전소 조회는 XML을 매핑하고 키워드 필터와 페이지 보정을 적용한다")
     @Test
     void findChargersMapsXmlFiltersKeywordAndClampsPaging() throws Exception {
         FakeHttpClient http = new FakeHttpClient().enqueue(200, """
@@ -44,6 +46,7 @@ class EvChargerClientTest {
                 .contains("zcode=11");
     }
 
+    @DisplayName("충전소 조회는 빈 키워드면 모든 행을 유지하고 잘못된 좌표는 기본값으로 처리한다")
     @Test
     void findChargersKeepsAllRowsWhenKeywordBlankAndDefaultsInvalidCoordinates() throws Exception {
         FakeHttpClient http = new FakeHttpClient().enqueue(200, """
@@ -68,6 +71,7 @@ class EvChargerClientTest {
                 .doesNotContain("zcode=");
     }
 
+    @DisplayName("API 키가 없으면 HTTP 호출 없이 예외를 던진다")
     @Test
     void throwsWhenApiKeyMissingWithoutCallingHttp() {
         FakeHttpClient http = new FakeHttpClient();
@@ -79,6 +83,7 @@ class EvChargerClientTest {
         assertThat(http.requests()).isEmpty();
     }
 
+    @DisplayName("HTTP 오류와 잘못된 XML 및 전송 실패는 IOException을 던진다")
     @Test
     void throwsIOExceptionForHttpErrorMalformedXmlAndTransportFailure() {
         EvChargerClient httpErrorClient = new EvChargerClient(

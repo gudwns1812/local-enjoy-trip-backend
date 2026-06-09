@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.storage.repository;
 
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationHandler;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NativeMutationExecutorTest {
+    @DisplayName("update는 바인딩된 SQL을 실행하고 영향받은 행 수를 반환한다")
     @Test
     void updateExecutesSqlWithBindingsAndReturnsAffectedRows() {
         AtomicBoolean providerCalled = new AtomicBoolean(false);
@@ -36,6 +38,7 @@ class NativeMutationExecutorTest {
         assertTrue(providerCalled.get());
     }
 
+    @DisplayName("update는 jOOQ 실행 실패를 전파한다")
     @Test
     void updatePropagatesJooqExecutionFailures() {
         DSLContext dsl = dslContext((sql, bindings) -> {

@@ -3,6 +3,7 @@ package com.ssafy.enjoytrip.config;
 import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.service.JwtTokenService;
 import com.ssafy.enjoytrip.web.dto.response.IssuedToken;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("security")
 class SecuritySupportTest {
 
+    @DisplayName("JWT 설정이 비어 있거나 잘못되어도 안전한 기본값을 제공한다")
     @Test
     void jwtPropertiesProvideSafeDefaultsForBlankOrInvalidConfiguration() {
         JwtProperties defaults = new JwtProperties(" ", -1);
@@ -25,6 +27,7 @@ class SecuritySupportTest {
         assertThat(defaults.expirationSeconds()).isEqualTo(7200);
     }
 
+    @DisplayName("JWT 명시 설정값을 그대로 보존한다")
     @Test
     void jwtPropertiesPreserveExplicitConfiguration() {
         JwtProperties explicit = new JwtProperties("01234567890123456789012345678901", 60);
@@ -33,6 +36,7 @@ class SecuritySupportTest {
         assertThat(explicit.expirationSeconds()).isEqualTo(60);
     }
 
+    @DisplayName("비밀번호 인코더는 BCrypt를 사용한다")
     @Test
     void passwordEncoderUsesBcrypt() {
         PasswordEncoder passwordEncoder = new SecurityConfig().passwordEncoder();
@@ -43,6 +47,7 @@ class SecuritySupportTest {
         assertThat(passwordEncoder.matches("secret", encoded)).isTrue();
     }
 
+    @DisplayName("CORS는 로컬 개발 출처와 JWT 헤더를 허용한다")
     @Test
     void corsAllowsLocalhostDevelopmentOriginsAndJwtHeaders() {
         TestCorsRegistry registry = new TestCorsRegistry();
@@ -58,6 +63,7 @@ class SecuritySupportTest {
         assertThat(configuration.getAllowCredentials()).isTrue();
     }
 
+    @DisplayName("발급한 JWT는 설정된 시크릿으로 복호화되고 회원 클레임을 포함한다")
     @Test
     void issuedJwtCanBeDecodedWithConfiguredSecretAndContainsMemberClaims() {
         JwtProperties properties = new JwtProperties("01234567890123456789012345678901", 120);

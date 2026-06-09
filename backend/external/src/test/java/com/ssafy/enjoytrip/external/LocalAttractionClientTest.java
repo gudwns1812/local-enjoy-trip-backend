@@ -1,6 +1,7 @@
 package com.ssafy.enjoytrip.external;
 
 import com.ssafy.enjoytrip.domain.Attraction;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LocalAttractionClientTest {
+    @DisplayName("로컬 관광지 검색은 JSON을 매핑하고 지역과 콘텐츠 타입 및 키워드로 필터링한다")
     @Test
     void searchMapsLocalJsonAndFiltersAreaContentTypeAndKeyword() {
         LocalAttractionClient client = new LocalAttractionClient();
@@ -40,6 +42,7 @@ class LocalAttractionClientTest {
         ));
     }
 
+    @DisplayName("로컬 관광지 검색은 도로명 주소가 비면 지번 주소를 쓰고 빈 제목은 건너뛴다")
     @Test
     void searchUsesJibunAddressWhenRoadAddressIsBlankAndSkipsBlankTitles() {
         LocalAttractionClient client = new LocalAttractionClient();
@@ -60,6 +63,7 @@ class LocalAttractionClientTest {
                 .doesNotContain("");
     }
 
+    @DisplayName("주변 검색은 거리로 필터링하고 좌표가 없으면 일반 검색으로 대체한다")
     @Test
     void searchAroundFiltersByDistanceAndFallsBackToSearchWhenCoordinatesMissing() {
         LocalAttractionClient client = new LocalAttractionClient();

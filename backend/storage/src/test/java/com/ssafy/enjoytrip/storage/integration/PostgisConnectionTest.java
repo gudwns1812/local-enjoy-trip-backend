@@ -3,6 +3,7 @@ package com.ssafy.enjoytrip.storage.integration;
 import com.ssafy.enjoytrip.storage.StorageConfiguration;
 import com.ssafy.enjoytrip.storage.testsupport.PostgisTestcontainersConfiguration;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ class PostgisConnectionTest {
     @Autowired
     private DSLContext dslContext;
 
+    @DisplayName("PostGIS 컨테이너에 연결한다")
     @Test
     void connectsToPostgisContainer() {
         String version = dslContext.select(field("PostGIS_Version()", String.class))

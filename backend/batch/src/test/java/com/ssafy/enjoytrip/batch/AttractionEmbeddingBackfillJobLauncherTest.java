@@ -1,5 +1,6 @@
 package com.ssafy.enjoytrip.batch;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.boot.DefaultApplicationArguments;
@@ -17,6 +18,7 @@ class AttractionEmbeddingBackfillJobLauncherTest {
             ZoneOffset.UTC
     );
 
+    @DisplayName("Spring Boot 옵션 인자로 배치 작업 파라미터를 만든다")
     @Test
     void buildsJobParametersFromSpringBootOptionArguments() {
         DefaultApplicationArguments args = new DefaultApplicationArguments(
@@ -36,6 +38,7 @@ class AttractionEmbeddingBackfillJobLauncherTest {
         assertThat(parameters.getLong("run.id")).isEqualTo(FIXED_CLOCK.millis());
     }
 
+    @DisplayName("원시 배치 형식 인자로 작업 파라미터를 만든다")
     @Test
     void buildsJobParametersFromRawBatchStyleArguments() {
         DefaultApplicationArguments args = new DefaultApplicationArguments(
@@ -54,6 +57,7 @@ class AttractionEmbeddingBackfillJobLauncherTest {
         assertThat(parameters.getLong("limit")).isEqualTo(3L);
     }
 
+    @DisplayName("값 없는 dry-run 플래그는 true로 해석한다")
     @Test
     void dryRunFlagWithoutValueMeansTrue() {
         DefaultApplicationArguments args = new DefaultApplicationArguments(
@@ -70,6 +74,7 @@ class AttractionEmbeddingBackfillJobLauncherTest {
         assertThat(parameters.getLong("limit")).isZero();
     }
 
+    @DisplayName("배치 실행을 열기 전에 sourceVersion 필수값을 검증한다")
     @Test
     void sourceVersionIsRequiredBeforeOpeningBatchExecution() {
         DefaultApplicationArguments args = new DefaultApplicationArguments("--dryRun=true");
@@ -79,6 +84,7 @@ class AttractionEmbeddingBackfillJobLauncherTest {
                 .hasMessageContaining("sourceVersion job parameter is required");
     }
 
+    @DisplayName("배치 실행을 열기 전에 음수 limit을 거부한다")
     @Test
     void negativeLimitIsRejectedBeforeOpeningBatchExecution() {
         DefaultApplicationArguments args = new DefaultApplicationArguments(

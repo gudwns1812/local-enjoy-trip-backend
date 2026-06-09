@@ -1,5 +1,6 @@
 package com.ssafy.enjoytrip.domain;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AttractionTest {
 
+    @DisplayName("표준 생성자는 명시 상세 필드와 record 동작을 보존한다")
     @Test
     void canonicalConstructorPreservesExplicitDetailFieldsAndRecordBehavior() {
         Attraction attraction = detailedAttraction("12", "Night beach overview");
@@ -27,6 +29,7 @@ class AttractionTest {
         );
     }
 
+    @DisplayName("표준 생성자는 참조 타입 null 값을 허용한다")
     @Test
     void canonicalConstructorAllowsNullReferenceValues() {
         Attraction attraction = new Attraction(
