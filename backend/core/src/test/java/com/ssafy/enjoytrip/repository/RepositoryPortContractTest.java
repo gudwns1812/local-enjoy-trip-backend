@@ -9,6 +9,8 @@ import com.ssafy.enjoytrip.domain.Notice;
 import com.ssafy.enjoytrip.domain.TravelPlan;
 import com.ssafy.enjoytrip.domain.Attraction;
 import com.ssafy.enjoytrip.domain.AttractionSearchCondition;
+import com.ssafy.enjoytrip.domain.NearbyAttractionCandidate;
+import com.ssafy.enjoytrip.domain.NearbySearchCondition;
 import com.ssafy.enjoytrip.domain.WeatherSummary;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +20,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -39,6 +43,7 @@ class RepositoryPortContractTest {
     void repositoryPortsRemainInterfacesInCoreRepositoryPackage() {
         List.of(
                 AttractionRepository.class,
+                AttractionPopularityRepository.class,
                 BoardRepository.class,
                 ChargerRepository.class,
                 HotplaceRepository.class,
@@ -69,6 +74,9 @@ class RepositoryPortContractTest {
     void attractionRepositoryContractUsesDbSearchInputsAndDomainModel() throws Exception {
         assertListReturn(AttractionRepository.class.getMethod(
                 "search", AttractionSearchCondition.class), Attraction.class);
+        assertListReturn(AttractionRepository.class.getMethod(
+                "findNearbyCandidates", NearbySearchCondition.class, String.class), NearbyAttractionCandidate.class);
+        assertMethod(AttractionPopularityRepository.class, "findFavoriteCounts", Map.class, Collection.class);
     }
 
     @DisplayName("충전소 저장소 계약은 도메인 모델과 페이지 입력을 사용한다")
@@ -137,6 +145,7 @@ class RepositoryPortContractTest {
     void repositoryPortsDoNotReferenceAppExternalOrStorageTypes() {
         List.of(
                 AttractionRepository.class,
+                AttractionPopularityRepository.class,
                 BoardRepository.class,
                 ChargerRepository.class,
                 HotplaceRepository.class,
