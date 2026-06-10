@@ -39,6 +39,7 @@ public class NoteController implements NoteApi {
     public ApiResponse<NoteResponse> create(@Valid @RequestBody NoteCreateRequest request,
                                             @AuthenticationPrincipal Jwt jwt) {
         Note note = service.createNote(request.toCommand(authenticatedUserId(jwt)));
+
         return success(new NoteResponse(note));
     }
 
@@ -48,6 +49,7 @@ public class NoteController implements NoteApi {
                                             @Valid @RequestBody NoteUpdateRequest request,
                                             @AuthenticationPrincipal Jwt jwt) {
         Note note = service.updateNote(request.toCommand(id, authenticatedUserId(jwt)));
+
         return success(new NoteResponse(note));
     }
 
@@ -55,6 +57,7 @@ public class NoteController implements NoteApi {
     @Override
     public ApiResponse<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
         service.deleteNote(id, authenticatedUserId(jwt));
+
         return success();
     }
 
@@ -62,7 +65,11 @@ public class NoteController implements NoteApi {
     @Override
     public ApiResponse<NotesResponse> nearby(@Valid @ModelAttribute NearbySectionRequest request,
                                              @AuthenticationPrincipal Jwt jwt) {
-        List<Note> notes = service.findNearbyNotes(request.toNotesCondition(), authenticatedUserIdOrBlank(jwt));
+        List<Note> notes = service.findNearbyNotes(
+                request.toNotesCondition(),
+                authenticatedUserIdOrBlank(jwt)
+        );
+
         return success(NotesResponse.from(notes));
     }
 
@@ -70,6 +77,7 @@ public class NoteController implements NoteApi {
         if (jwt == null || jwt.getSubject() == null || jwt.getSubject().isBlank()) {
             throw new CoreException(AUTHENTICATION_REQUIRED);
         }
+
         return jwt.getSubject().trim();
     }
 
@@ -77,6 +85,7 @@ public class NoteController implements NoteApi {
         if (jwt == null || jwt.getSubject() == null) {
             return "";
         }
+
         return jwt.getSubject().trim();
     }
 }

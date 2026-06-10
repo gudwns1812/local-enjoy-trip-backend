@@ -35,6 +35,7 @@ public record NoteCreateRequest(
         if (value == null || value.isBlank()) {
             return null;
         }
+
         return value.strip();
     }
 }

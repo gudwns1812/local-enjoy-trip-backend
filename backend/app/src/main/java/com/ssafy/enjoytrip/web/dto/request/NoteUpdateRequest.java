@@ -36,6 +36,7 @@ public record NoteUpdateRequest(
         if (value == null || value.isBlank()) {
             return null;
         }
+
         return value.strip();
     }
 }

@@ -22,21 +22,26 @@ public class NoteService {
 
     public Note createNote(CreateNoteCommand command) {
         requireAuthenticated(command.authorUserId());
+
         return repository.save(command);
     }
 
     public Note updateNote(UpdateNoteCommand command) {
         requireAuthenticated(command.authorUserId());
+
         Note note = findEditableNote(command.id());
         requireOwner(note, command.authorUserId());
+
         return repository.updateOwned(command)
                 .orElseThrow(() -> new CoreException(NOTE_NOT_FOUND));
     }
 
     public void deleteNote(Long id, String authorUserId) {
         requireAuthenticated(authorUserId);
+
         Note note = findEditableNote(id);
         requireOwner(note, authorUserId);
+
         if (!repository.softDeleteOwned(id, authorUserId)) {
             throw new CoreException(NOTE_NOT_FOUND);
         }
@@ -49,9 +54,11 @@ public class NoteService {
     private Note findEditableNote(Long id) {
         Note note = repository.findById(id)
                 .orElseThrow(() -> new CoreException(NOTE_NOT_FOUND));
+
         if (note.status() != NoteStatus.ACTIVE) {
             throw new CoreException(NOTE_NOT_FOUND);
         }
+
         return note;
     }
 
@@ -71,6 +78,7 @@ public class NoteService {
         if (value == null || value.isBlank()) {
             return "";
         }
+
         return value.trim();
     }
 }

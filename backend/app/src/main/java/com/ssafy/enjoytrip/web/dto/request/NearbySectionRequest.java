@@ -24,6 +24,7 @@ public record NearbySectionRequest(
 
     public NearbySearchCondition toCondition() {
         NormalizedNearbySection normalized = normalize();
+
         return new NearbySearchCondition(
                 normalized.longitude(),
                 normalized.latitude(),
@@ -34,6 +35,7 @@ public record NearbySectionRequest(
 
     public NearbyNotesCondition toNotesCondition() {
         NormalizedNearbySection normalized = normalize();
+
         return new NearbyNotesCondition(
                 normalized.longitude(),
                 normalized.latitude(),
@@ -46,16 +48,24 @@ public record NearbySectionRequest(
         if ((mapX == null) != (mapY == null)) {
             throw new CoreException(INVALID_LATITUDE_OR_LONGITUDE);
         }
+
         double longitude = mapX == null ? SEOUL_LONGITUDE : mapX;
         double latitude = mapY == null ? SEOUL_LATITUDE : mapY;
         double radiusMeters = radius == null ? DEFAULT_RADIUS_METERS : radius;
         int normalizedLimit = limit == null ? DEFAULT_LIMIT : limit;
+
         if (radiusMeters <= 0 || radiusMeters > 5000 || normalizedLimit <= 0 || normalizedLimit > 50) {
             throw new CoreException(INVALID_REQUEST);
         }
+
         return new NormalizedNearbySection(longitude, latitude, radiusMeters, normalizedLimit);
     }
 
-    private record NormalizedNearbySection(double longitude, double latitude, double radiusMeters, int limit) {
+    private record NormalizedNearbySection(
+            double longitude,
+            double latitude,
+            double radiusMeters,
+            int limit
+    ) {
     }
 }

@@ -27,7 +27,17 @@ public interface NoteApi {
                             mediaType = "application/json",
                             schema = @Schema(implementation = NoteResponse.class),
                             examples = @ExampleObject(value = """
-                                    {"success":true,"data":{"id":1,"title":"서울 산책 메모","visibility":"PUBLIC","latitude":37.5665,"longitude":126.9780},"error":null}
+                                    {
+                                      "success": true,
+                                      "data": {
+                                        "id": 1,
+                                        "title": "서울 산책 메모",
+                                        "visibility": "PUBLIC",
+                                        "latitude": 37.5665,
+                                        "longitude": 126.9780
+                                      },
+                                      "error": null
+                                    }
                                     """)
                     )
             )
@@ -37,7 +47,11 @@ public interface NoteApi {
     @Operation(summary = "쪽지 수정", description = "작성자 본인의 active 쪽지만 수정합니다.", operationId = "updateNote")
     ApiResponse<NoteResponse> update(Long id, NoteUpdateRequest request, Jwt jwt);
 
-    @Operation(summary = "쪽지 삭제", description = "작성자 본인의 active 쪽지를 soft delete 합니다.", operationId = "deleteNote")
+    @Operation(
+            summary = "쪽지 삭제",
+            description = "작성자 본인의 active 쪽지를 soft delete 합니다.",
+            operationId = "deleteNote"
+    )
     ApiResponse<Void> delete(Long id, Jwt jwt);
 
     @Operation(
@@ -57,7 +71,10 @@ public interface NoteApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
                     description = "주변 최근 쪽지 조회 성공",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = NotesResponse.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NotesResponse.class)
+                    )
             )
     })
     ApiResponse<NotesResponse> nearby(@ParameterObject NearbySectionRequest request, Jwt jwt);
