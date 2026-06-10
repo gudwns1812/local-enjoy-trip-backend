@@ -67,7 +67,7 @@ public class NoteController implements NoteApi {
                                              @AuthenticationPrincipal Jwt jwt) {
         List<Note> notes = service.findNearbyNotes(
                 request.toNotesCondition(),
-                authenticatedUserIdOrBlank(jwt)
+                authenticatedUserIdOrNull(jwt)
         );
 
         return success(NotesResponse.from(notes));
@@ -81,9 +81,9 @@ public class NoteController implements NoteApi {
         return jwt.getSubject().trim();
     }
 
-    private static String authenticatedUserIdOrBlank(Jwt jwt) {
-        if (jwt == null || jwt.getSubject() == null) {
-            return "";
+    private static String authenticatedUserIdOrNull(Jwt jwt) {
+        if (jwt == null || jwt.getSubject() == null || jwt.getSubject().isBlank()) {
+            return null;
         }
 
         return jwt.getSubject().trim();

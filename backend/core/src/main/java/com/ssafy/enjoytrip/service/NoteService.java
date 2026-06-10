@@ -1,7 +1,7 @@
 package com.ssafy.enjoytrip.service;
 
-import static com.ssafy.enjoytrip.support.error.ErrorType.AUTHENTICATION_REQUIRED;
 import static com.ssafy.enjoytrip.support.error.ErrorType.NOTE_ACCESS_DENIED;
+import static com.ssafy.enjoytrip.support.error.ErrorType.NOTE_NOT_ACTIVE;
 import static com.ssafy.enjoytrip.support.error.ErrorType.NOTE_NOT_FOUND;
 
 import com.ssafy.enjoytrip.domain.CreateNoteCommand;
@@ -21,14 +21,10 @@ public class NoteService {
     private final NoteRepository repository;
 
     public Note createNote(CreateNoteCommand command) {
-        requireAuthenticated(command.authorUserId());
-
         return repository.save(command);
     }
 
     public Note updateNote(UpdateNoteCommand command) {
-        requireAuthenticated(command.authorUserId());
-
         Note note = findEditableNote(command.id());
         requireOwner(note, command.authorUserId());
 
@@ -37,8 +33,6 @@ public class NoteService {
     }
 
     public void deleteNote(Long id, String authorUserId) {
-        requireAuthenticated(authorUserId);
-
         Note note = findEditableNote(id);
         requireOwner(note, authorUserId);
 
@@ -48,7 +42,7 @@ public class NoteService {
     }
 
     public List<Note> findNearbyNotes(NearbyNotesCondition condition, String viewerUserId) {
-        return repository.findNearbyAccessible(condition, blankToEmpty(viewerUserId));
+        return repository.findNearbyAccessible(condition, viewerUserId);
     }
 
     private Note findEditableNote(Long id) {
@@ -56,7 +50,7 @@ public class NoteService {
                 .orElseThrow(() -> new CoreException(NOTE_NOT_FOUND));
 
         if (note.status() != NoteStatus.ACTIVE) {
-            throw new CoreException(NOTE_NOT_FOUND);
+            throw new CoreException(NOTE_NOT_ACTIVE);
         }
 
         return note;
@@ -66,19 +60,5 @@ public class NoteService {
         if (!note.authorUserId().equals(authorUserId)) {
             throw new CoreException(NOTE_ACCESS_DENIED);
         }
-    }
-
-    private static void requireAuthenticated(String userId) {
-        if (blankToEmpty(userId).isEmpty()) {
-            throw new CoreException(AUTHENTICATION_REQUIRED);
-        }
-    }
-
-    private static String blankToEmpty(String value) {
-        if (value == null || value.isBlank()) {
-            return "";
-        }
-
-        return value.trim();
     }
 }

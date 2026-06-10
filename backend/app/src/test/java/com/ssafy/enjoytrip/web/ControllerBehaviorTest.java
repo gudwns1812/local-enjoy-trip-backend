@@ -232,7 +232,7 @@ class ControllerBehaviorTest {
         @Test
         void nearbyNotesUseDefaultSeoulAndRadius() throws Exception {
             Note note = note(1L, "writer", "근처 쪽지", NoteVisibility.PUBLIC);
-            when(noteService.findNearbyNotes(new NearbyNotesCondition(126.9780, 37.5665, 500.0, 20), ""))
+            when(noteService.findNearbyNotes(new NearbyNotesCondition(126.9780, 37.5665, 500.0, 20), null))
                     .thenReturn(List.of(note));
 
             mockMvc.perform(get("/api/notes/nearby"))
@@ -242,7 +242,7 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.data.notes[0].title").value("근처 쪽지"))
                     .andExpect(jsonPath("$.data.notes[0].visibility").value("PUBLIC"));
 
-            verify(noteService).findNearbyNotes(new NearbyNotesCondition(126.9780, 37.5665, 500.0, 20), "");
+            verify(noteService).findNearbyNotes(new NearbyNotesCondition(126.9780, 37.5665, 500.0, 20), null);
         }
 
         @DisplayName("주변 쪽지는 일부 좌표만 전달되면 검증 오류를 반환한다")
