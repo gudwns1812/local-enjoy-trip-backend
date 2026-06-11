@@ -1,15 +1,8 @@
 package com.ssafy.enjoytrip.web.controller;
 
-import com.ssafy.enjoytrip.web.api.*;
-
 import static com.ssafy.enjoytrip.support.error.ErrorType.ACCESS_DENIED;
 import static com.ssafy.enjoytrip.support.error.ErrorType.AUTHENTICATION_REQUIRED;
-import static com.ssafy.enjoytrip.support.error.ErrorType.EMAIL_ALREADY_EXISTS;
-import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_CREDENTIALS;
-import static com.ssafy.enjoytrip.support.error.ErrorType.MISSING_USER_ID;
 import static com.ssafy.enjoytrip.support.error.ErrorType.PASSWORD_LOOKUP_GONE;
-import static com.ssafy.enjoytrip.support.error.ErrorType.USER_ALREADY_EXISTS;
-import static com.ssafy.enjoytrip.support.error.ErrorType.USER_NOT_FOUND;
 import static com.ssafy.enjoytrip.support.response.ApiResponse.success;
 
 import com.ssafy.enjoytrip.domain.Member;
@@ -18,8 +11,8 @@ import com.ssafy.enjoytrip.service.MemberService;
 import com.ssafy.enjoytrip.service.OAuthSignupTicketService;
 import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
 import com.ssafy.enjoytrip.support.error.CoreException;
-import com.ssafy.enjoytrip.support.error.ErrorType;
 import com.ssafy.enjoytrip.support.response.ApiResponse;
+import com.ssafy.enjoytrip.web.api.MemberApi;
 import com.ssafy.enjoytrip.web.dto.request.MemberLoginRequest;
 import com.ssafy.enjoytrip.web.dto.request.MemberLogoutRequest;
 import com.ssafy.enjoytrip.web.dto.request.MemberOAuthSignupRequest;
@@ -62,40 +55,25 @@ public class MemberController implements MemberApi {
     @PostMapping("/signup")
     @Override
     public ApiResponse<Void> signup(@Valid @RequestBody MemberSignupRequest request) {
-        String userId = request.userId().trim();
-        String email = request.email().trim();
-        if (service.existsByUserId(userId)) {
-            return fail(USER_ALREADY_EXISTS);
-        }
-        if (service.existsByEmail(email)) {
-            return fail(EMAIL_ALREADY_EXISTS);
-        }
-        if (service.signup(new Member(
-                userId,
+        service.signup(new Member(
+                request.userId(),
                 request.name().trim(),
                 request.nicknameOrName(),
-                email,
+                request.email().trim(),
                 request.password(),
                 request.normalizedProfileImageUrl(),
                 request.representativeLatitude(),
                 request.representativeLongitude(),
                 request.normalizedRepresentativeRegionName(),
                 ""
-        ))) {
-            return success();
-        }
-        return fail(USER_ALREADY_EXISTS);
+        ));
+        return success();
     }
 
     @PostMapping("/login")
     @Override
     public ApiResponse<LoginResponse> login(@Valid @RequestBody MemberLoginRequest request) {
-        String userId = request.userId().trim();
-        String password = request.password();
-        Member member = service.login(userId, password);
-        if (member == null) {
-            return fail(INVALID_CREDENTIALS);
-        }
+        Member member = service.login(request.userId(), request.password());
         IssuedToken token = tokenService.issue(member);
         return success(new LoginResponse(
                 toUserResponse(member),
@@ -107,12 +85,7 @@ public class MemberController implements MemberApi {
 
     @PostMapping("/oauth/signup")
     public ApiResponse<LoginResponse> completeOAuthSignup(@Valid @RequestBody MemberOAuthSignupRequest request) {
-        PendingOAuthSignup pending;
-        try {
-            pending = oauthSignupTicketService.verify(request.oauthSignupTicket().trim());
-        } catch (RuntimeException exception) {
-            return fail(ErrorType.INVALID_REQUEST);
-        }
+        PendingOAuthSignup pending = oauthSignupTicketService.verify(request.oauthSignupTicket().trim());
         Member member = service.signupWithOAuth(
                 pending.provider(),
                 pending.providerUserId(),
@@ -131,14 +104,14 @@ public class MemberController implements MemberApi {
     @PostMapping("/logout")
     @Override
     public ApiResponse<Void> logout(@Valid @RequestBody MemberLogoutRequest request) {
-        service.logout(request.userId().trim());
+        service.logout(request.userId());
         return success();
     }
 
     @PostMapping("/find-password")
     @Override
     public ApiResponse<Void> findPassword() {
-        return fail(PASSWORD_LOOKUP_GONE);
+        throw new CoreException(PASSWORD_LOOKUP_GONE);
     }
 
     @PutMapping("/{userId}")
@@ -153,10 +126,7 @@ public class MemberController implements MemberApi {
     @Override
     public ApiResponse<UserEnvelopeResponse> me(@AuthenticationPrincipal Jwt jwt) {
         String userId = authenticatedUserId(jwt);
-        Member member = service.findByUserId(userId);
-        if (member == null) {
-            return fail(USER_NOT_FOUND);
-        }
+        Member member = service.findRequiredByUserId(userId);
         return success(new UserEnvelopeResponse(toUserResponse(member)));
     }
 
@@ -178,33 +148,20 @@ public class MemberController implements MemberApi {
     private ApiResponse<Void> updateAuthenticated(String userId,
                                                   MemberUpdateRequest request,
                                                   Jwt jwt) {
-        if (trim(userId).isEmpty()) {
-            return fail(MISSING_USER_ID);
-        }
         authorizeUser(userId, jwt);
-        String email = request.normalizedEmail();
-        if (!email.isEmpty()) {
-            Member owner = service.findByEmail(email);
-            if (owner != null && !owner.userId().equals(userId)) {
-                return fail(EMAIL_ALREADY_EXISTS);
-            }
-        }
-
-        if (service.update(new Member(
+        service.update(new Member(
                 userId,
                 request.normalizedName(),
                 request.normalizedNickname(),
-                email,
+                request.normalizedEmail(),
                 request.normalizedPassword(),
                 request.normalizedProfileImageUrl(),
                 request.representativeLatitude(),
                 request.representativeLongitude(),
                 request.normalizedRepresentativeRegionName(),
                 ""
-        ))) {
-            return success();
-        }
-        return fail(USER_NOT_FOUND);
+        ));
+        return success();
     }
 
     @DeleteMapping("/{userId}")
@@ -214,28 +171,26 @@ public class MemberController implements MemberApi {
     }
 
     private ApiResponse<Void> deleteAuthenticated(String userId, Jwt jwt) {
-        if (trim(userId).isEmpty()) {
-            return fail(MISSING_USER_ID);
-        }
         authorizeUser(userId, jwt);
-        if (service.delete(userId)) {
-            return success();
-        }
-        return fail(USER_NOT_FOUND);
+        service.delete(userId);
+        return success();
     }
 
     private void authorizeUser(String userId, Jwt jwt) {
         if (jwt == null) {
-            fail(AUTHENTICATION_REQUIRED);
+            throw new CoreException(AUTHENTICATION_REQUIRED);
         }
         String authenticatedUserId = authenticatedUserId(jwt);
         if (!authenticatedUserId.equals(userId)) {
-            fail(ACCESS_DENIED);
+            throw new CoreException(ACCESS_DENIED);
         }
     }
 
     private String authenticatedUserId(Jwt jwt) {
-        return trim(jwt.getSubject());
+        if (jwt == null || jwt.getSubject() == null || jwt.getSubject().isBlank()) {
+            throw new CoreException(AUTHENTICATION_REQUIRED);
+        }
+        return jwt.getSubject();
     }
 
     private static UserResponse toUserResponse(Member member) {
@@ -250,17 +205,6 @@ public class MemberController implements MemberApi {
                 member.representativeRegionName(),
                 value(member.createdAt(), "")
         );
-    }
-
-    private static <T> T fail(ErrorType error) {
-        throw new CoreException(error);
-    }
-
-    private static String trim(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.trim();
     }
 
     private static String value(String value, String fallback) {

@@ -25,6 +25,9 @@ Backend는 `app`, `core`, `storage`, `external` 모듈 경계를 유지한다.
 - `storage`: JPA entity, Spring Data repository, persistence adapter, migration, jOOQ query.
 - `external`: third-party API client, external DTO parsing, outbound integration.
 
+`app`은 Spring Boot 조립 모듈이므로 실행 애플리케이션 구성을 위해 Gradle 의존성으로 `storage` 구현 모듈을 포함할 수 있다.
+다만 이 의존성은 bean 조립과 런타임 구성 목적에 한정하며, `app` 소스가 persistence 구현 타입을 직접 참조하는 것은 금지한다.
+
 금지:
 
 - `backend/app/src/main`에서 `com.ssafy.enjoytrip.storage.*` import/reference 금지.

@@ -60,7 +60,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_CREDENTIALS;
 import static com.ssafy.enjoytrip.support.error.ErrorType.PLAN_NOT_FOUND;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.mockito.ArgumentMatchers.any;
@@ -490,7 +492,7 @@ class ControllerBehaviorTest {
         @DisplayName("로그인 실패와 로그아웃 검증 및 비밀번호 조회 종료를 확인한다")
         @Test
         void loginFailureLogoutValidationAndPasswordLookupGone() throws Exception {
-            when(memberService.login("ssafy", "wrong")).thenReturn(null);
+            doThrow(new CoreException(INVALID_CREDENTIALS)).when(memberService).login("ssafy", "wrong");
 
             mockMvc.perform(post("/api/members/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -517,8 +519,6 @@ class ControllerBehaviorTest {
         @DisplayName("내 정보 수정은 인증된 JWT 주체를 사용하고 없는 사용자를 처리한다")
         @Test
         void updateMeUsesAuthenticatedJwtSubjectAndHandlesMissingUser() throws Exception {
-            when(memberService.update(any())).thenReturn(true);
-
             mockMvc.perform(put("/api/members/me")
                             .principal(jwtPrincipal("ssafy"))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -535,7 +535,7 @@ class ControllerBehaviorTest {
             verify(memberService).update(captor.capture());
             assertThat(captor.getValue().userId()).isEqualTo("ssafy");
 
-            when(memberService.findByUserId("ghost")).thenReturn(null);
+            when(memberService.findRequiredByUserId("ghost")).thenThrow(new CoreException(USER_NOT_FOUND));
             mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ghost")))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error.message").value("User not found"));

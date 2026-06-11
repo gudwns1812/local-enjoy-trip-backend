@@ -1,6 +1,9 @@
 package com.ssafy.enjoytrip.service;
 
+import static com.ssafy.enjoytrip.support.error.ErrorType.EMAIL_ALREADY_EXISTS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_CREDENTIALS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -10,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
+import com.ssafy.enjoytrip.support.error.CoreException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,9 +41,8 @@ class MemberServiceTest {
         when(repository.existsByUserId("ssafy")).thenReturn(false);
         when(repository.existsByEmail("ssafy@example.com")).thenReturn(false);
 
-        boolean signedUp = service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", ""));
+        service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", ""));
 
-        assertThat(signedUp).isTrue();
         ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
         verify(repository).insert(memberCaptor.capture());
         Member saved = memberCaptor.getValue();
@@ -53,9 +56,10 @@ class MemberServiceTest {
         when(repository.existsByUserId("ssafy")).thenReturn(false);
         when(repository.existsByEmail("ssafy@example.com")).thenReturn(true);
 
-        boolean signedUp = service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", ""));
+        assertThatThrownBy(() -> service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", "")))
+                .isInstanceOfSatisfying(CoreException.class,
+                        exception -> assertThat(exception.errorType()).isEqualTo(EMAIL_ALREADY_EXISTS));
 
-        assertThat(signedUp).isFalse();
         verify(repository, never()).insert(any());
     }
 
@@ -79,9 +83,10 @@ class MemberServiceTest {
         Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", passwordEncoder.encode("secret"), "");
         when(repository.findByUserId("ssafy")).thenReturn(member);
 
-        Member loggedIn = service.login("ssafy", "wrong");
+        assertThatThrownBy(() -> service.login("ssafy", "wrong"))
+                .isInstanceOfSatisfying(CoreException.class,
+                        exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
 
-        assertThat(loggedIn).isNull();
         verify(repository, never()).insertAuthLog(any(), any());
     }
 

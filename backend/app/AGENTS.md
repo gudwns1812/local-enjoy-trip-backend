@@ -4,7 +4,7 @@
 
 - **Entry Point**: The `app` module serves as the application entry point and the web/API layer. It orchestrates business logic by calling `core` services.
 - **Thin Controllers**: Controllers should be thin. Their primary responsibility is translating incoming HTTP requests into service calls and returning structured HTTP responses.
-- **Strict Isolation**: Must not import any `com.ssafy.enjoytrip.storage.*` types. Persistence details are fully encapsulated behind `core` repository interfaces.
+- **Strict Source Isolation**: Must not import any `com.ssafy.enjoytrip.storage.*` types in `app` source. Persistence details are accessed through `core` repository interfaces. Because `app` is the Spring Boot assembly module, its Gradle build may depend on `backend:storage` for application wiring, but controllers/configuration must not directly use storage implementation types.
 
 ## Coding Style
 

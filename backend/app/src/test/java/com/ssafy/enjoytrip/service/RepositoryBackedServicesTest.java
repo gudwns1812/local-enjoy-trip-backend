@@ -1,5 +1,16 @@
 package com.ssafy.enjoytrip.service;
 
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_CREDENTIALS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_ALREADY_EXISTS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.ssafy.enjoytrip.domain.BoardPost;
 import com.ssafy.enjoytrip.domain.Hotplace;
 import com.ssafy.enjoytrip.domain.Member;
@@ -11,6 +22,7 @@ import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.repository.NoticeRepository;
 import com.ssafy.enjoytrip.repository.PlanRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
+import com.ssafy.enjoytrip.support.error.CoreException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -20,14 +32,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @Tag("service")
 class RepositoryBackedServicesTest {
@@ -142,9 +146,10 @@ class RepositoryBackedServicesTest {
         void signupDoesNotInsertDuplicateUser() {
             when(repository.existsByUserId("ssafy")).thenReturn(true);
 
-            boolean result = service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", ""));
+            assertThatThrownBy(() -> service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", "")))
+                    .isInstanceOfSatisfying(CoreException.class,
+                            exception -> assertThat(exception.errorType()).isEqualTo(USER_ALREADY_EXISTS));
 
-            assertThat(result).isFalse();
             verify(repository, never()).insert(org.mockito.ArgumentMatchers.any());
         }
 
@@ -155,9 +160,15 @@ class RepositoryBackedServicesTest {
             when(repository.findByUserId("blank-input")).thenReturn(new Member("blank-input", "A", "a@example.com", passwordEncoder.encode("secret"), ""));
             when(repository.findByUserId("blank-stored")).thenReturn(new Member("blank-stored", "A", "a@example.com", " ", ""));
 
-            assertThat(service.login("missing", "secret")).isNull();
-            assertThat(service.login("blank-input", " ")).isNull();
-            assertThat(service.login("blank-stored", "secret")).isNull();
+            assertThatThrownBy(() -> service.login("missing", "secret"))
+                    .isInstanceOfSatisfying(CoreException.class,
+                            exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
+            assertThatThrownBy(() -> service.login("blank-input", " "))
+                    .isInstanceOfSatisfying(CoreException.class,
+                            exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
+            assertThatThrownBy(() -> service.login("blank-stored", "secret"))
+                    .isInstanceOfSatisfying(CoreException.class,
+                            exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
 
             verify(repository, never()).insertAuthLog(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
         }
@@ -167,13 +178,15 @@ class RepositoryBackedServicesTest {
         void updateEncodesNonBlankPasswordAndLeavesBlankPasswordBlank() {
             when(repository.update(org.mockito.ArgumentMatchers.any())).thenReturn(true);
 
-            assertThat(service.update(new Member("ssafy", "SSAFY", "ssafy@example.com", "new-secret", ""))).isTrue();
+            service.update(new Member("ssafy", "SSAFY", "ssafy@example.com", "new-secret", ""));
             ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);
             verify(repository).update(captor.capture());
             assertThat(passwordEncoder.matches("new-secret", captor.getValue().password())).isTrue();
 
             when(repository.update(org.mockito.ArgumentMatchers.any())).thenReturn(false);
-            assertThat(service.update(new Member("ssafy", "SSAFY", "ssafy@example.com", " ", ""))).isFalse();
+            assertThatThrownBy(() -> service.update(new Member("ssafy", "SSAFY", "ssafy@example.com", " ", "")))
+                    .isInstanceOfSatisfying(CoreException.class,
+                            exception -> assertThat(exception.errorType()).isEqualTo(USER_NOT_FOUND));
             verify(repository, org.mockito.Mockito.times(2)).update(captor.capture());
             assertThat(captor.getAllValues().getLast().password()).isEqualTo(" ");
         }
@@ -188,7 +201,8 @@ class RepositoryBackedServicesTest {
 
             verify(repository).insertAuthLog("ssafy", "LOGOUT");
             assertThat(service.findPassword("ssafy", "ssafy@example.com")).isEqualTo("legacy-secret");
-            assertThat(service.delete("ssafy")).isTrue();
+            service.delete("ssafy");
+            verify(repository).delete("ssafy");
         }
     }
 

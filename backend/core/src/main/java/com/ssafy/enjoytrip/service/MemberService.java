@@ -1,14 +1,19 @@
 package com.ssafy.enjoytrip.service;
 
+import static com.ssafy.enjoytrip.support.error.ErrorType.EMAIL_ALREADY_EXISTS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_CREDENTIALS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_ALREADY_EXISTS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_NOT_FOUND;
+
 import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
+import com.ssafy.enjoytrip.support.error.CoreException;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -28,28 +33,21 @@ public class MemberService {
         return repository.findByEmail(email);
     }
 
-    public boolean existsByUserId(String userId) {
-        return repository.existsByUserId(userId);
-    }
-
-    public boolean existsByEmail(String email) {
-        return repository.existsByEmail(email);
-    }
-
-    public boolean signup(Member member) {
-        if (memberAlreadyExists(member)) {
-            return false;
+    public Member findRequiredByUserId(String userId) {
+        Member member = repository.findByUserId(userId);
+        if (member == null) {
+            throw new CoreException(USER_NOT_FOUND);
         }
+        return member;
+    }
+
+    public void signup(Member member) {
+        validateNewMember(member);
         saveMemberWithEncodedPassword(member);
-        return true;
     }
 
     public Member login(String userId, String password) {
         Member member = findAuthenticatableMember(userId, password);
-        if (member == null) {
-            return null;
-        }
-
         upgradeLegacyPasswordIfNeeded(member, password);
         recordLogin(member);
         return member;
@@ -84,16 +82,36 @@ public class MemberService {
         return repository.findPassword(userId, email);
     }
 
-    public boolean update(Member member) {
-        return repository.update(member.withEncodedPasswordWhenPresent(passwordCodec));
+    public void update(Member member) {
+        validateEmailOwner(member);
+        if (!repository.update(member.withEncodedPasswordWhenPresent(passwordCodec))) {
+            throw new CoreException(USER_NOT_FOUND);
+        }
     }
 
-    public boolean delete(String userId) {
-        return repository.delete(userId);
+    public void delete(String userId) {
+        if (!repository.delete(userId)) {
+            throw new CoreException(USER_NOT_FOUND);
+        }
     }
 
-    private boolean memberAlreadyExists(Member member) {
-        return repository.existsByUserId(member.userId()) || repository.existsByEmail(member.email());
+    private void validateNewMember(Member member) {
+        if (repository.existsByUserId(member.userId())) {
+            throw new CoreException(USER_ALREADY_EXISTS);
+        }
+        if (repository.existsByEmail(member.email())) {
+            throw new CoreException(EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    private void validateEmailOwner(Member member) {
+        if (member.email() == null || member.email().isBlank()) {
+            return;
+        }
+        Member owner = repository.findByEmail(member.email());
+        if (owner != null && !owner.userId().equals(member.userId())) {
+            throw new CoreException(EMAIL_ALREADY_EXISTS);
+        }
     }
 
     private void saveMemberWithEncodedPassword(Member member) {
@@ -103,7 +121,7 @@ public class MemberService {
     private Member findAuthenticatableMember(String userId, String password) {
         Member member = repository.findByUserId(userId);
         if (member == null || !member.canAuthenticate(password, passwordCodec)) {
-            return null;
+            throw new CoreException(INVALID_CREDENTIALS);
         }
         return member;
     }

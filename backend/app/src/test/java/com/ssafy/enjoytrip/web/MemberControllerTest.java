@@ -1,28 +1,10 @@
 package com.ssafy.enjoytrip.web;
-import com.ssafy.enjoytrip.web.api.*;
-import com.ssafy.enjoytrip.web.controller.*;
-import com.ssafy.enjoytrip.web.dto.request.*;
-import com.ssafy.enjoytrip.web.dto.response.*;
 
-import com.ssafy.enjoytrip.domain.Member;
-import com.ssafy.enjoytrip.service.JwtTokenService;
-import com.ssafy.enjoytrip.service.MemberService;
-import com.ssafy.enjoytrip.service.OAuthSignupTicketService;
-import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.time.Instant;
-
+import static com.ssafy.enjoytrip.support.error.ErrorType.EMAIL_ALREADY_EXISTS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_ALREADY_EXISTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +14,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.ssafy.enjoytrip.domain.Member;
+import com.ssafy.enjoytrip.service.JwtTokenService;
+import com.ssafy.enjoytrip.service.MemberService;
+import com.ssafy.enjoytrip.service.OAuthSignupTicketService;
+import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
+import com.ssafy.enjoytrip.support.error.CoreException;
+import com.ssafy.enjoytrip.web.controller.MemberController;
+import com.ssafy.enjoytrip.web.dto.response.IssuedToken;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import java.time.Instant;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 class MemberControllerTest {
     private MemberService memberService;
@@ -67,7 +68,7 @@ class MemberControllerTest {
     @DisplayName("회원가입은 사용자가 이미 있으면 충돌로 응답한다")
     @Test
     void signupReturnsConflictWhenUserExists() throws Exception {
-        when(memberService.existsByUserId("ssafy")).thenReturn(true);
+        doThrow(new CoreException(USER_ALREADY_EXISTS)).when(memberService).signup(any(Member.class));
 
         mockMvc.perform(post("/api/members/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +84,7 @@ class MemberControllerTest {
                         .content(signupJson("bad id", "SSAFY", "ssafy@example.com", "secret123")))
                 .andExpect(status().isBadRequest());
 
-        when(memberService.existsByEmail("ssafy@example.com")).thenReturn(true);
+        doThrow(new CoreException(EMAIL_ALREADY_EXISTS)).when(memberService).signup(any(Member.class));
 
         mockMvc.perform(post("/api/members/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -159,7 +160,7 @@ class MemberControllerTest {
                 "서울 중구",
                 "2026-05-14 11:00:00"
         );
-        when(memberService.findByUserId("ssafy")).thenReturn(member);
+        when(memberService.findRequiredByUserId("ssafy")).thenReturn(member);
 
         mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ssafy")))
                 .andExpect(status().isOk())
@@ -175,8 +176,6 @@ class MemberControllerTest {
     @DisplayName("내 정보 수정은 닉네임과 프로필 이미지와 대표 위치를 변경한다")
     @Test
     void updateMeChangesProfileAndRepresentativeLocation() throws Exception {
-        when(memberService.update(any(Member.class))).thenReturn(true);
-
         mockMvc.perform(put("/api/members/me")
                         .principal(jwtPrincipal("ssafy"))
                         .contentType(MediaType.APPLICATION_JSON)
