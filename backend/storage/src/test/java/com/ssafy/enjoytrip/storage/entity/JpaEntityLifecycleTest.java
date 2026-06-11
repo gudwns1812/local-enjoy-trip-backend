@@ -58,17 +58,32 @@ class JpaEntityLifecycleTest {
     @DisplayName("회원 수정은 null과 빈 패치 필드는 무시하고 updatedAt은 갱신한다")
     @Test
     void memberUpdateIgnoresNullAndBlankPatchFieldsButRefreshesUpdatedAt() {
-        MemberEntity member = new MemberEntity("ssafy", "SSAFY", "ssafy@example.com", "secret");
+        MemberEntity member = new MemberEntity(
+                "ssafy",
+                "SSAFY",
+                "동네핀러",
+                "ssafy@example.com",
+                "secret",
+                "https://cdn.example.com/profile.png",
+                37.5665,
+                126.9780,
+                "서울 중구"
+        );
 
         member.prePersist();
-        member.update("  ", null, "");
+        member.update("  ", " ", null, "", "", null, null, " ");
 
         assertAll(
                 () -> assertEquals("members", MemberEntity.class.getAnnotation(Table.class).name()),
                 () -> assertEquals("ssafy", member.getUserId()),
                 () -> assertEquals("SSAFY", member.getName()),
+                () -> assertEquals("동네핀러", member.getNickname()),
                 () -> assertEquals("ssafy@example.com", member.getEmail()),
                 () -> assertEquals("secret", member.getPassword()),
+                () -> assertEquals("https://cdn.example.com/profile.png", member.getProfileImageUrl()),
+                () -> assertEquals(37.5665, member.getRepresentativeLatitude()),
+                () -> assertEquals(126.9780, member.getRepresentativeLongitude()),
+                () -> assertEquals("서울 중구", member.getRepresentativeRegionName()),
                 () -> assertNotNull(member.getCreatedAt()),
                 () -> assertNotNull(field(member, "updatedAt")),
                 () -> assertTrue(column(MemberEntity.class, "userId").unique()),

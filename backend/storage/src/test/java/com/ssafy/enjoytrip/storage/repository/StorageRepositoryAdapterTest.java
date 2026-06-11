@@ -104,13 +104,30 @@ class StorageRepositoryAdapterTest {
         );
 
         assertTrue(repository.update(new Member("ssafy", "", "updated@example.com", null, "")));
+        assertTrue(repository.update(new Member(
+                "ssafy",
+                "",
+                "동네핀러",
+                "",
+                null,
+                "https://cdn.example.com/profile.png",
+                37.5665,
+                126.9780,
+                "서울 중구",
+                ""
+        )));
         MemberEntity updated = memberFake.byUserId.get("ssafy");
         repository.insertAuthLog("ssafy", "LOGIN");
 
         assertAll(
                 () -> assertEquals("SSAFY", updated.getName()),
+                () -> assertEquals("동네핀러", updated.getNickname()),
                 () -> assertEquals("updated@example.com", updated.getEmail()),
                 () -> assertEquals("secret", updated.getPassword()),
+                () -> assertEquals("https://cdn.example.com/profile.png", updated.getProfileImageUrl()),
+                () -> assertEquals(37.5665, updated.getRepresentativeLatitude()),
+                () -> assertEquals(126.9780, updated.getRepresentativeLongitude()),
+                () -> assertEquals("서울 중구", updated.getRepresentativeRegionName()),
                 () -> assertNotNull(field(updated, "updatedAt")),
                 () -> assertFalse(repository.update(new Member("missing", "Name", "email@example.com", "pw", ""))),
                 () -> assertEquals(1, authFake.saved.size()),

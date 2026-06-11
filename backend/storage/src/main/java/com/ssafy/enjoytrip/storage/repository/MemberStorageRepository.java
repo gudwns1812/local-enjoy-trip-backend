@@ -55,7 +55,17 @@ public class MemberStorageRepository implements MemberRepository {
     @Override
     @Transactional
     public void insert(Member member) {
-        memberRepository.save(new MemberEntity(member.userId(), member.name(), member.email(), member.password()));
+        memberRepository.save(new MemberEntity(
+                member.userId(),
+                member.name(),
+                member.nickname(),
+                member.email(),
+                member.password(),
+                member.profileImageUrl(),
+                member.representativeLatitude(),
+                member.representativeLongitude(),
+                member.representativeRegionName()
+        ));
     }
 
     @Override
@@ -63,7 +73,16 @@ public class MemberStorageRepository implements MemberRepository {
     public boolean update(Member member) {
         return memberRepository.findByUserId(member.userId())
                 .map(entity -> {
-                    entity.update(member.name(), member.email(), member.password());
+                    entity.update(
+                            member.name(),
+                            member.nickname(),
+                            member.email(),
+                            member.password(),
+                            member.profileImageUrl(),
+                            member.representativeLatitude(),
+                            member.representativeLongitude(),
+                            member.representativeRegionName()
+                    );
                     return true;
                 })
                 .orElse(false);
@@ -89,8 +108,13 @@ public class MemberStorageRepository implements MemberRepository {
         return new Member(
                 entity.getUserId(),
                 entity.getName(),
+                entity.getNickname(),
                 entity.getEmail(),
                 entity.getPassword(),
+                entity.getProfileImageUrl(),
+                entity.getRepresentativeLatitude(),
+                entity.getRepresentativeLongitude(),
+                entity.getRepresentativeRegionName(),
                 stringValue(entity.getCreatedAt())
         );
     }

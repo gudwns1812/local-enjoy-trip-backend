@@ -12,6 +12,7 @@ import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,8 +20,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -134,13 +137,64 @@ class MemberControllerTest {
     @DisplayName("내 정보 조회는 인증된 사용자를 반환한다")
     @Test
     void meReturnsAuthenticatedUser() throws Exception {
-        Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden", "2026-05-14 11:00:00");
+        Member member = new Member(
+                "ssafy",
+                "SSAFY",
+                "동네핀러",
+                "ssafy@example.com",
+                "hidden",
+                "https://cdn.example.com/profile.png",
+                37.5665,
+                126.9780,
+                "서울 중구",
+                "2026-05-14 11:00:00"
+        );
         when(memberService.findByUserId("ssafy")).thenReturn(member);
 
         mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ssafy")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.user.userId").value("ssafy"))
-                .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"));
+                .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"))
+                .andExpect(jsonPath("$.data.user.nickname").value("동네핀러"))
+                .andExpect(jsonPath("$.data.user.profileImageUrl").value("https://cdn.example.com/profile.png"))
+                .andExpect(jsonPath("$.data.user.representativeLatitude").value(37.5665))
+                .andExpect(jsonPath("$.data.user.representativeLongitude").value(126.9780))
+                .andExpect(jsonPath("$.data.user.representativeRegionName").value("서울 중구"));
+    }
+
+    @DisplayName("내 정보 수정은 닉네임과 프로필 이미지와 대표 위치를 변경한다")
+    @Test
+    void updateMeChangesProfileAndRepresentativeLocation() throws Exception {
+        when(memberService.update(any(Member.class))).thenReturn(true);
+
+        mockMvc.perform(put("/api/members/me")
+                        .principal(jwtPrincipal("ssafy"))
+                        .param("nickname", "동네핀러")
+                        .param("profileImageUrl", "https://cdn.example.com/profile.png")
+                        .param("representativeLatitude", "37.5665")
+                        .param("representativeLongitude", "126.9780")
+                        .param("representativeRegionName", "서울 중구"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
+        verify(memberService).update(memberCaptor.capture());
+        Member member = memberCaptor.getValue();
+        assertThat(member.userId()).isEqualTo("ssafy");
+        assertThat(member.nickname()).isEqualTo("동네핀러");
+        assertThat(member.profileImageUrl()).isEqualTo("https://cdn.example.com/profile.png");
+        assertThat(member.representativeLatitude()).isEqualTo(37.5665);
+        assertThat(member.representativeLongitude()).isEqualTo(126.9780);
+        assertThat(member.representativeRegionName()).isEqualTo("서울 중구");
+    }
+
+    @DisplayName("내 정보 수정은 대표 위치 위도와 경도를 함께 요구한다")
+    @Test
+    void updateMeRequiresBothLatitudeAndLongitude() throws Exception {
+        mockMvc.perform(put("/api/members/me")
+                        .principal(jwtPrincipal("ssafy"))
+                        .param("representativeLatitude", "37.5665"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.message").value("Invalid latitude or longitude"));
     }
 
     @DisplayName("내 정보 수정은 다른 사용자 토큰을 거부한다")

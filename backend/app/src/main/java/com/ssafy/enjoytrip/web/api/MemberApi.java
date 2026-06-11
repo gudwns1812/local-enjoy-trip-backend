@@ -26,7 +26,23 @@ public interface MemberApi {
                     description = "회원 목록 조회 성공",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsersResponse.class),
                             examples = @ExampleObject(value = """
-                                    {"success":true,"data":{"users":[{"userId":"ssafy","name":"김싸피","email":"ssafy@example.com","createdAt":"2026-05-20"}]},"error":null}
+                                    {
+                                      "success": true,
+                                      "data": {
+                                        "users": [{
+                                          "userId": "ssafy",
+                                          "name": "김싸피",
+                                          "nickname": "동네핀러",
+                                          "email": "ssafy@example.com",
+                                          "profileImageUrl": "https://cdn.example.com/profile.png",
+                                          "representativeLatitude": 37.5665,
+                                          "representativeLongitude": 126.978,
+                                          "representativeRegionName": "서울 중구",
+                                          "createdAt": "2026-05-20"
+                                        }]
+                                      },
+                                      "error": null
+                                    }
                                     """))
             )
     })
@@ -53,7 +69,11 @@ public interface MemberApi {
     })
     ApiResponse<?> legacyPost(@ParameterObject MemberRequest request, @Parameter(hidden = true) Jwt jwt);
 
-    @Operation(summary = "회원 가입", description = "`userId`, `name`, `email`, `password`를 등록합니다.", operationId = "signup")
+    @Operation(
+            summary = "회원 가입",
+            description = "`userId`, `name`, `email`, `password`를 등록하고 선택적으로 닉네임, 프로필 이미지, 대표 위치를 받습니다.",
+            operationId = "signup"
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 가입 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "필수 필드 누락"),
@@ -68,7 +88,26 @@ public interface MemberApi {
                     description = "로그인 성공",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class),
                             examples = @ExampleObject(value = """
-                                    {"success":true,"data":{"user":{"userId":"ssafy","name":"김싸피","email":"ssafy@example.com","createdAt":"2026-05-20"},"accessToken":"eyJhbGciOiJIUzI1NiJ9...","tokenType":"Bearer","expiresIn":3600},"error":null}
+                                    {
+                                      "success": true,
+                                      "data": {
+                                        "user": {
+                                          "userId": "ssafy",
+                                          "name": "김싸피",
+                                          "nickname": "동네핀러",
+                                          "email": "ssafy@example.com",
+                                          "profileImageUrl": "https://cdn.example.com/profile.png",
+                                          "representativeLatitude": 37.5665,
+                                          "representativeLongitude": 126.978,
+                                          "representativeRegionName": "서울 중구",
+                                          "createdAt": "2026-05-20"
+                                        },
+                                        "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+                                        "tokenType": "Bearer",
+                                        "expiresIn": 3600
+                                      },
+                                      "error": null
+                                    }
                                     """))
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "아이디 또는 비밀번호 불일치")
@@ -88,7 +127,12 @@ public interface MemberApi {
     })
     ApiResponse<Void> findPassword(@ParameterObject MemberRequest request);
 
-    @Operation(summary = "회원 수정", description = "경로의 `userId` 회원 정보를 수정합니다. 인증된 사용자 본인만 수정할 수 있습니다.", operationId = "updateMember", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(
+            summary = "회원 수정",
+            description = "경로의 `userId` 회원 정보와 닉네임, 프로필 이미지, 대표 위치를 수정합니다. 인증된 사용자 본인만 수정할 수 있습니다.",
+            operationId = "updateMember",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 수정 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "userId 누락"),
@@ -110,7 +154,12 @@ public interface MemberApi {
     })
     ApiResponse<UserEnvelopeResponse> me(@Parameter(hidden = true) Jwt jwt);
 
-    @Operation(summary = "내 정보 수정", description = "JWT subject에 해당하는 내 회원 정보를 수정합니다.", operationId = "updateMe", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(
+            summary = "내 정보 수정",
+            description = "JWT subject에 해당하는 내 회원 정보와 닉네임, 프로필 이미지, 대표 위치를 수정합니다.",
+            operationId = "updateMe",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "내 정보 수정 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),

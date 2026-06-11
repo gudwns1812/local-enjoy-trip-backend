@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,11 +34,26 @@ public class MemberEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(length = 30)
+    private String nickname;
+
     @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String password;
+
+    @Column(name = "profile_image_url", length = 512)
+    private String profileImageUrl;
+
+    @Column(name = "representative_latitude", precision = 10, scale = 7)
+    private BigDecimal representativeLatitude;
+
+    @Column(name = "representative_longitude", precision = 10, scale = 7)
+    private BigDecimal representativeLongitude;
+
+    @Column(name = "representative_region_name", length = 100)
+    private String representativeRegionName;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -45,11 +61,24 @@ public class MemberEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public MemberEntity(String userId, String name, String email, String password) {
+    public MemberEntity(String userId,
+                        String name,
+                        String nickname,
+                        String email,
+                        String password,
+                        String profileImageUrl,
+                        Double representativeLatitude,
+                        Double representativeLongitude,
+                        String representativeRegionName) {
         this.userId = userId;
         this.name = name;
+        this.nickname = nickname;
         this.email = email;
         this.password = password;
+        this.profileImageUrl = profileImageUrl;
+        this.representativeLatitude = decimalValue(representativeLatitude);
+        this.representativeLongitude = decimalValue(representativeLongitude);
+        this.representativeRegionName = representativeRegionName;
     }
 
     @PrePersist
@@ -59,10 +88,58 @@ public class MemberEntity {
         }
     }
 
-    public void update(String name, String email, String password) {
-        if (name != null && !name.isBlank()) this.name = name;
-        if (email != null && !email.isBlank()) this.email = email;
-        if (password != null && !password.isBlank()) this.password = password;
+    public void update(String name,
+                       String nickname,
+                       String email,
+                       String password,
+                       String profileImageUrl,
+                       Double representativeLatitude,
+                       Double representativeLongitude,
+                       String representativeRegionName) {
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname;
+        }
+        if (email != null && !email.isBlank()) {
+            this.email = email;
+        }
+        if (password != null && !password.isBlank()) {
+            this.password = password;
+        }
+        if (profileImageUrl != null && !profileImageUrl.isBlank()) {
+            this.profileImageUrl = profileImageUrl;
+        }
+        if (representativeLatitude != null && representativeLongitude != null) {
+            this.representativeLatitude = decimalValue(representativeLatitude);
+            this.representativeLongitude = decimalValue(representativeLongitude);
+        }
+        if (representativeRegionName != null && !representativeRegionName.isBlank()) {
+            this.representativeRegionName = representativeRegionName;
+        }
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Double getRepresentativeLatitude() {
+        return doubleValue(representativeLatitude);
+    }
+
+    public Double getRepresentativeLongitude() {
+        return doubleValue(representativeLongitude);
+    }
+
+    private static BigDecimal decimalValue(Double value) {
+        if (value == null) {
+            return null;
+        }
+        return BigDecimal.valueOf(value);
+    }
+
+    private static Double doubleValue(BigDecimal value) {
+        if (value == null) {
+            return null;
+        }
+        return value.doubleValue();
     }
 }

@@ -8,8 +8,12 @@ import static com.ssafy.enjoytrip.support.error.ErrorType.EMAIL_ALREADY_EXISTS;
 import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_ACTION;
 import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_CREDENTIALS;
 import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_EMAIL;
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_LATITUDE_OR_LONGITUDE;
 import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_NAME;
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_NICKNAME;
 import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_PASSWORD;
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_PROFILE_IMAGE_URL;
+import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_REQUEST;
 import static com.ssafy.enjoytrip.support.error.ErrorType.INVALID_USER_ID;
 import static com.ssafy.enjoytrip.support.error.ErrorType.MISSING_REQUIRED_FIELDS;
 import static com.ssafy.enjoytrip.support.error.ErrorType.MISSING_USER_ID;
@@ -84,6 +88,7 @@ public class MemberController implements MemberApi {
     public ApiResponse<Void> signup(@ModelAttribute MemberRequest request) {
         String userId = trim(request.userId());
         String name = trim(request.name());
+        String nickname = trim(request.nickname());
         String email = trim(request.email());
         String password = trim(request.password());
         if (userId.isEmpty() || name.isEmpty() || email.isEmpty() || password.isEmpty()) {
@@ -91,15 +96,33 @@ public class MemberController implements MemberApi {
         }
         validateUserId(userId);
         validateName(name);
+        if (nickname.isEmpty()) {
+            nickname = name;
+        }
+        validateNickname(nickname);
         validateEmail(email);
         validatePassword(password);
+        validateProfileImageUrl(request.profileImageUrl());
+        validateLocation(request.representativeLatitude(), request.representativeLongitude());
+        validateRepresentativeRegionName(request.representativeRegionName());
         if (service.existsByUserId(userId)) {
             return fail(USER_ALREADY_EXISTS);
         }
         if (service.existsByEmail(email)) {
             return fail(EMAIL_ALREADY_EXISTS);
         }
-        if (service.signup(new Member(userId, name, email, password, ""))) {
+        if (service.signup(new Member(
+                userId,
+                name,
+                nickname,
+                email,
+                password,
+                trimToNull(request.profileImageUrl()),
+                request.representativeLatitude(),
+                request.representativeLongitude(),
+                trimToNull(request.representativeRegionName()),
+                ""
+        ))) {
             return success();
         }
         return fail(USER_ALREADY_EXISTS);
@@ -209,10 +232,14 @@ public class MemberController implements MemberApi {
         }
         authorizeUser(userId, jwt);
         String name = trim(request.name());
+        String nickname = trim(request.nickname());
         String email = trim(request.email());
         String password = trim(request.password());
         if (!name.isEmpty()) {
             validateName(name);
+        }
+        if (!nickname.isEmpty()) {
+            validateNickname(nickname);
         }
         if (!email.isEmpty()) {
             validateEmail(email);
@@ -224,7 +251,22 @@ public class MemberController implements MemberApi {
         if (!password.isEmpty()) {
             validatePassword(password);
         }
-        if (service.update(new Member(userId, name, email, password, ""))) {
+        validateProfileImageUrl(request.profileImageUrl());
+        validateLocation(request.representativeLatitude(), request.representativeLongitude());
+        validateRepresentativeRegionName(request.representativeRegionName());
+
+        if (service.update(new Member(
+                userId,
+                name,
+                nickname,
+                email,
+                password,
+                trimToNull(request.profileImageUrl()),
+                request.representativeLatitude(),
+                request.representativeLongitude(),
+                trimToNull(request.representativeRegionName()),
+                ""
+        ))) {
             return success();
         }
         return fail(USER_NOT_FOUND);
@@ -265,7 +307,12 @@ public class MemberController implements MemberApi {
         return new UserResponse(
                 member.userId(),
                 member.name(),
+                value(member.nickname(), member.name()),
                 member.email(),
+                member.profileImageUrl(),
+                member.representativeLatitude(),
+                member.representativeLongitude(),
+                member.representativeRegionName(),
                 value(member.createdAt(), "")
         );
     }
@@ -293,6 +340,12 @@ public class MemberController implements MemberApi {
         }
     }
 
+    private static void validateNickname(String nickname) {
+        if (nickname.length() < 2 || nickname.length() > 30) {
+            fail(INVALID_NICKNAME);
+        }
+    }
+
     private static void validateEmail(String email) {
         if (!EMAIL_PATTERN.matcher(email).matches()) {
             fail(INVALID_EMAIL);
@@ -303,6 +356,38 @@ public class MemberController implements MemberApi {
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
             fail(INVALID_PASSWORD);
         }
+    }
+
+    private static void validateProfileImageUrl(String profileImageUrl) {
+        if (profileImageUrl != null && profileImageUrl.length() > 512) {
+            fail(INVALID_PROFILE_IMAGE_URL);
+        }
+    }
+
+    private static void validateLocation(Double latitude, Double longitude) {
+        if (latitude == null && longitude == null) {
+            return;
+        }
+        if (latitude == null || longitude == null) {
+            fail(INVALID_LATITUDE_OR_LONGITUDE);
+        }
+        if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+            fail(INVALID_LATITUDE_OR_LONGITUDE);
+        }
+    }
+
+    private static void validateRepresentativeRegionName(String regionName) {
+        if (regionName != null && regionName.length() > 100) {
+            fail(INVALID_REQUEST);
+        }
+    }
+
+    private static String trimToNull(String value) {
+        String trimmed = trim(value);
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        return trimmed;
     }
 
     private static String value(String value, String fallback) {
