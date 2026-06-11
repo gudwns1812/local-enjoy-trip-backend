@@ -492,13 +492,20 @@ class ControllerBehaviorTest {
         void loginFailureLogoutValidationAndPasswordLookupGone() throws Exception {
             when(memberService.login("ssafy", "wrong")).thenReturn(null);
 
-            mockMvc.perform(post("/api/members/login").param("userId", "ssafy").param("password", "wrong"))
+            mockMvc.perform(post("/api/members/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "userId": "ssafy",
+                                      "password": "wrong"
+                                    }
+                                    """))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.message").value("Invalid credentials"));
 
             mockMvc.perform(post("/api/members/logout"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Missing userId"));
+                    .andExpect(jsonPath("$.error.message").value("Invalid request"));
 
             mockMvc.perform(post("/api/members/find-password")
                             .param("userId", "ssafy")
@@ -514,9 +521,14 @@ class ControllerBehaviorTest {
 
             mockMvc.perform(put("/api/members/me")
                             .principal(jwtPrincipal("ssafy"))
-                            .param("name", "SSAFY")
-                            .param("email", "ssafy@example.com")
-                            .param("password", "new-secret1"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                      "name": "SSAFY",
+                                      "email": "ssafy@example.com",
+                                      "password": "new-secret1"
+                                    }
+                                    """))
                     .andExpect(status().isOk());
 
             ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);

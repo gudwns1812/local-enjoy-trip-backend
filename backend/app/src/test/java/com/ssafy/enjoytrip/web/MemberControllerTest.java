@@ -211,10 +211,10 @@ class MemberControllerTest {
                         .content("""
                                 {
                                   "representativeLatitude": 37.5665
-                                }
-                                """))
+                }
+                """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.message").value("Invalid latitude or longitude"));
+                .andExpect(jsonPath("$.error.message").value("Invalid request"));
     }
 
     @DisplayName("내 정보 수정은 다른 사용자 토큰을 거부한다")
