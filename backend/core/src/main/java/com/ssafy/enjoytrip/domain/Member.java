@@ -5,10 +5,19 @@ import com.ssafy.enjoytrip.security.PasswordCodec;
 public record Member(
         String userId,
         String name,
+        String nickname,
         String email,
         String password,
+        String profileImageUrl,
+        Double representativeLatitude,
+        Double representativeLongitude,
+        String representativeRegionName,
         String createdAt
 ) {
+    public Member(String userId, String name, String email, String password, String createdAt) {
+        this(userId, name, name, email, password, null, null, null, null, createdAt);
+    }
+
     public Member withEncodedPassword(PasswordCodec passwordCodec) {
         return withPassword(passwordCodec.encode(password));
     }
@@ -21,7 +30,18 @@ public record Member(
     }
 
     public Member withPassword(String newPassword) {
-        return new Member(userId, name, email, newPassword, createdAt);
+        return new Member(
+                userId,
+                name,
+                nickname,
+                email,
+                newPassword,
+                profileImageUrl,
+                representativeLatitude,
+                representativeLongitude,
+                representativeRegionName,
+                createdAt
+        );
     }
 
     public boolean canAuthenticate(String rawPassword, PasswordCodec passwordCodec) {

@@ -52,10 +52,17 @@ class DomainRecordContractTest {
             ),
             new RecordSpec(
                     Member.class,
-                    new String[]{"userId", "name", "email", "password", "createdAt"},
-                    new Class<?>[]{String.class, String.class, String.class, String.class, String.class},
-                    new Object[]{"user-1", "Alice", "alice@example.com", "secret", "2026-05-15T09:00:00"},
-                    new Object[]{"user-2", "Bob", "bob@example.com", "secret2", "2026-05-16T09:00:00"}
+                    new String[]{"userId", "name", "nickname", "email", "password", "profileImageUrl",
+                            "representativeLatitude", "representativeLongitude", "representativeRegionName",
+                            "createdAt"},
+                    new Class<?>[]{String.class, String.class, String.class, String.class, String.class,
+                            String.class, Double.class, Double.class, String.class, String.class},
+                    new Object[]{"user-1", "Alice", "앨리스", "alice@example.com", "secret",
+                            "https://cdn.example.com/a.png", 37.5665, 126.9780, "서울 중구",
+                            "2026-05-15T09:00:00"},
+                    new Object[]{"user-2", "Bob", "보비", "bob@example.com", "secret2",
+                            "https://cdn.example.com/b.png", 35.1796, 129.0756, "부산 부산진구",
+                            "2026-05-16T09:00:00"}
             ),
             new RecordSpec(
                     NewsItem.class,

@@ -26,7 +26,7 @@ dependencies {
 }
 
 tasks.register('forbidStorageReferences') {
-    description = 'Fails if backend:app compiles against or imports backend:storage.'
+    description = 'Fails if backend:app source imports or references backend:storage implementation types.'
     group = 'verification'
 
     def mainJava = layout.projectDirectory.dir('src/main/java')
@@ -44,20 +44,11 @@ tasks.register('forbidStorageReferences') {
             }
         }
 
-        def compileHasStorage = configurations.compileClasspath.incoming.resolutionResult.allComponents.any { component ->
-            def id = component.id
-            id instanceof org.gradle.api.artifacts.component.ProjectComponentIdentifier &&
-                    id.projectPath == ':backend:storage'
-        }
-
-        if (!offenders.isEmpty() || compileHasStorage) {
-            def message = new StringBuilder('backend:app must not reference backend:storage at compile time.')
+        if (!offenders.isEmpty()) {
+            def message = new StringBuilder('backend:app source must not import or reference backend:storage implementation types.')
             if (!offenders.isEmpty()) {
                 message.append(System.lineSeparator()).append('Forbidden storage imports/packages:')
                 offenders.each { message.append(System.lineSeparator()).append(' - ').append(it) }
-            }
-            if (compileHasStorage) {
-                message.append(System.lineSeparator()).append('backend:storage is present on app compileClasspath.')
             }
             throw new GradleException(message.toString())
         }

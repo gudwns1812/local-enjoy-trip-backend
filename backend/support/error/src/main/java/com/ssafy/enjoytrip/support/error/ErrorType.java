@@ -24,8 +24,10 @@ public enum ErrorType {
     INVALID_LATITUDE_OR_LONGITUDE(BAD_REQUEST, "Invalid latitude or longitude", WARN),
     INVALID_USER_ID(BAD_REQUEST, "User ID must be 4-20 letters, numbers, or underscores", WARN),
     INVALID_NAME(BAD_REQUEST, "Name must be 2-30 characters", WARN),
+    INVALID_NICKNAME(BAD_REQUEST, "Nickname must be 2-30 characters", WARN),
     INVALID_EMAIL(BAD_REQUEST, "Invalid email", WARN),
     INVALID_PASSWORD(BAD_REQUEST, "Password must be 8-64 characters and include letters and numbers", WARN),
+    INVALID_PROFILE_IMAGE_URL(BAD_REQUEST, "Profile image URL must be 512 characters or less", WARN),
 
     AUTHENTICATION_REQUIRED(UNAUTHORIZED, "Authentication required", WARN),
     INVALID_CREDENTIALS(UNAUTHORIZED, "Invalid credentials", WARN),

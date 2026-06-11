@@ -2,7 +2,9 @@ package com.ssafy.enjoytrip.support.response;
 
 import com.ssafy.enjoytrip.support.error.ErrorCode;
 import com.ssafy.enjoytrip.support.error.ErrorType;
+import lombok.Getter;
 
+@Getter
 public final class ApiResponse<T> {
     private final boolean success;
     private final T data;
@@ -26,15 +28,4 @@ public final class ApiResponse<T> {
         return new ApiResponse<>(false, null, new ErrorResponse(error.code(), error.message()));
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public ErrorResponse getError() {
-        return error;
-    }
 }

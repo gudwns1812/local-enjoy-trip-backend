@@ -3,6 +3,8 @@ package com.ssafy.enjoytrip.service;
 import com.ssafy.enjoytrip.domain.Member;
 import com.ssafy.enjoytrip.repository.MemberRepository;
 import com.ssafy.enjoytrip.security.PasswordCodec;
+import com.ssafy.enjoytrip.support.error.CoreException;
+import com.ssafy.enjoytrip.support.error.ErrorType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,9 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MemberServiceTest {
@@ -27,9 +28,12 @@ class MemberServiceTest {
         CountingPasswordCodec passwordCodec = new CountingPasswordCodec();
         MemberService service = new MemberService(repository, passwordCodec);
 
-        boolean result = service.signup(member("dreamer", "other@example.com", "raw-password"));
+        CoreException exception = assertThrows(
+                CoreException.class,
+                () -> service.signup(member("dreamer", "other@example.com", "raw-password"))
+        );
 
-        assertFalse(result);
+        assertEquals(ErrorType.USER_ALREADY_EXISTS, exception.errorType());
         assertEquals(0, passwordCodec.encodeCalls);
         assertEquals(1, repository.members.size());
     }
@@ -41,9 +45,8 @@ class MemberServiceTest {
         CountingPasswordCodec passwordCodec = new CountingPasswordCodec();
         MemberService service = new MemberService(repository, passwordCodec);
 
-        boolean result = service.signup(member("newbie", "newbie@example.com", "raw-password"));
+        service.signup(member("newbie", "newbie@example.com", "raw-password"));
 
-        assertTrue(result);
         assertEquals("encoded:raw-password", repository.findByUserId("newbie").password());
         assertEquals(1, passwordCodec.encodeCalls);
     }
@@ -55,9 +58,9 @@ class MemberServiceTest {
         repository.insert(member("traveler", "traveler@example.com", "encoded:correct"));
         MemberService service = new MemberService(repository, new CountingPasswordCodec());
 
-        Member result = service.login("traveler", "wrong");
+        CoreException exception = assertThrows(CoreException.class, () -> service.login("traveler", "wrong"));
 
-        assertNull(result);
+        assertEquals(ErrorType.INVALID_CREDENTIALS, exception.errorType());
         assertTrue(repository.authLogs.isEmpty());
     }
 

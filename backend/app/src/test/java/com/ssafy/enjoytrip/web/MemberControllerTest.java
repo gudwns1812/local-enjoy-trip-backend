@@ -1,26 +1,12 @@
 package com.ssafy.enjoytrip.web;
-import com.ssafy.enjoytrip.web.api.*;
-import com.ssafy.enjoytrip.web.controller.*;
-import com.ssafy.enjoytrip.web.dto.request.*;
-import com.ssafy.enjoytrip.web.dto.response.*;
 
-import com.ssafy.enjoytrip.domain.Member;
-import com.ssafy.enjoytrip.service.JwtTokenService;
-import com.ssafy.enjoytrip.service.MemberService;
-import com.ssafy.enjoytrip.service.OAuthSignupTicketService;
-import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.time.Instant;
-
+import static com.ssafy.enjoytrip.support.error.ErrorType.EMAIL_ALREADY_EXISTS;
+import static com.ssafy.enjoytrip.support.error.ErrorType.USER_ALREADY_EXISTS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,6 +14,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.ssafy.enjoytrip.domain.Member;
+import com.ssafy.enjoytrip.service.JwtTokenService;
+import com.ssafy.enjoytrip.service.MemberService;
+import com.ssafy.enjoytrip.service.OAuthSignupTicketService;
+import com.ssafy.enjoytrip.service.OAuthSignupTicketService.PendingOAuthSignup;
+import com.ssafy.enjoytrip.support.error.CoreException;
+import com.ssafy.enjoytrip.web.controller.MemberController;
+import com.ssafy.enjoytrip.web.dto.response.IssuedToken;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import java.time.Instant;
+import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 class MemberControllerTest {
     private MemberService memberService;
@@ -50,21 +55,24 @@ class MemberControllerTest {
     @Test
     void signupRequiresAllFields() throws Exception {
         mockMvc.perform(post("/api/members/signup")
-                        .param("userId", "ssafy")
-                        .param("password", "secret123"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": "ssafy",
+                                  "password": "secret123"
+                                }
+                                """))
                 .andExpect(status().isBadRequest());
     }
 
     @DisplayName("회원가입은 사용자가 이미 있으면 충돌로 응답한다")
     @Test
     void signupReturnsConflictWhenUserExists() throws Exception {
-        when(memberService.existsByUserId("ssafy")).thenReturn(true);
+        doThrow(new CoreException(USER_ALREADY_EXISTS)).when(memberService).signup(any(Member.class));
 
         mockMvc.perform(post("/api/members/signup")
-                        .param("userId", "ssafy")
-                        .param("name", "SSAFY")
-                        .param("email", "ssafy@example.com")
-                        .param("password", "secret123"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupJson("ssafy", "SSAFY", "ssafy@example.com", "secret123")))
                 .andExpect(status().isConflict());
     }
 
@@ -72,19 +80,15 @@ class MemberControllerTest {
     @Test
     void signupValidatesFieldsAndEmailDuplicates() throws Exception {
         mockMvc.perform(post("/api/members/signup")
-                        .param("userId", "bad id")
-                        .param("name", "SSAFY")
-                        .param("email", "ssafy@example.com")
-                        .param("password", "secret123"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupJson("bad id", "SSAFY", "ssafy@example.com", "secret123")))
                 .andExpect(status().isBadRequest());
 
-        when(memberService.existsByEmail("ssafy@example.com")).thenReturn(true);
+        doThrow(new CoreException(EMAIL_ALREADY_EXISTS)).when(memberService).signup(any(Member.class));
 
         mockMvc.perform(post("/api/members/signup")
-                        .param("userId", "ssafy")
-                        .param("name", "SSAFY")
-                        .param("email", "ssafy@example.com")
-                        .param("password", "secret123"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupJson("ssafy", "SSAFY", "ssafy@example.com", "secret123")))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.message").value("Email already exists"));
     }
@@ -97,8 +101,13 @@ class MemberControllerTest {
         when(tokenService.issue(member)).thenReturn(new IssuedToken("jwt-token", "Bearer", 7200));
 
         mockMvc.perform(post("/api/members/login")
-                        .param("userId", "ssafy")
-                        .param("password", "secret"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": "ssafy",
+                                  "password": "secret"
+                                }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").value("jwt-token"))
                 .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
@@ -117,8 +126,13 @@ class MemberControllerTest {
         when(tokenService.issue(member)).thenReturn(new IssuedToken("jwt-token", "Bearer", 7200));
 
         mockMvc.perform(post("/api/members/oauth/signup")
-                        .param("oauthSignupTicket", "ticket")
-                        .param("name", "트래블러"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "oauthSignupTicket": "ticket",
+                                  "name": "트래블러"
+                                }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").value("jwt-token"))
                 .andExpect(jsonPath("$.data.user.name").value("트래블러"));
@@ -134,13 +148,72 @@ class MemberControllerTest {
     @DisplayName("내 정보 조회는 인증된 사용자를 반환한다")
     @Test
     void meReturnsAuthenticatedUser() throws Exception {
-        Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden", "2026-05-14 11:00:00");
-        when(memberService.findByUserId("ssafy")).thenReturn(member);
+        Member member = new Member(
+                "ssafy",
+                "SSAFY",
+                "동네핀러",
+                "ssafy@example.com",
+                "hidden",
+                "https://cdn.example.com/profile.png",
+                37.5665,
+                126.9780,
+                "서울 중구",
+                "2026-05-14 11:00:00"
+        );
+        when(memberService.findRequiredByUserId("ssafy")).thenReturn(member);
 
         mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ssafy")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.user.userId").value("ssafy"))
-                .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"));
+                .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"))
+                .andExpect(jsonPath("$.data.user.nickname").value("동네핀러"))
+                .andExpect(jsonPath("$.data.user.profileImageUrl").value("https://cdn.example.com/profile.png"))
+                .andExpect(jsonPath("$.data.user.representativeLatitude").value(37.5665))
+                .andExpect(jsonPath("$.data.user.representativeLongitude").value(126.9780))
+                .andExpect(jsonPath("$.data.user.representativeRegionName").value("서울 중구"));
+    }
+
+    @DisplayName("내 정보 수정은 닉네임과 프로필 이미지와 대표 위치를 변경한다")
+    @Test
+    void updateMeChangesProfileAndRepresentativeLocation() throws Exception {
+        mockMvc.perform(put("/api/members/me")
+                        .principal(jwtPrincipal("ssafy"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname": "동네핀러",
+                                  "profileImageUrl": "https://cdn.example.com/profile.png",
+                                  "representativeLatitude": 37.5665,
+                                  "representativeLongitude": 126.9780,
+                                  "representativeRegionName": "서울 중구"
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
+        verify(memberService).update(memberCaptor.capture());
+        Member member = memberCaptor.getValue();
+        assertThat(member.userId()).isEqualTo("ssafy");
+        assertThat(member.nickname()).isEqualTo("동네핀러");
+        assertThat(member.profileImageUrl()).isEqualTo("https://cdn.example.com/profile.png");
+        assertThat(member.representativeLatitude()).isEqualTo(37.5665);
+        assertThat(member.representativeLongitude()).isEqualTo(126.9780);
+        assertThat(member.representativeRegionName()).isEqualTo("서울 중구");
+    }
+
+    @DisplayName("내 정보 수정은 대표 위치 위도와 경도를 함께 요구한다")
+    @Test
+    void updateMeRequiresBothLatitudeAndLongitude() throws Exception {
+        mockMvc.perform(put("/api/members/me")
+                        .principal(jwtPrincipal("ssafy"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "representativeLatitude": 37.5665
+                }
+                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.message").value("Invalid request"));
     }
 
     @DisplayName("내 정보 수정은 다른 사용자 토큰을 거부한다")
@@ -148,7 +221,12 @@ class MemberControllerTest {
     void updateRejectsDifferentUserToken() throws Exception {
         mockMvc.perform(put("/api/members/other")
                         .principal(jwtPrincipal("ssafy"))
-                        .param("name", "Other"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Other"
+                                }
+                                """))
                 .andExpect(status().isForbidden());
     }
 
@@ -158,6 +236,17 @@ class MemberControllerTest {
         mockMvc.perform(delete("/api/members/other")
                         .principal(jwtPrincipal("ssafy")))
                 .andExpect(status().isForbidden());
+    }
+
+    private static String signupJson(String userId, String name, String email, String password) {
+        return """
+                {
+                  "userId": "%s",
+                  "name": "%s",
+                  "email": "%s",
+                  "password": "%s"
+                }
+                """.formatted(userId, name, email, password);
     }
 
     private static JwtAuthenticationToken jwtPrincipal(String userId) {

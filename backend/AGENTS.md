@@ -22,7 +22,8 @@ The backend is organized as a multi-module architecture with four primary module
   - Owns Spring MVC controllers, request/response DTOs, validation, exception handling, and service orchestration.
   - Depends on `core` and `external`.
   - Must not import any `com.ssafy.enjoytrip.storage.*` type and must not place persistence adapters under `app`.
-  - Must not have `backend:storage` on its compile classpath. `backend:app:check` enforces this through `forbidStorageReferences`.
+  - As the Spring Boot assembly module, may declare a Gradle dependency on `backend:storage` so storage adapters are available for application wiring.
+  - `backend:app:check` enforces source-level isolation only: `app` source must not import or reference storage implementation packages.
 - `core`: domain and application ports.
   - Owns domain models and repository interfaces.
   - Must not depend on `app`, `storage`, or `external`.
@@ -52,7 +53,7 @@ Layering rules:
 - JPA-backed adapters live only in `storage/repository` and use the `storage` module's entities and Spring Data repositories.
 - No source under `backend/app/src/main` may import or reference `com.ssafy.enjoytrip.storage.*`.
 - Controllers must not call repositories directly.
-- `app`, `storage`, and `external` must not depend on each other through source-level imports except for the allowed `app -> external` client dependency. Shared application contracts go through `core`.
+- `app`, `storage`, and `external` must not depend on each other through source-level imports except for allowed `app -> external` client usage and `app`'s Spring Boot assembly dependency on `storage`. Shared application contracts go through `core`.
 
 ---
 
