@@ -133,23 +133,32 @@ class JpaEntityLifecycleTest {
         );
     }
 
-    @DisplayName("핫플레이스와 여행 계획은 Auditing 생성 시각과 nullable 텍스트 필드를 보존한다")
+    @DisplayName("핫플레이스와 여행 계획은 BaseEntity Auditing 시각과 nullable 텍스트 필드를 보존한다")
     @Test
     void hotplaceAndTravelPlanPreserveNullableTextFieldsAndRequiredColumnsWithAuditing() {
         HotplaceEntity hotplace = persistAndFlush(new HotplaceEntity("hot-1", "ssafy", "Cafe", "food",
                 "2026-05-15", 37.5, 127.0, null, null));
         TravelPlanEntity plan = persistAndFlush(new TravelPlanEntity("plan-1", "ssafy", "Trip", "2026-05-15",
                 "2026-05-16", 1000, null, null));
+        LocalDateTime planCreatedAt = plan.getCreatedAt();
+
+        plan.update("Updated Trip", "2026-05-16", "2026-05-17", 2000, null, null);
+        flushAndClear();
+        TravelPlanEntity foundPlan = entityManager.find(TravelPlanEntity.class, "plan-1");
 
         assertAll(
                 () -> assertEquals("hotplaces", HotplaceEntity.class.getAnnotation(Table.class).name()),
                 () -> assertEquals("plans", TravelPlanEntity.class.getAnnotation(Table.class).name()),
                 () -> assertNull(hotplace.getDescription()),
                 () -> assertNull(hotplace.getPhoto()),
-                () -> assertNull(plan.getNote()),
-                () -> assertNull(plan.getRouteItemsJson()),
+                () -> assertNull(foundPlan.getNote()),
+                () -> assertNull(foundPlan.getRouteItemsJson()),
                 () -> assertNotNull(hotplace.getCreatedAt()),
-                () -> assertNotNull(plan.getCreatedAt()),
+                () -> assertNull(hotplace.getUpdatedAt()),
+                () -> assertEquals(planCreatedAt, foundPlan.getCreatedAt()),
+                () -> assertNotNull(foundPlan.getUpdatedAt()),
+                () -> assertEquals("Updated Trip", foundPlan.getTitle()),
+                () -> assertEquals(2000, foundPlan.getBudget()),
                 () -> assertColumn(HotplaceEntity.class, "userId", "user_id", 64, false),
                 () -> assertColumn(TravelPlanEntity.class, "routeItemsJson", "route_items", 255, true)
         );
@@ -163,6 +172,7 @@ class JpaEntityLifecycleTest {
         assertAll(
                 () -> assertEquals("plan_items", PlanItemEntity.class.getAnnotation(Table.class).name()),
                 () -> assertNotNull(planItem.getCreatedAt()),
+                () -> assertNull(planItem.getUpdatedAt()),
                 () -> assertColumn(PlanItemEntity.class, "planId", "plan_id", 128, false),
                 () -> assertColumn(PlanItemEntity.class, "stayMinutes", "stay_minutes", 255, false)
         );

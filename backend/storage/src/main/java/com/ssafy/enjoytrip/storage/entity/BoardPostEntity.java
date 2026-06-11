@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "boards")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BoardPostEntity extends UpdatableBaseEntity {
+public class BoardPostEntity extends BaseEntity {
     @Id
     @Column(length = 128)
     private String id;

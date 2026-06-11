@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberEntity extends UpdatableBaseEntity {
+public class MemberEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "notices")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NoticeEntity extends UpdatableBaseEntity {
+public class NoticeEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
