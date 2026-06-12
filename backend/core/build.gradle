@@ -3,6 +3,7 @@
 dependencies {
     implementation project(':backend:support:error')
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework:spring-tx'
     
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

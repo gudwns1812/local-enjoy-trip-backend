@@ -1,6 +1,8 @@
 package com.ssafy.enjoytrip.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.ssafy.enjoytrip.support.error.ErrorType;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.ObjectProvider;
@@ -8,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -68,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/notes").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/notes/{id}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/notes/{id}").authenticated()
+                        .requestMatchers("/api/friendships/**", "/api/notifications/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/plans", "/api/plans/items").authenticated()
                         .requestMatchers(
                                 HttpMethod.PUT,
@@ -80,6 +84,13 @@ public class SecurityConfig {
                                 "/api/plans/{id}/items/{itemId}"
                         ).authenticated()
                         .anyRequest().permitAll()
+                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((request, response, exception) ->
+                                writeFailure(response, HttpServletResponse.SC_UNAUTHORIZED,
+                                        ErrorType.AUTHENTICATION_REQUIRED))
+                        .accessDeniedHandler((request, response, exception) ->
+                                writeFailure(response, HttpServletResponse.SC_FORBIDDEN, ErrorType.ACCESS_DENIED))
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
@@ -110,5 +121,14 @@ public class SecurityConfig {
 
     private static SecretKey jwtSecretKey(JwtProperties properties) {
         return new SecretKeySpec(properties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+
+    private static void writeFailure(HttpServletResponse response, int status, ErrorType error) throws java.io.IOException {
+        response.setStatus(status);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write("""
+                {"success":false,"data":null,"error":{"code":"%s","message":"%s"}}
+                """.formatted(error.code(), error.message()));
     }
 }
