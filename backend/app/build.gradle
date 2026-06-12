@@ -1,73 +1,7 @@
-plugins {
-    id 'org.springframework.boot'
-}
-
-dependencies {
-    implementation project(':backend:core')
-    implementation project(':backend:storage')
-    implementation project(':backend:external')
-    implementation project(':backend:support:common')
-    implementation project(':backend:support:error')
-    implementation project(':backend:support:auth')
-
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-json'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.kafka:spring-kafka'
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.register('forbidStorageReferences') {
-    description = 'Fails if backend:app source imports or references backend:storage implementation types.'
-    group = 'verification'
-
-    def mainJava = layout.projectDirectory.dir('src/main/java')
-    inputs.dir(mainJava)
-
-    doLast {
-        def offenders = []
-        fileTree(mainJava) {
-            include '**/*.java'
-        }.each { file ->
-            def source = file.getText('UTF-8')
-            if (source.contains('com.ssafy.enjoytrip.storage') ||
-                    source.contains('com.ssafy.enjoytrip.repository.storage')) {
-                offenders << file
-            }
-        }
-
-        if (!offenders.isEmpty()) {
-            def message = new StringBuilder('backend:app source must not import or reference backend:storage implementation types.')
-            if (!offenders.isEmpty()) {
-                message.append(System.lineSeparator()).append('Forbidden storage imports/packages:')
-                offenders.each { message.append(System.lineSeparator()).append(' - ').append(it) }
-            }
-            throw new GradleException(message.toString())
-        }
-    }
-}
+// Aggregator namespace for backend executable applications.
+// Keep this module source-free; put runnable boundaries under backend:app:web and backend:app:worker.
 
 tasks.named('check') {
-    dependsOn tasks.named('forbidStorageReferences')
-}
-
-ext {
-    snippetsDir = file('build/generated-snippets')
-}
-
-tasks.named('test') {
-    outputs.dir snippetsDir
-    useJUnitPlatform {
-        excludeTags 'suite'
-        excludeEngines 'junit-platform-suite'
-    }
+    dependsOn ':backend:app:web:check'
+    dependsOn ':backend:app:worker:check'
 }

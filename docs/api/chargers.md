@@ -1,6 +1,6 @@
 ﻿# Chargers API
 
-> Source: `backend/app/src/docs/asciidoc/index.adoc`
+> Source: `backend/app/web/src/docs/asciidoc/index.adoc`
 
 ### HTTP Request
 
