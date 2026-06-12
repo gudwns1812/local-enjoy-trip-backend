@@ -96,3 +96,12 @@ tasks.named('test') {
         excludeEngines 'junit-platform-suite'
     }
 }
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
