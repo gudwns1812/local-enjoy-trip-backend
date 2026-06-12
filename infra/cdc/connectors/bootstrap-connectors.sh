@@ -7,6 +7,7 @@ set -euo pipefail
 CONNECTOR_DIR="${CONNECTOR_DIR:-/cdc/connectors}"
 CONNECTORS=(
   "${CONNECTOR_DIR}/debezium-attraction-favorites-source.properties"
+  "${CONNECTOR_DIR}/debezium-notification-outbox-source.properties"
   "${CONNECTOR_DIR}/clickhouse-attraction-favorites-sink.properties"
 )
 
