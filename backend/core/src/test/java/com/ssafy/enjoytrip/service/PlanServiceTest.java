@@ -42,6 +42,8 @@ class PlanServiceTest {
         assertEquals("ssafy", repository.savedPlan.userId());
         assertEquals(0, repository.savedPlan.budget());
         assertTrue(repository.savedPlan.note().isEmpty());
+        assertEquals("[]", repository.savedPlan.routeItemsJson());
+        assertTrue(repository.savedPlan.createdAt().isEmpty());
         assertEquals(List.of(new PlanItem(null, "p1", 10L, 0, 2, "lunch", 120)), repository.savedItems);
     }
 
