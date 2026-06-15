@@ -4,11 +4,11 @@ import static com.ssafy.enjoytrip.support.error.ErrorType.NOTE_ACCESS_DENIED;
 import static com.ssafy.enjoytrip.support.error.ErrorType.NOTE_NOT_ACTIVE;
 import static com.ssafy.enjoytrip.support.error.ErrorType.NOTE_NOT_FOUND;
 
-import com.ssafy.enjoytrip.domain.CreateNoteCommand;
-import com.ssafy.enjoytrip.domain.NearbyNotesCondition;
+import com.ssafy.enjoytrip.application.dto.command.CreateNoteCommand;
+import com.ssafy.enjoytrip.application.dto.query.NearbyNotesCondition;
 import com.ssafy.enjoytrip.domain.Note;
 import com.ssafy.enjoytrip.domain.NoteStatus;
-import com.ssafy.enjoytrip.domain.UpdateNoteCommand;
+import com.ssafy.enjoytrip.application.dto.command.UpdateNoteCommand;
 import com.ssafy.enjoytrip.repository.NoteRepository;
 import com.ssafy.enjoytrip.support.error.CoreException;
 import java.util.List;
