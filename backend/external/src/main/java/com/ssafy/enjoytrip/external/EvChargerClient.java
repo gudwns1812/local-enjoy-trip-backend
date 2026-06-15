@@ -38,7 +38,8 @@ public class EvChargerClient {
             throws IOException, InterruptedException {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException(
-                    "EV charger API key is missing. Set enjoytrip.external.ev-charger.api-key."
+                    "EV 충전기 API 키가 없습니다. "
+                            + "enjoytrip.external.ev-charger.api-key를 설정하세요."
             );
         }
 
@@ -56,7 +57,7 @@ public class EvChargerClient {
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
         );
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException("EV API HTTP error: " + response.statusCode());
+            throw new IOException("EV API HTTP 오류: " + response.statusCode());
         }
         return parse(response.body(), keyword);
     }
@@ -99,7 +100,7 @@ public class EvChargerClient {
             }
             return rows;
         } catch (Exception ex) {
-            throw new IOException("Failed to parse EV charger API response", ex);
+            throw new IOException("EV 충전기 API 응답을 파싱하지 못했습니다", ex);
         }
     }
 

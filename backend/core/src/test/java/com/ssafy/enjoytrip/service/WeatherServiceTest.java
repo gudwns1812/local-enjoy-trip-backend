@@ -25,7 +25,7 @@ class WeatherServiceTest {
     @Test
     void returnsDefaultFallbackRowsWhenRepositoryThrows() {
         WeatherService service = new WeatherService(() -> {
-            throw new IllegalStateException("KMA unavailable");
+            throw new IllegalStateException("KMA를 사용할 수 없습니다.");
         });
 
         List<WeatherSummary> result = service.findWeatherBriefings();

@@ -106,7 +106,7 @@ class TourApiClientTest {
 
         assertThatThrownBy(() -> client.search("", "", "", ""))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Tour API key is missing");
+                .hasMessageContaining("Tour API 키가 없습니다");
         assertThat(http.requests()).isEmpty();
         assertThat(client.isConfigured()).isFalse();
     }
@@ -121,7 +121,7 @@ class TourApiClientTest {
 
         assertThatThrownBy(() -> httpErrorClient.search("", "", "", ""))
                 .isInstanceOf(IOException.class)
-                .hasMessageContaining("Tour API HTTP error: 503");
+                .hasMessageContaining("Tour API HTTP 오류: 503");
 
         TourApiClient malformedClient = new TourApiClient(
                 new FakeHttpClient().enqueue(200, "<response><item>"),
@@ -130,6 +130,6 @@ class TourApiClientTest {
 
         assertThatThrownBy(() -> malformedClient.search("", "", "", ""))
                 .isInstanceOf(IOException.class)
-                .hasMessageContaining("Failed to parse Tour API response");
+                .hasMessageContaining("Tour API 응답을 파싱하지 못했습니다");
     }
 }

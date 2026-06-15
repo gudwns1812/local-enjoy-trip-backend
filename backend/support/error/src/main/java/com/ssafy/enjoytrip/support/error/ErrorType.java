@@ -14,56 +14,88 @@ import static com.ssafy.enjoytrip.support.error.LogLevel.ERROR;
 import static com.ssafy.enjoytrip.support.error.LogLevel.WARN;
 
 public enum ErrorType {
-    INVALID_ACTION(BAD_REQUEST, "Invalid action", WARN),
-    MISSING_REQUIRED_FIELDS(BAD_REQUEST, "Missing required fields", WARN),
-    MISSING_ID(BAD_REQUEST, "Missing id", WARN),
-    MISSING_USER_ID(BAD_REQUEST, "Missing userId", WARN),
-    INVALID_REQUEST(BAD_REQUEST, "Invalid request", WARN),
-    INVALID_ID(BAD_REQUEST, "Invalid id", WARN),
-    INVALID_POINTS(BAD_REQUEST, "Invalid points", WARN),
-    INVALID_LATITUDE_OR_LONGITUDE(BAD_REQUEST, "Invalid latitude or longitude", WARN),
-    INVALID_USER_ID(BAD_REQUEST, "User ID must be 4-20 letters, numbers, or underscores", WARN),
-    INVALID_NAME(BAD_REQUEST, "Name must be 2-30 characters", WARN),
-    INVALID_NICKNAME(BAD_REQUEST, "Nickname must be 2-30 characters", WARN),
-    INVALID_EMAIL(BAD_REQUEST, "Invalid email", WARN),
-    INVALID_PASSWORD(BAD_REQUEST, "Password must be 8-64 characters and include letters and numbers", WARN),
-    INVALID_PROFILE_IMAGE_URL(BAD_REQUEST, "Profile image URL must be 512 characters or less", WARN),
+    INVALID_ACTION(BAD_REQUEST, "유효하지 않은 작업입니다.", WARN),
+    MISSING_REQUIRED_FIELDS(BAD_REQUEST, "필수 입력값이 누락되었습니다.", WARN),
+    MISSING_ID(BAD_REQUEST, "id가 누락되었습니다.", WARN),
+    MISSING_USER_ID(BAD_REQUEST, "userId가 누락되었습니다.", WARN),
+    INVALID_REQUEST(BAD_REQUEST, "유효하지 않은 요청입니다.", WARN),
+    INVALID_ID(BAD_REQUEST, "유효하지 않은 id입니다.", WARN),
+    INVALID_POINTS(BAD_REQUEST, "유효하지 않은 경로 좌표입니다.", WARN),
+    INVALID_LATITUDE_OR_LONGITUDE(BAD_REQUEST, "위도 또는 경도가 유효하지 않습니다.", WARN),
+    INVALID_USER_ID(
+            BAD_REQUEST,
+            "사용자 ID는 4-20자의 영문, 숫자, 밑줄만 사용할 수 있습니다.",
+            WARN
+    ),
+    INVALID_NAME(BAD_REQUEST, "이름은 2-30자여야 합니다.", WARN),
+    INVALID_NICKNAME(BAD_REQUEST, "닉네임은 2-30자여야 합니다.", WARN),
+    INVALID_EMAIL(BAD_REQUEST, "유효하지 않은 이메일입니다.", WARN),
+    INVALID_PASSWORD(
+            BAD_REQUEST,
+            "비밀번호는 8-64자이며 영문과 숫자를 포함해야 합니다.",
+            WARN
+    ),
+    INVALID_PROFILE_IMAGE_URL(BAD_REQUEST, "프로필 이미지 URL은 512자 이하여야 합니다.", WARN),
 
-    AUTHENTICATION_REQUIRED(UNAUTHORIZED, "Authentication required", WARN),
-    INVALID_CREDENTIALS(UNAUTHORIZED, "Invalid credentials", WARN),
-    ACCESS_DENIED(FORBIDDEN, "Cannot access another user's account", WARN),
+    AUTHENTICATION_REQUIRED(UNAUTHORIZED, "인증이 필요합니다.", WARN),
+    INVALID_CREDENTIALS(UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.", WARN),
+    ACCESS_DENIED(FORBIDDEN, "다른 사용자의 계정에 접근할 수 없습니다.", WARN),
 
-    USER_NOT_FOUND(NOT_FOUND, "User not found", WARN),
-    ATTRACTION_NOT_FOUND(NOT_FOUND, "Attraction not found", WARN),
-    TAG_NOT_FOUND(NOT_FOUND, "Tag not found", WARN),
-    POST_NOT_FOUND(NOT_FOUND, "Post not found", WARN),
-    HOTPLACE_NOT_FOUND(NOT_FOUND, "Hotplace not found", WARN),
-    PLAN_NOT_FOUND(NOT_FOUND, "Plan not found", WARN),
-    NOTICE_NOT_FOUND(NOT_FOUND, "Notice not found", WARN),
-    NOTE_NOT_FOUND(NOT_FOUND, "Note not found", WARN),
-    NOTE_NOT_ACTIVE(GONE, "Note is not active", WARN),
-    NOTE_ACCESS_DENIED(FORBIDDEN, "Cannot access another user's note", WARN),
-    FRIENDSHIP_NOT_FOUND(NOT_FOUND, "Friendship not found", WARN),
-    FRIENDSHIP_SELF_REQUEST(BAD_REQUEST, "Cannot send a friend request to yourself", WARN),
-    FRIENDSHIP_INVALID_STATE(CONFLICT, "Friendship is not in a valid state for this operation", WARN),
-    FRIENDSHIP_ALREADY_ACTIVE(CONFLICT, "Active friendship or pending request already exists", WARN),
-    FRIENDSHIP_ACCESS_DENIED(FORBIDDEN, "Cannot access another user's friendship", WARN),
-    NOTIFICATION_NOT_FOUND(NOT_FOUND, "Notification not found", WARN),
-    NOTIFICATION_ACCESS_DENIED(FORBIDDEN, "Cannot access another user's notification", WARN),
-    NOTIFICATION_OUTBOX_NOT_FOUND(NOT_FOUND, "Notification outbox event not found", WARN),
+    USER_NOT_FOUND(NOT_FOUND, "사용자를 찾을 수 없습니다.", WARN),
+    ATTRACTION_NOT_FOUND(NOT_FOUND, "관광지를 찾을 수 없습니다.", WARN),
+    TAG_NOT_FOUND(NOT_FOUND, "태그를 찾을 수 없습니다.", WARN),
+    POST_NOT_FOUND(NOT_FOUND, "게시글을 찾을 수 없습니다.", WARN),
+    HOTPLACE_NOT_FOUND(NOT_FOUND, "핫플레이스를 찾을 수 없습니다.", WARN),
+    PLAN_NOT_FOUND(NOT_FOUND, "여행 계획을 찾을 수 없습니다.", WARN),
+    NOTICE_NOT_FOUND(NOT_FOUND, "공지사항을 찾을 수 없습니다.", WARN),
+    NOTE_NOT_FOUND(NOT_FOUND, "노트를 찾을 수 없습니다.", WARN),
+    NOTE_NOT_ACTIVE(GONE, "활성 상태의 노트가 아닙니다.", WARN),
+    NOTE_ACCESS_DENIED(FORBIDDEN, "다른 사용자의 노트에 접근할 수 없습니다.", WARN),
+    FRIENDSHIP_NOT_FOUND(NOT_FOUND, "친구 관계를 찾을 수 없습니다.", WARN),
+    FRIENDSHIP_SELF_REQUEST(
+            BAD_REQUEST,
+            "자기 자신에게 친구 요청을 보낼 수 없습니다.",
+            WARN
+    ),
+    FRIENDSHIP_INVALID_STATE(
+            CONFLICT,
+            "현재 친구 관계 상태에서는 이 작업을 수행할 수 없습니다.",
+            WARN
+    ),
+    FRIENDSHIP_ALREADY_ACTIVE(
+            CONFLICT,
+            "이미 활성 친구 관계 또는 대기 중인 요청이 있습니다.",
+            WARN
+    ),
+    FRIENDSHIP_ACCESS_DENIED(
+            FORBIDDEN,
+            "다른 사용자의 친구 관계에 접근할 수 없습니다.",
+            WARN
+    ),
+    NOTIFICATION_NOT_FOUND(NOT_FOUND, "알림을 찾을 수 없습니다.", WARN),
+    NOTIFICATION_ACCESS_DENIED(FORBIDDEN, "다른 사용자의 알림에 접근할 수 없습니다.", WARN),
+    NOTIFICATION_OUTBOX_NOT_FOUND(NOT_FOUND, "알림 outbox 이벤트를 찾을 수 없습니다.", WARN),
 
-    USER_ALREADY_EXISTS(CONFLICT, "User already exists", WARN),
-    EMAIL_ALREADY_EXISTS(CONFLICT, "Email already exists", WARN),
-    TAG_ALREADY_EXISTS(CONFLICT, "Tag already exists", WARN),
-    PASSWORD_LOOKUP_GONE(GONE, "Password lookup is no longer supported. Please reset your password.", WARN),
-    ATTRACTIONS_POST_NOT_ALLOWED(METHOD_NOT_ALLOWED, "Use GET /api/attractions", WARN),
-    INVALID_RATING(BAD_REQUEST, "Rating must be between 1 and 5", WARN),
-    GOOGLE_OAUTH_NOT_CONFIGURED(SERVICE_UNAVAILABLE, "Google OAuth is not configured", WARN),
+    USER_ALREADY_EXISTS(CONFLICT, "이미 존재하는 사용자입니다.", WARN),
+    EMAIL_ALREADY_EXISTS(CONFLICT, "이미 사용 중인 이메일입니다.", WARN),
+    TAG_ALREADY_EXISTS(CONFLICT, "이미 존재하는 태그입니다.", WARN),
+    PASSWORD_LOOKUP_GONE(
+            GONE,
+            "비밀번호 찾기는 더 이상 지원하지 않습니다. 비밀번호를 재설정하세요.",
+            WARN
+    ),
+    ATTRACTIONS_POST_NOT_ALLOWED(METHOD_NOT_ALLOWED, "GET /api/attractions를 사용하세요.", WARN),
+    INVALID_RATING(BAD_REQUEST, "평점은 1 이상 5 이하여야 합니다.", WARN),
+    GOOGLE_OAUTH_NOT_CONFIGURED(
+            SERVICE_UNAVAILABLE,
+            "Google OAuth가 설정되어 있지 않습니다.",
+            WARN
+    ),
 
-    TOUR_API_CALL_FAILED(BAD_GATEWAY, "Tour API call failed", ERROR),
-    EV_CHARGER_API_CALL_FAILED(BAD_GATEWAY, "EV charger API call failed", ERROR),
-    DATABASE_DISCONNECTED(SERVICE_UNAVAILABLE, "Database disconnected", ERROR),
-    INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "Internal server error", ERROR);
+    TOUR_API_CALL_FAILED(BAD_GATEWAY, "Tour API 호출에 실패했습니다.", ERROR),
+    EV_CHARGER_API_CALL_FAILED(BAD_GATEWAY, "EV 충전기 API 호출에 실패했습니다.", ERROR),
+    DATABASE_DISCONNECTED(SERVICE_UNAVAILABLE, "데이터베이스 연결이 끊어졌습니다.", ERROR),
+    INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.", ERROR);
 
     private final ErrorCode code;
     private final String message;

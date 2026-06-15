@@ -69,7 +69,7 @@ public class NotificationOutboxCdcConsumer {
         if (value instanceof String text && !text.isBlank()) {
             return Long.parseLong(text);
         }
-        throw new IllegalArgumentException("notification outbox CDC message id is missing");
+        throw new IllegalArgumentException("알림 outbox CDC 메시지 id가 누락되었습니다.");
     }
 
     private static String stringValue(Object value) {

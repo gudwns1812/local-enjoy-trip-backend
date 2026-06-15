@@ -25,7 +25,7 @@ class OpenWeatherMapWeatherRepositoryTest {
 
         assertThatThrownBy(repository::findWeatherBriefings)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("OpenWeatherMap API key is missing");
+                .hasMessageContaining("OpenWeatherMap API 키가 없습니다");
         server.verify();
     }
 
@@ -102,7 +102,7 @@ class OpenWeatherMapWeatherRepositoryTest {
 
         assertThatThrownBy(repository::findWeatherBriefings)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("OpenWeatherMap API call failed");
+                .hasMessageContaining("OpenWeatherMap API 호출에 실패했습니다");
         server.verify();
     }
 
@@ -124,7 +124,7 @@ class OpenWeatherMapWeatherRepositoryTest {
 
         assertThatThrownBy(repository::findWeatherBriefings)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Failed to parse OpenWeatherMap API response");
+                .hasMessageContaining("OpenWeatherMap API 응답을 파싱하지 못했습니다");
         server.verify();
     }
 
@@ -150,7 +150,7 @@ class OpenWeatherMapWeatherRepositoryTest {
 
         assertThatThrownBy(repository::findWeatherBriefings)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Failed to parse OpenWeatherMap API response");
+                .hasMessageContaining("OpenWeatherMap API 응답을 파싱하지 못했습니다");
         server.verify();
     }
 }

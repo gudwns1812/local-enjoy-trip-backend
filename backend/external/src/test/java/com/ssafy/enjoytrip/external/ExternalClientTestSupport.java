@@ -96,7 +96,7 @@ final class ExternalClientTestSupport {
             requests.add(request);
             Object outcome = outcomes.poll();
             if (outcome == null) {
-                throw new AssertionError("No fake HTTP outcome was queued");
+                throw new AssertionError("대기 중인 가짜 HTTP 결과가 없습니다.");
             }
             if (outcome instanceof IOException ex) {
                 throw ex;

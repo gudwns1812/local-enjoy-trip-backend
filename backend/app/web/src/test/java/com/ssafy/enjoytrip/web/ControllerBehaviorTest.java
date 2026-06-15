@@ -246,7 +246,7 @@ class ControllerBehaviorTest {
                                     }
                                     """))
                     .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.error.message").value("Authentication required"));
+                    .andExpect(jsonPath("$.error.message").value("인증이 필요합니다."));
         }
 
         @DisplayName("인증 사용자는 본인 쪽지를 수정하고 삭제한다")
@@ -305,7 +305,8 @@ class ControllerBehaviorTest {
         void nearbyNotesRejectPartialCoordinates() throws Exception {
             mockMvc.perform(get("/api/notes/nearby").param("mapY", "37.5665"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid latitude or longitude"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("위도 또는 경도가 유효하지 않습니다."));
         }
     }
 
@@ -350,9 +351,11 @@ class ControllerBehaviorTest {
                                     {"title":"title","content":"content"}
                                     """))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error.message").value("Post not found"));
+                    .andExpect(jsonPath("$.error.message").value("게시글을 찾을 수 없습니다."));
 
-            doThrow(new IllegalStateException("write failed")).when(boardService).insertPost(any());
+            doThrow(new IllegalStateException("쓰기 작업에 실패했습니다."))
+                    .when(boardService)
+                    .insertPost(any());
             mockMvc.perform(post("/api/boards")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
@@ -418,12 +421,13 @@ class ControllerBehaviorTest {
                                     }
                                     """))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                    .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
 
             when(hotplaceService.deleteHotplace("h-missing")).thenReturn(false);
             mockMvc.perform(delete("/api/hotplaces/h-missing"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error.message").value("Hotplace not found"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("핫플레이스를 찾을 수 없습니다."));
         }
     }
 
@@ -457,7 +461,7 @@ class ControllerBehaviorTest {
 
             mockMvc.perform(delete("/api/plans/missing").principal(jwtPrincipal("ssafy")))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error.message").value("Plan not found"));
+                    .andExpect(jsonPath("$.error.message").value("여행 계획을 찾을 수 없습니다."));
         }
 
         @DisplayName("표준 계획 생성은 인증 사용자 기준의 타입화된 경로 항목을 저장한다")
@@ -508,7 +512,7 @@ class ControllerBehaviorTest {
                                     }
                                     """))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                    .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
         }
 
         @DisplayName("표준 계획 수정은 경로 항목 필드가 없으면 기존 항목을 유지한다")
@@ -551,7 +555,7 @@ class ControllerBehaviorTest {
                                     {"title":"공지","content":"내용"}
                                     """))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid id"));
+                    .andExpect(jsonPath("$.error.message").value("유효하지 않은 id입니다."));
 
             when(noticeService.updateNotice(any())).thenReturn(false);
             mockMvc.perform(put("/api/notices/1")
@@ -560,7 +564,7 @@ class ControllerBehaviorTest {
                                     {"title":"공지","content":"내용"}
                                     """))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error.message").value("Notice not found"));
+                    .andExpect(jsonPath("$.error.message").value("공지사항을 찾을 수 없습니다."));
         }
     }
 
@@ -578,13 +582,14 @@ class ControllerBehaviorTest {
                                       "userId": "ssafy",
                                       "password": "wrong"
                                     }
-                                    """))
+                    """))
                     .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.error.message").value("Invalid credentials"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("아이디 또는 비밀번호가 올바르지 않습니다."));
 
             mockMvc.perform(post("/api/members/logout"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                    .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
 
             mockMvc.perform(post("/api/members/password-lookup-requests")
                             .param("userId", "ssafy")
@@ -615,7 +620,7 @@ class ControllerBehaviorTest {
             when(memberService.findRequiredByUserId("ghost")).thenThrow(new CoreException(USER_NOT_FOUND));
             mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ghost")))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error.message").value("User not found"));
+                    .andExpect(jsonPath("$.error.message").value("사용자를 찾을 수 없습니다."));
         }
     }
 
@@ -626,7 +631,7 @@ class ControllerBehaviorTest {
         void attractionAndChargerControllersTranslateNormalAndExceptionCases() throws Exception {
             mockMvc.perform(post("/api/attractions"))
                     .andExpect(status().isMethodNotAllowed())
-                    .andExpect(jsonPath("$.error.message").value("Use GET /api/attractions"));
+                    .andExpect(jsonPath("$.error.message").value("GET /api/attractions를 사용하세요."));
 
             when(attractionService.searchAttractions(
                     new AttractionSearchCondition("1", "", "", "궁", "", "", ""),
@@ -634,33 +639,35 @@ class ControllerBehaviorTest {
             ))
                     .thenThrow(new ExternalServiceException(
                             ExternalServiceException.Source.TOUR_API,
-                            new RuntimeException("tour failed")
+                            new RuntimeException("Tour API 호출에 실패했습니다.")
                     ));
             mockMvc.perform(get("/api/attractions").param("sidoCode", "1").param("keyword", "궁"))
                     .andExpect(status().isBadGateway())
-                    .andExpect(jsonPath("$.error.message").value("Tour API call failed"));
+                    .andExpect(jsonPath("$.error.message").value("Tour API 호출에 실패했습니다."));
 
             when(attractionService.searchAttractions(
                     new AttractionSearchCondition("", "", "", "", "126.9", "37.5", ""),
                     ""
             ))
-                    .thenThrow(new IllegalStateException("not configured"));
+                    .thenThrow(new IllegalStateException("설정되어 있지 않습니다."));
             mockMvc.perform(get("/api/attractions").param("mapX", "126.9").param("mapY", "37.5"))
                     .andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.error.message").value("Internal server error"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("서버 내부 오류가 발생했습니다."));
 
             mockMvc.perform(get("/api/chargers").param("pageNo", "bad").param("numOfRows", "bad"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                    .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
 
             when(chargerService.findChargers("", "", 1, 150))
                     .thenThrow(new ExternalServiceException(
                             ExternalServiceException.Source.EV_CHARGER_API,
-                            new RuntimeException("timeout")
+                            new RuntimeException("요청 시간이 초과되었습니다.")
                     ));
             mockMvc.perform(get("/api/chargers"))
                     .andExpect(status().isBadGateway())
-                    .andExpect(jsonPath("$.error.message").value("EV charger API call failed"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("EV 충전기 API 호출에 실패했습니다."));
         }
 
         @DisplayName("홈 인기 주변 관광지는 서울과 500m 기본값을 적용하고 전용 인기 수를 반환한다")
@@ -696,7 +703,8 @@ class ControllerBehaviorTest {
         void popularNearbyAttractionsRejectPartialCoordinates() throws Exception {
             mockMvc.perform(get("/api/attractions/popular-nearby").param("mapX", "126.9780"))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid latitude or longitude"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("위도 또는 경도가 유효하지 않습니다."));
         }
 
         @DisplayName("관광지 참여와 태그 엔드포인트는 검증 후 위임한다")
@@ -720,7 +728,7 @@ class ControllerBehaviorTest {
                                     {"rating":6}
                                     """))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                    .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
 
             mockMvc.perform(get("/api/attractions/1/stats").principal(jwtPrincipal("ssafy")))
                     .andExpect(status().isOk())
@@ -753,7 +761,8 @@ class ControllerBehaviorTest {
             when(dbHealthRepository.isConnected()).thenReturn(false);
             mockMvc.perform(get("/api/db/health"))
                     .andExpect(status().isServiceUnavailable())
-                    .andExpect(jsonPath("$.error.message").value("Database disconnected"));
+                    .andExpect(jsonPath("$.error.message")
+                            .value("데이터베이스 연결이 끊어졌습니다."));
 
             mockMvc.perform(get("/test/fail"))
                     .andExpect(status().isInternalServerError())
@@ -766,11 +775,11 @@ class ControllerBehaviorTest {
     void routeEndpointsRejectInvalidInput() throws Exception {
         mockMvc.perform(get("/api/routes/optimizations").param("points", "37.5|bad"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.message").value("Invalid points"));
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 경로 좌표입니다."));
 
         mockMvc.perform(get("/api/routes/day-splits").param("points", "37.5|bad").param("days", "two"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
     }
 
     @DisplayName("컨트롤러 계약은 원시 Map 대신 DTO를 사용한다")
@@ -842,7 +851,7 @@ class ControllerBehaviorTest {
     static class FailingController {
         @org.springframework.web.bind.annotation.GetMapping("/test/fail")
         String fail(Principal ignored) {
-            throw new IllegalStateException("boom");
+            throw new IllegalStateException("처리 중 오류가 발생했습니다.");
         }
     }
 }

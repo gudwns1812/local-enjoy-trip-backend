@@ -62,7 +62,7 @@ class SpringAiNeighborhoodBriefingGeneratorTest {
 
         assertThatThrownBy(() -> generator.generate(prompt()))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("GMS API key is missing");
+                .hasMessageContaining("GMS API 키가 없습니다");
         verifyNoInteractions(builder);
     }
 
@@ -76,7 +76,7 @@ class SpringAiNeighborhoodBriefingGeneratorTest {
 
         assertThatThrownBy(() -> generator.generate(prompt()))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("ChatClient.Builder is not available");
+                .hasMessageContaining("ChatClient.Builder를 사용할 수 없습니다");
     }
 
     private static NeighborhoodBriefingPrompt prompt() {

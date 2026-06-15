@@ -176,7 +176,7 @@ public class AttractionEmbeddingStorageRepository implements AttractionEmbedding
 
     private static Condition targetRegionCondition(List<AttractionEmbeddingTargetRegion> targetRegions) {
         if (targetRegions == null || targetRegions.isEmpty()) {
-            throw new IllegalArgumentException("targetRegions are required");
+            throw new IllegalArgumentException("targetRegions가 필요합니다.");
         }
         Condition condition = null;
         for (AttractionEmbeddingTargetRegion region : targetRegions) {
@@ -189,13 +189,15 @@ public class AttractionEmbeddingStorageRepository implements AttractionEmbedding
 
     private static String toVectorLiteral(List<Double> embedding) {
         if (embedding == null || embedding.isEmpty()) {
-            throw new IllegalArgumentException("embedding must not be empty");
+            throw new IllegalArgumentException("embedding은 비어 있으면 안 됩니다.");
         }
         StringBuilder builder = new StringBuilder("[");
         for (int i = 0; i < embedding.size(); i++) {
             Double value = embedding.get(i);
             if (value == null || !Double.isFinite(value)) {
-                throw new IllegalArgumentException("embedding contains non-finite value at index " + i);
+                throw new IllegalArgumentException(
+                        "embedding에 유한하지 않은 값이 있습니다. index=" + i
+                );
             }
             if (i > 0) {
                 builder.append(',');

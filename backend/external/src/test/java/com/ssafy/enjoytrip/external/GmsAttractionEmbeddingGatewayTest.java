@@ -42,7 +42,7 @@ class GmsAttractionEmbeddingGatewayTest {
 
         assertThatThrownBy(() -> gateway.embed("전주 여행지"))
                 .isInstanceOf(AttractionEmbeddingGatewayException.class)
-                .hasMessageContaining("GMS API key is missing");
+                .hasMessageContaining("GMS API 키가 없습니다");
     }
 
     private static GmsEmbeddingProperties properties() {

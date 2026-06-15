@@ -48,20 +48,22 @@ public class GmsAttractionKeywordExpansionGateway implements AttractionKeywordEx
             );
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new AttractionEmbeddingGatewayException("GMS_CHAT_HTTP_" + response.statusCode(),
-                        "GMS keyword expansion request failed with HTTP " + response.statusCode());
+                        "GMS 키워드 확장 요청이 HTTP "
+                                + response.statusCode()
+                                + " 상태로 실패했습니다.");
             }
             return parse(response.body());
         } catch (IOException ex) {
             throw new AttractionEmbeddingGatewayException(
                     "GMS_CHAT_IO_ERROR",
-                    "GMS keyword expansion request failed",
+                    "GMS 키워드 확장 요청에 실패했습니다",
                     ex
             );
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new AttractionEmbeddingGatewayException(
                     "GMS_CHAT_INTERRUPTED",
-                    "GMS keyword expansion request was interrupted",
+                    "GMS 키워드 확장 요청이 인터럽트되었습니다",
                     ex
             );
         }
@@ -108,7 +110,7 @@ public class GmsAttractionKeywordExpansionGateway implements AttractionKeywordEx
         List<String> keywords = parseKeywords(content);
         if (keywords.isEmpty()) {
             throw new AttractionEmbeddingGatewayException("GMS_CHAT_INVALID_RESPONSE",
-                    "GMS keyword expansion response did not contain keywords.");
+                    "GMS 키워드 확장 응답에 keywords가 없습니다.");
         }
         return new AttractionKeywordExpansion(keywords.stream()
                 .limit(properties.getMaxKeywords())

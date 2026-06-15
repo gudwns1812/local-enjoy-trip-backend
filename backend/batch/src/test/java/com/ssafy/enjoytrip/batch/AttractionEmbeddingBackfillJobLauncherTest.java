@@ -81,7 +81,7 @@ class AttractionEmbeddingBackfillJobLauncherTest {
 
         assertThatThrownBy(() -> AttractionEmbeddingBackfillJobLauncher.buildJobParameters(args, FIXED_CLOCK))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("sourceVersion job parameter is required");
+                .hasMessageContaining("sourceVersion 작업 파라미터가 필요합니다");
     }
 
     @DisplayName("배치 실행을 열기 전에 음수 limit을 거부한다")
@@ -94,6 +94,6 @@ class AttractionEmbeddingBackfillJobLauncherTest {
 
         assertThatThrownBy(() -> AttractionEmbeddingBackfillJobLauncher.buildJobParameters(args, FIXED_CLOCK))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("limit job parameter");
+                .hasMessageContaining("limit 작업 파라미터");
     }
 }

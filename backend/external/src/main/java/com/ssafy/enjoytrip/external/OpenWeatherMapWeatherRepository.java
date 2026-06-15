@@ -45,8 +45,8 @@ public class OpenWeatherMapWeatherRepository implements WeatherRepository {
     public List<WeatherSummary> findWeatherBriefings() {
         if (!notBlank(apiKey)) {
             throw new IllegalStateException(
-                    "OpenWeatherMap API key is missing. Set enjoytrip.external.open-weather-map.api-key, "
-                            + "OPENWEATHERMAP_API_KEY or OPENWEATHER_API_KEY."
+                    "OpenWeatherMap API 키가 없습니다. enjoytrip.external.open-weather-map.api-key, "
+                            + "OPENWEATHERMAP_API_KEY 또는 OPENWEATHER_API_KEY를 설정하세요."
             );
         }
 
@@ -69,7 +69,7 @@ public class OpenWeatherMapWeatherRepository implements WeatherRepository {
                     .retrieve()
                     .body(String.class);
         } catch (RestClientException ex) {
-            throw new IllegalStateException("OpenWeatherMap API call failed", ex);
+            throw new IllegalStateException("OpenWeatherMap API 호출에 실패했습니다", ex);
         }
     }
 
@@ -102,7 +102,7 @@ public class OpenWeatherMapWeatherRepository implements WeatherRepository {
                     epochSecondsToKoreanTime(numberValue(currentBody, "sunset"))
             );
         } catch (Exception ex) {
-            throw new IllegalStateException("Failed to parse OpenWeatherMap API response", ex);
+            throw new IllegalStateException("OpenWeatherMap API 응답을 파싱하지 못했습니다", ex);
         }
     }
 
@@ -160,7 +160,9 @@ public class OpenWeatherMapWeatherRepository implements WeatherRepository {
         if (!notBlank(body)
                 || !body.stripLeading().startsWith("{")
                 || !body.contains("\"" + expectedField + "\"")) {
-            throw new IllegalArgumentException("Missing OpenWeatherMap field: " + expectedField);
+            throw new IllegalArgumentException(
+                    "OpenWeatherMap 필드가 누락되었습니다: " + expectedField
+            );
         }
     }
 

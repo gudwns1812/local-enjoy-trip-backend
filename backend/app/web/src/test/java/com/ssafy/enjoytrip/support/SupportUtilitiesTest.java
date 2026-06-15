@@ -43,18 +43,19 @@ class SupportUtilitiesTest {
             assertThat(response.isSuccess()).isFalse();
             assertThat(response.getData()).isNull();
             assertThat(response.getError().code()).isEqualTo(ErrorCode.UNAUTHORIZED);
-            assertThat(response.getError().message()).isEqualTo("Invalid credentials");
+            assertThat(response.getError().message())
+                    .isEqualTo("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         @DisplayName("CoreException은 오류 타입과 원인을 보존한다")
         @Test
         void coreExceptionKeepsErrorTypeAndCause() {
-            IllegalArgumentException cause = new IllegalArgumentException("bad");
+            IllegalArgumentException cause = new IllegalArgumentException("잘못된 값입니다.");
 
             CoreException exception = new CoreException(ErrorType.INVALID_REQUEST, cause);
 
             assertThat(exception.errorType()).isEqualTo(ErrorType.INVALID_REQUEST);
-            assertThat(exception).hasMessage("Invalid request").hasCause(cause);
+            assertThat(exception).hasMessage("유효하지 않은 요청입니다.").hasCause(cause);
         }
     }
 

@@ -56,10 +56,10 @@ public class AttractionEmbeddingBackfillService {
     private static void validateBackfillRequest(List<AttractionEmbeddingTargetRegion> targetRegions,
                                                 String sourceVersion) {
         if (sourceVersion == null || sourceVersion.isBlank()) {
-            throw new IllegalArgumentException("sourceVersion is required");
+            throw new IllegalArgumentException("sourceVersion이 필요합니다.");
         }
         if (targetRegions == null || targetRegions.isEmpty()) {
-            throw new IllegalArgumentException("targetRegions are required");
+            throw new IllegalArgumentException("targetRegions가 필요합니다.");
         }
     }
 
@@ -180,12 +180,14 @@ public class AttractionEmbeddingBackfillService {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             return HexFormat.of().formatHex(digest.digest(sourceText.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException ex) {
-            throw new IllegalStateException("SHA-256 digest is unavailable", ex);
+            throw new IllegalStateException("SHA-256 해시를 사용할 수 없습니다.", ex);
         }
     }
 
     private static String limitMessage(String message) {
-        String normalized = message == null || message.isBlank() ? "No failure message" : message.strip();
+        String normalized = message == null || message.isBlank()
+                ? "실패 메시지가 없습니다."
+                : message.strip();
         if (normalized.length() <= FAILURE_MESSAGE_LIMIT) {
             return normalized;
         }

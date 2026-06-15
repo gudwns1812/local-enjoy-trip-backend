@@ -54,7 +54,7 @@ class NeighborhoodBriefingServiceTest {
                 List.of(new WeatherSummary("서울", "비", 18, 80, "05:10", "19:50")),
                 List.of(new CourseBriefingCandidate("course-1", "비 오는 날 북촌", "서울")),
                 prompt -> {
-                    throw new IllegalStateException("GMS unavailable");
+                    throw new IllegalStateException("GMS를 사용할 수 없습니다.");
                 }
         );
 
@@ -63,7 +63,7 @@ class NeighborhoodBriefingServiceTest {
                 () -> service.brief("서울")
         );
 
-        assertEquals("GMS unavailable", exception.getMessage());
+        assertEquals("GMS를 사용할 수 없습니다.", exception.getMessage());
     }
 
     @DisplayName("LLM 생성기가 blank 문장을 반환하면 저장된 코스 기반 fallback 문장을 반환한다")

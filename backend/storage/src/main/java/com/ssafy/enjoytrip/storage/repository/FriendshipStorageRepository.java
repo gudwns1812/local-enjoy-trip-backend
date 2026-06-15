@@ -44,7 +44,9 @@ public class FriendshipStorageRepository implements FriendshipRepository {
     @Transactional
     public Friendship updateStatus(Long id, FriendshipStatus status) {
         FriendshipEntity entity = friendshipJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Friendship not found: " + id));
+                .orElseThrow(() -> new IllegalStateException(
+                        "친구 관계를 찾을 수 없습니다: " + id
+                ));
         entity.transitionTo(status);
         return toModel(entity);
     }

@@ -18,7 +18,7 @@ public class SpringAiNeighborhoodBriefingGenerator implements NeighborhoodBriefi
         properties.assertLiveReady();
         ChatClient.Builder builder = chatClientBuilderProvider.getIfAvailable();
         if (builder == null) {
-            throw new IllegalStateException("Spring AI ChatClient.Builder is not available.");
+            throw new IllegalStateException("Spring AI ChatClient.Builder를 사용할 수 없습니다.");
         }
 
         String content = builder.build()

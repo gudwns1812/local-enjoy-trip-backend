@@ -67,8 +67,9 @@ public class AttractionEmbeddingBackfillJobConfiguration {
                 long outsideTarget = embeddingRepository.countEmbeddingsOutsideTargetRegions(targetRegions);
                 if (outsideTarget > 0) {
                     throw new IllegalStateException(
-                            "Found " + outsideTarget
-                                    + " attraction embedding rows outside canonical target regions."
+                            "정식 대상 지역 밖의 관광지 임베딩 행이 "
+                                    + outsideTarget
+                                    + "개 발견되었습니다."
                     );
                 }
             }
@@ -91,7 +92,7 @@ public class AttractionEmbeddingBackfillJobConfiguration {
     private static String stringParameter(Object value) {
         String normalized = value == null ? "" : value.toString().strip();
         if (normalized.isEmpty()) {
-            throw new IllegalArgumentException("sourceVersion job parameter is required");
+            throw new IllegalArgumentException("sourceVersion 작업 파라미터가 필요합니다.");
         }
         return normalized;
     }

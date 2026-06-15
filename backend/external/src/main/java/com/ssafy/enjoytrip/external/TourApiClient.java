@@ -93,7 +93,8 @@ public class TourApiClient {
     private String baseQuery() {
         if (!notBlank(serviceKey)) {
             throw new IllegalStateException(
-                    "Tour API key is missing. Set enjoytrip.external.tour-api.service-key."
+                    "Tour API 키가 없습니다. "
+                            + "enjoytrip.external.tour-api.service-key를 설정하세요."
             );
         }
         return "serviceKey=" + serviceKey
@@ -112,7 +113,7 @@ public class TourApiClient {
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
         );
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException("Tour API HTTP error: " + response.statusCode());
+            throw new IOException("Tour API HTTP 오류: " + response.statusCode());
         }
         return parseItems(response.body());
     }
@@ -156,7 +157,7 @@ public class TourApiClient {
             }
             return rows;
         } catch (Exception ex) {
-            throw new IOException("Failed to parse Tour API response", ex);
+            throw new IOException("Tour API 응답을 파싱하지 못했습니다", ex);
         }
     }
 

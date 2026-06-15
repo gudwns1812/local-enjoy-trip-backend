@@ -7,7 +7,7 @@ public record AttractionKeywordExpansion(
 ) {
     public AttractionKeywordExpansion {
         if (keywords == null || keywords.isEmpty()) {
-            throw new IllegalArgumentException("expanded keywords are required");
+            throw new IllegalArgumentException("확장 키워드가 필요합니다.");
         }
         keywords = keywords.stream()
                 .map(keyword -> keyword == null ? "" : keyword.strip())
@@ -15,7 +15,7 @@ public record AttractionKeywordExpansion(
                 .distinct()
                 .toList();
         if (keywords.isEmpty()) {
-            throw new IllegalArgumentException("expanded keywords are required");
+            throw new IllegalArgumentException("확장 키워드가 필요합니다.");
         }
     }
 

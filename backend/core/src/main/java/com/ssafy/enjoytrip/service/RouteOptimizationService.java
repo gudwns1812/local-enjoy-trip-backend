@@ -147,7 +147,7 @@ public class RouteOptimizationService {
     private Point parseCoordinatePair(String rawPair, int index) {
         String[] pair = rawPair.split(",");
         if (pair.length != 2) {
-            throw new IllegalArgumentException("invalid coordinate pair");
+            throw new IllegalArgumentException("유효하지 않은 좌표 쌍입니다.");
         }
         double lat = Double.parseDouble(pair[0].trim());
         double lng = Double.parseDouble(pair[1].trim());

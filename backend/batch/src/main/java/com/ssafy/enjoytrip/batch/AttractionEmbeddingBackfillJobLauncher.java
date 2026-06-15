@@ -52,9 +52,9 @@ class AttractionEmbeddingBackfillJobLauncher implements ApplicationRunner, ExitC
 
             if (status != BatchStatus.COMPLETED) {
                 exitCode = 1;
-                throw new IllegalStateException("Batch job " + attractionEmbeddingBackfillJob.getName()
-                        + " finished with status " + status
-                        + " and exit status " + execution.getExitStatus());
+                throw new IllegalStateException("배치 작업 " + attractionEmbeddingBackfillJob.getName()
+                        + "이 상태 " + status
+                        + " 및 종료 상태 " + execution.getExitStatus() + "로 종료되었습니다.");
             }
         } catch (Exception ex) {
             exitCode = 1;
@@ -72,7 +72,7 @@ class AttractionEmbeddingBackfillJobLauncher implements ApplicationRunner, ExitC
         boolean dryRun = booleanParameter(args, DRY_RUN_PARAMETER, false);
         int limit = intParameter(args, LIMIT_PARAMETER, 0);
         if (limit < 0) {
-            throw new IllegalArgumentException("limit job parameter must be greater than or equal to 0");
+            throw new IllegalArgumentException("limit 작업 파라미터는 0 이상이어야 합니다.");
         }
 
         return new JobParametersBuilder()
@@ -87,8 +87,9 @@ class AttractionEmbeddingBackfillJobLauncher implements ApplicationRunner, ExitC
         return optionalParameter(args, name)
                 .map(String::strip)
                 .filter(value -> !value.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException(name + " job parameter is required. "
-                        + "Example: --" + name + "=tourapi-2026-06-05"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        name + " 작업 파라미터가 필요합니다. 예: --" + name + "=tourapi-2026-06-05"
+                ));
     }
 
     private static boolean booleanParameter(ApplicationArguments args, String name, boolean fallback) {

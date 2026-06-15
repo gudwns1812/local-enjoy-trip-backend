@@ -19,14 +19,19 @@ public class GmsEmbeddingProperties {
     public void assertLiveReady() {
         if (apiKey == null || apiKey.isBlank()) {
             throw new AttractionEmbeddingGatewayException("GMS_KEY_MISSING",
-                    "GMS API key is missing. Set GMS_KEY so enjoytrip.ai.embedding.gms.api-key is populated.");
+                    "GMS API 키가 없습니다. "
+                            + "GMS_KEY를 설정해 enjoytrip.ai.embedding.gms.api-key "
+                            + "값이 채워지도록 하세요.");
         }
         if (url == null || url.isBlank()) {
-            throw new AttractionEmbeddingGatewayException("GMS_URL_MISSING", "GMS embedding URL is missing.");
+            throw new AttractionEmbeddingGatewayException(
+                    "GMS_URL_MISSING",
+                    "GMS 임베딩 URL이 없습니다."
+            );
         }
         if (dimension != 3072) {
             throw new AttractionEmbeddingGatewayException("GMS_DIMENSION_UNSUPPORTED",
-                    "text-embedding-3-large backfill expects 3072 dimensions.");
+                    "text-embedding-3-large 백필은 3072차원을 기대합니다.");
         }
     }
 

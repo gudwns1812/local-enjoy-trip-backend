@@ -18,25 +18,26 @@ public class GmsKeywordExpansionProperties {
     public void assertLiveReady() {
         if (apiKey == null || apiKey.isBlank()) {
             throw new AttractionEmbeddingGatewayException("GMS_KEY_MISSING",
-                    "GMS API key is missing. Set GMS_KEY so "
-                            + "enjoytrip.ai.embedding.expansion.gms.api-key is populated.");
+                    "GMS API 키가 없습니다. GMS_KEY를 설정해 "
+                            + "enjoytrip.ai.embedding.expansion.gms.api-key 값이 채워지도록 하세요."
+            );
         }
         if (url == null || url.isBlank()) {
             throw new AttractionEmbeddingGatewayException(
                     "GMS_CHAT_URL_MISSING",
-                    "GMS chat completion URL is missing."
+                    "GMS 채팅 완성 URL이 없습니다."
             );
         }
         if (model == null || model.isBlank()) {
             throw new AttractionEmbeddingGatewayException(
                     "GMS_CHAT_MODEL_MISSING",
-                    "GMS chat completion model is missing."
+                    "GMS 채팅 완성 모델이 없습니다."
             );
         }
         if (maxKeywords <= 0) {
             throw new AttractionEmbeddingGatewayException(
                     "GMS_CHAT_MAX_KEYWORDS_INVALID",
-                    "maxKeywords must be positive."
+                    "maxKeywords는 양수여야 합니다."
             );
         }
     }

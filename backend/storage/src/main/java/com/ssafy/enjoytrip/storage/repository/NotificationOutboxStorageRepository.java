@@ -43,7 +43,9 @@ public class NotificationOutboxStorageRepository implements NotificationOutboxRe
     @Transactional
     public void markProcessed(Long id) {
         NotificationOutboxEntity entity = outboxJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Notification outbox not found: " + id));
+                .orElseThrow(() -> new IllegalStateException(
+                        "알림 outbox를 찾을 수 없습니다: " + id
+                ));
         entity.markProcessed();
     }
 
@@ -51,7 +53,9 @@ public class NotificationOutboxStorageRepository implements NotificationOutboxRe
     @Transactional
     public void markFailed(Long id, String lastError) {
         NotificationOutboxEntity entity = outboxJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Notification outbox not found: " + id));
+                .orElseThrow(() -> new IllegalStateException(
+                        "알림 outbox를 찾을 수 없습니다: " + id
+                ));
         entity.markFailed(lastError);
     }
 

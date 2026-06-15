@@ -11,10 +11,12 @@ public class GmsNeighborhoodBriefingProperties {
 
     public void assertLiveReady() {
         if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("GMS API key is missing. Set GMS_KEY for neighborhood briefing.");
+            throw new IllegalStateException(
+                    "GMS API 키가 없습니다. 동네 브리핑용 GMS_KEY를 설정하세요."
+            );
         }
         if (maxLength <= 0) {
-            throw new IllegalStateException("Neighborhood briefing maxLength must be positive.");
+            throw new IllegalStateException("동네 브리핑 maxLength는 양수여야 합니다.");
         }
     }
 

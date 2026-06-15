@@ -79,7 +79,7 @@ class EvChargerClientTest {
 
         assertThatThrownBy(() -> client.findChargers("11", "", 1, 10))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("EV charger API key is missing");
+                .hasMessageContaining("EV 충전기 API 키가 없습니다");
         assertThat(http.requests()).isEmpty();
     }
 
@@ -93,7 +93,7 @@ class EvChargerClientTest {
 
         assertThatThrownBy(() -> httpErrorClient.findChargers("", "", 1, 10))
                 .isInstanceOf(IOException.class)
-                .hasMessageContaining("EV API HTTP error: 500");
+                .hasMessageContaining("EV API HTTP 오류: 500");
 
         EvChargerClient malformedClient = new EvChargerClient(
                 new FakeHttpClient().enqueue(200, "<response><item>"),
@@ -102,15 +102,15 @@ class EvChargerClientTest {
 
         assertThatThrownBy(() -> malformedClient.findChargers("", "", 1, 10))
                 .isInstanceOf(IOException.class)
-                .hasMessageContaining("Failed to parse EV charger API response");
+                .hasMessageContaining("EV 충전기 API 응답을 파싱하지 못했습니다");
 
         EvChargerClient transportClient = new EvChargerClient(
-                new FakeHttpClient().enqueueIOException("offline"),
+                new FakeHttpClient().enqueueIOException("오프라인 상태입니다."),
                 "ev-key"
         );
 
         assertThatThrownBy(() -> transportClient.findChargers("", "", 1, 10))
                 .isInstanceOf(IOException.class)
-                .hasMessageContaining("offline");
+                .hasMessageContaining("오프라인 상태입니다");
     }
 }

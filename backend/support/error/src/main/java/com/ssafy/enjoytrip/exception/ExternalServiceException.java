@@ -13,8 +13,8 @@ public class ExternalServiceException extends RuntimeException {
     }
 
     public enum Source {
-        TOUR_API("Tour API call failed"),
-        EV_CHARGER_API("EV charger API call failed");
+        TOUR_API("Tour API 호출에 실패했습니다."),
+        EV_CHARGER_API("EV 충전기 API 호출에 실패했습니다.");
 
         private final String message;
 

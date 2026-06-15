@@ -44,7 +44,7 @@ public class OAuthSignupTicketService {
     public PendingOAuthSignup verify(String ticket) {
         Jwt jwt = jwtDecoder.decode(ticket);
         if (!PURPOSE.equals(jwt.getClaimAsString("purpose"))) {
-            throw new IllegalArgumentException("Invalid OAuth signup ticket");
+            throw new IllegalArgumentException("유효하지 않은 OAuth 가입 티켓입니다.");
         }
         return new PendingOAuthSignup(
                 jwt.getClaimAsString("provider"),

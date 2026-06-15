@@ -70,7 +70,7 @@ class NewsClientTest {
     @Test
     void findNewsFallsBackWhenFeedsFailOrXmlIsMalformed() {
         FakeHttpClient http = new FakeHttpClient()
-                .enqueueIOException("offline")
+                .enqueueIOException("오프라인 상태입니다.")
                 .enqueue(200, "<rss><item>");
         NewsClient client = new NewsClient(http);
 

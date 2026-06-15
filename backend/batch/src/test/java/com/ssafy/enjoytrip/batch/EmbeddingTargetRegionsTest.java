@@ -42,7 +42,7 @@ class EmbeddingTargetRegionsTest {
 
         assertThatThrownBy(() -> validator.validate(invalid))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("canonical proof");
+                .hasMessageContaining("정식 증빙");
     }
 
     private static Properties yamlProperties() {

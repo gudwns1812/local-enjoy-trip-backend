@@ -42,14 +42,14 @@ class NativeMutationExecutorTest {
     @Test
     void updatePropagatesJooqExecutionFailures() {
         DSLContext dsl = dslContext((sql, bindings) -> {
-            throw new DataAccessException("database rejected mutation");
+            throw new DataAccessException("데이터베이스가 변경을 거부했습니다.");
         });
 
         DataAccessException thrown = assertThrows(
                 DataAccessException.class,
                 () -> new NativeMutationExecutor(dsl).update("broken sql")
         );
-        assertTrue(thrown.getMessage().contains("database rejected mutation"));
+        assertTrue(thrown.getMessage().contains("데이터베이스가 변경을 거부했습니다."));
     }
 
     private static DSLContext dslContext(Mutation mutation) {

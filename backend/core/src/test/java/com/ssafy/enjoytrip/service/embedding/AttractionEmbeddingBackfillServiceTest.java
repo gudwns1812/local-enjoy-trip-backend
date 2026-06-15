@@ -91,7 +91,10 @@ class AttractionEmbeddingBackfillServiceTest {
         FakeRepository repository = new FakeRepository(List.of(source(1L, 32, 1)));
         FakeExpansionGateway expansionGateway = new FakeExpansionGateway();
         FakeGateway gateway = new FakeGateway();
-        gateway.failure = new AttractionEmbeddingGatewayException("GMS_HTTP_500", "GMS failed");
+        gateway.failure = new AttractionEmbeddingGatewayException(
+                "GMS_HTTP_500",
+                "GMS 호출에 실패했습니다."
+        );
         AttractionEmbeddingBackfillService service = new AttractionEmbeddingBackfillService(
                 repository,
                 expansionGateway,
@@ -103,7 +106,7 @@ class AttractionEmbeddingBackfillServiceTest {
         assertEquals(1, report.failedCount());
         assertTrue(repository.failures.containsKey(1L));
         assertEquals("GMS_HTTP_500", repository.failures.get(1L).code());
-        assertEquals("GMS failed", repository.failures.get(1L).message());
+        assertEquals("GMS 호출에 실패했습니다.", repository.failures.get(1L).message());
         assertEquals(1, repository.attempts.get(1L));
     }
 
@@ -114,7 +117,7 @@ class AttractionEmbeddingBackfillServiceTest {
         FakeExpansionGateway expansionGateway = new FakeExpansionGateway();
         expansionGateway.failure = new AttractionEmbeddingGatewayException(
                 "GMS_CHAT_HTTP_500",
-                "GMS chat failed"
+                "GMS 채팅 호출에 실패했습니다."
         );
         FakeGateway gateway = new FakeGateway();
         AttractionEmbeddingBackfillService service = new AttractionEmbeddingBackfillService(

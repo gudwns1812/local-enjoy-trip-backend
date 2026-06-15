@@ -386,7 +386,7 @@ class StorageRepositoryAdapterTest {
                 case "save" -> {
                     MemberEntity entity = (MemberEntity) args[0];
                     if (byUserId.containsKey(entity.getUserId())) {
-                        throw new DataIntegrityViolationException("duplicate user_id");
+                        throw new DataIntegrityViolationException("user_id가 중복되었습니다.");
                     }
                     if (entity.getCreatedAt() == null) {
                         setField(entity, "createdAt", LocalDateTime.now());

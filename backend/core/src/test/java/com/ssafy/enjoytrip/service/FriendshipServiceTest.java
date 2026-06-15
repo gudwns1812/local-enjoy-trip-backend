@@ -77,7 +77,9 @@ class FriendshipServiceTest {
     @Test
     void requestFriendshipPropagatesActiveDuplicateConstraintFailure() {
         FakeFriendshipRepository friendships = new FakeFriendshipRepository();
-        RuntimeException duplicate = new IllegalStateException("active friendship constraint violation");
+        RuntimeException duplicate = new IllegalStateException(
+                "활성 친구 관계 제약 조건을 위반했습니다."
+        );
         friendships.saveFailure = duplicate;
         FriendshipService service = service(friendships, new FakeOutboxRepository());
 

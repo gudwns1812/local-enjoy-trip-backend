@@ -90,7 +90,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupJson("ssafy", "SSAFY", "ssafy@example.com", "secret123")))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error.message").value("Email already exists"));
+                .andExpect(jsonPath("$.error.message").value("이미 사용 중인 이메일입니다."));
     }
 
     @DisplayName("로그인은 JWT 토큰을 반환한다")
@@ -213,7 +213,7 @@ class MemberControllerTest {
                 }
                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.message").value("Invalid request"));
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
     }
 
     @DisplayName("내 정보 수정은 다른 사용자 토큰을 거부한다")

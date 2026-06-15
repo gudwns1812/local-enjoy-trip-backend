@@ -78,7 +78,10 @@ public class LocalAttractionClient {
                     .filter(item -> !item.title().isBlank())
                     .toList();
         } catch (IOException ex) {
-            throw new IllegalStateException("Local attraction data is not available: " + DATA_PATH, ex);
+            throw new IllegalStateException(
+                    "로컬 관광지 데이터를 사용할 수 없습니다: " + DATA_PATH,
+                    ex
+            );
         }
     }
 

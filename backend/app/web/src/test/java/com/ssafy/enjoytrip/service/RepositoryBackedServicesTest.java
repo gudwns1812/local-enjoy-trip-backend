@@ -61,11 +61,13 @@ class RepositoryBackedServicesTest {
         @Test
         void propagatesRepositoryException() {
             BoardPost post = new BoardPost("b1", "title", "content", "author", "", "");
-            doThrow(new IllegalStateException("repository down")).when(repository).insert(post);
+            doThrow(new IllegalStateException("repository가 응답하지 않습니다."))
+                    .when(repository)
+                    .insert(post);
 
             assertThatThrownBy(() -> service.insertPost(post))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("repository down");
+                    .hasMessage("repository가 응답하지 않습니다.");
         }
     }
 
