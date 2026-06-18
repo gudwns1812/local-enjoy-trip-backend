@@ -1,6 +1,6 @@
 package com.ssafy.enjoytrip.batch;
 
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingTargetRegion;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingTargetRegion;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

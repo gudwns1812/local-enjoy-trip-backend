@@ -1,6 +1,6 @@
-package com.ssafy.enjoytrip.external.embedding;
+package com.ssafy.enjoytrip.batch.embedding.gms;
 
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingGatewayException;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingGatewayException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

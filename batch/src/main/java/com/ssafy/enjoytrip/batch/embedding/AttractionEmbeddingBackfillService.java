@@ -1,18 +1,18 @@
-package com.ssafy.enjoytrip.core.domain.service.embedding;
+package com.ssafy.enjoytrip.batch.embedding;
 
 import static com.ssafy.enjoytrip.storage.db.core.jooq.tables.Attractions.ATTRACTIONS;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.table;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingBackfillReport;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingFailure;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingGatewayException;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingResult;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingSource;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingTargetRegion;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionKeywordExpansion;
-import com.ssafy.enjoytrip.core.domain.external.embedding.AttractionEmbeddingGateway;
-import com.ssafy.enjoytrip.core.domain.external.embedding.AttractionKeywordExpansionGateway;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingBackfillReport;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingFailure;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingGatewayException;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingResult;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingSource;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingTargetRegion;
+import com.ssafy.enjoytrip.batch.embedding.AttractionKeywordExpansion;
+import com.ssafy.enjoytrip.batch.embedding.gms.GmsAttractionEmbeddingGateway;
+import com.ssafy.enjoytrip.batch.embedding.gms.GmsAttractionKeywordExpansionGateway;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,8 +29,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AttractionEmbeddingBackfillService {
     private static final int FAILURE_MESSAGE_LIMIT = 1_000;
-    private final AttractionKeywordExpansionGateway keywordExpansionGateway;
-    private final AttractionEmbeddingGateway gateway;
+    private final GmsAttractionKeywordExpansionGateway keywordExpansionGateway;
+    private final GmsAttractionEmbeddingGateway gateway;
 
     public AttractionEmbeddingBackfillReport backfill(List<AttractionEmbeddingTargetRegion> targetRegions,
                                                       String sourceVersion,

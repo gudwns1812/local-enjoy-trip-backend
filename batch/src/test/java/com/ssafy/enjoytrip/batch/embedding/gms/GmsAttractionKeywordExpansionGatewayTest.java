@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.external.embedding;
+package com.ssafy.enjoytrip.batch.embedding.gms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

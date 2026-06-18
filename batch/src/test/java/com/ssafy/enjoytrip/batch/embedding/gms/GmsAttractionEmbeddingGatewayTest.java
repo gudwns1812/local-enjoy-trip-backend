@@ -1,10 +1,7 @@
-package com.ssafy.enjoytrip.external;
+package com.ssafy.enjoytrip.batch.embedding.gms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingGatewayException;
-import com.ssafy.enjoytrip.external.ExternalClientTestSupport.FakeHttpClient;
-import com.ssafy.enjoytrip.external.embedding.GmsAttractionEmbeddingGateway;
-import com.ssafy.enjoytrip.external.embedding.GmsEmbeddingProperties;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingGatewayException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

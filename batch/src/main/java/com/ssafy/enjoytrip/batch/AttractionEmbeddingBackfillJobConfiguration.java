@@ -1,10 +1,10 @@
 package com.ssafy.enjoytrip.batch;
 
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingBackfillReport;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingTargetRegion;
-import com.ssafy.enjoytrip.core.domain.service.embedding.AttractionEmbeddingBackfillService;
-import com.ssafy.enjoytrip.external.embedding.GmsEmbeddingProperties;
-import com.ssafy.enjoytrip.external.embedding.GmsKeywordExpansionProperties;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingBackfillReport;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingTargetRegion;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingBackfillService;
+import com.ssafy.enjoytrip.batch.embedding.gms.GmsEmbeddingProperties;
+import com.ssafy.enjoytrip.batch.embedding.gms.GmsKeywordExpansionProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.job.Job;

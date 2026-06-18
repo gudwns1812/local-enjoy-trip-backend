@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.core.domain.embedding;
+package com.ssafy.enjoytrip.batch.embedding;
 
 public class AttractionEmbeddingGatewayException extends RuntimeException {
     private final String failureCode;

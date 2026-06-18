@@ -1,6 +1,6 @@
 package com.ssafy.enjoytrip.batch;
 
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingTargetRegion;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingTargetRegion;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;

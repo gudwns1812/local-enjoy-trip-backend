@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.core.domain.embedding;
+package com.ssafy.enjoytrip.batch.embedding;
 
 public record AttractionEmbeddingBackfillReport(
         int selectedCount,

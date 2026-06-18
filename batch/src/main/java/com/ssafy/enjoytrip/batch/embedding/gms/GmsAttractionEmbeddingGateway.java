@@ -1,12 +1,11 @@
-package com.ssafy.enjoytrip.external.embedding;
+package com.ssafy.enjoytrip.batch.embedding.gms;
 
-import com.ssafy.enjoytrip.core.domain.external.embedding.AttractionEmbeddingGateway;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingGatewayException;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingResult;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingGatewayException;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class GmsAttractionEmbeddingGateway implements AttractionEmbeddingGateway {
+public class GmsAttractionEmbeddingGateway {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final GmsEmbeddingProperties properties;

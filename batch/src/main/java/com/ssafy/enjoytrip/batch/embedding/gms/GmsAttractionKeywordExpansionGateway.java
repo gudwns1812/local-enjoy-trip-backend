@@ -1,13 +1,12 @@
-package com.ssafy.enjoytrip.external.embedding;
+package com.ssafy.enjoytrip.batch.embedding.gms;
 
-import com.ssafy.enjoytrip.core.domain.external.embedding.AttractionKeywordExpansionGateway;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionEmbeddingGatewayException;
-import com.ssafy.enjoytrip.core.domain.embedding.AttractionKeywordExpansion;
+import com.ssafy.enjoytrip.batch.embedding.AttractionEmbeddingGatewayException;
+import com.ssafy.enjoytrip.batch.embedding.AttractionKeywordExpansion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class GmsAttractionKeywordExpansionGateway implements AttractionKeywordExpansionGateway {
+public class GmsAttractionKeywordExpansionGateway {
     private static final String DEVELOPER_PROMPT = """
             너는 로컬레터(Local Letter) 서비스의 관광지 의미확장 편집자다.
             로컬레터 기획 원칙:
