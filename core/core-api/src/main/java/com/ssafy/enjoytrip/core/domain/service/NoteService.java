@@ -26,18 +26,19 @@ public class NoteService {
     private final NoteMapper noteMapper;
 
     public Note createNote(Note note) {
-        NoteRecord record = new NoteRecord();
-        record.setAuthorUserId(note.authorUserId());
-        record.setTitle(note.title());
-        record.setContent(note.content());
-        record.setCategory(note.category().name());
-        record.setVisibility(note.visibility().name());
-        record.setLatitude(BigDecimal.valueOf(note.latitude()));
-        record.setLongitude(BigDecimal.valueOf(note.longitude()));
-        record.setRegionName(blankToNull(note.regionName()));
-        record.setImageObjectKey(blankToNull(note.imageObjectKey()));
-        record.setImageUrl(blankToNull(note.imageUrl()));
-        record.setImageContentType(blankToNull(note.imageContentType()));
+        NoteRecord record = new NoteRecord(
+                note.authorUserId(),
+                note.title(),
+                note.content(),
+                note.category().name(),
+                note.visibility().name(),
+                BigDecimal.valueOf(note.latitude()),
+                BigDecimal.valueOf(note.longitude()),
+                blankToNull(note.regionName()),
+                blankToNull(note.imageObjectKey()),
+                blankToNull(note.imageUrl()),
+                blankToNull(note.imageContentType())
+        );
         NoteRecord saved = noteMapper.insert(record);
 
         return new Note(
@@ -66,19 +67,20 @@ public class NoteService {
                 .orElseThrow(() -> new CoreException(NOTE_NOT_FOUND));
         note.requireEditableBy(requestedNote.authorUserId());
 
-        NoteRecord record = new NoteRecord();
-        record.setId(requestedNote.id());
-        record.setAuthorUserId(requestedNote.authorUserId());
-        record.setTitle(requestedNote.title());
-        record.setContent(requestedNote.content());
-        record.setCategory(requestedNote.category().name());
-        record.setVisibility(requestedNote.visibility().name());
-        record.setLatitude(BigDecimal.valueOf(requestedNote.latitude()));
-        record.setLongitude(BigDecimal.valueOf(requestedNote.longitude()));
-        record.setRegionName(blankToNull(requestedNote.regionName()));
-        record.setImageObjectKey(blankToNull(requestedNote.imageObjectKey()));
-        record.setImageUrl(blankToNull(requestedNote.imageUrl()));
-        record.setImageContentType(blankToNull(requestedNote.imageContentType()));
+        NoteRecord record = new NoteRecord(
+                requestedNote.id(),
+                requestedNote.authorUserId(),
+                requestedNote.title(),
+                requestedNote.content(),
+                requestedNote.category().name(),
+                requestedNote.visibility().name(),
+                BigDecimal.valueOf(requestedNote.latitude()),
+                BigDecimal.valueOf(requestedNote.longitude()),
+                blankToNull(requestedNote.regionName()),
+                blankToNull(requestedNote.imageObjectKey()),
+                blankToNull(requestedNote.imageUrl()),
+                blankToNull(requestedNote.imageContentType())
+        );
         NoteRecord updated = noteMapper.updateOwned(record);
         if (updated == null) {
             throw new CoreException(NOTE_NOT_FOUND);
