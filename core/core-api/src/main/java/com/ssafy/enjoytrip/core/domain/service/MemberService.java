@@ -6,7 +6,6 @@ import static com.ssafy.enjoytrip.core.support.error.ErrorType.USER_ALREADY_EXIS
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.USER_NOT_FOUND;
 
 import com.ssafy.enjoytrip.core.domain.Member;
-import com.ssafy.enjoytrip.core.domain.auth.PasswordCodec;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.entity.AuthLogEntity;
 import com.ssafy.enjoytrip.storage.db.core.entity.MemberEntity;
@@ -16,13 +15,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    private final PasswordCodec passwordCodec;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Member> findAllUsers() {
         return memberRepository.findAllByOrderByCreatedAtDesc()
@@ -96,7 +96,7 @@ public class MemberService {
     @Transactional
     public void signup(Member member) {
         validateNewMember(member);
-        saveMember(member.withEncodedPassword(passwordCodec));
+        saveMember(member.withPassword(passwordEncoder.encode(member.password())));
     }
 
     @Transactional
@@ -172,7 +172,7 @@ public class MemberService {
     @Transactional
     public void update(Member member) {
         validateEmailOwner(member);
-        if (!updateMemberEntity(member.withEncodedPasswordWhenPresent(passwordCodec))) {
+        if (!updateMemberEntity(member.withPassword(encodedPasswordWhenPresent(member.password())))) {
             throw new CoreException(USER_NOT_FOUND);
         }
     }
@@ -230,16 +230,41 @@ public class MemberService {
                         stringValue(entity.getCreatedAt())
                 ))
                 .orElse(null);
-        if (member == null || !member.canAuthenticate(password, passwordCodec)) {
+        if (member == null || !matchesPassword(password, member.password())) {
             throw new CoreException(INVALID_CREDENTIALS);
         }
         return member;
     }
 
     private void upgradeLegacyPasswordIfNeeded(Member member, String password) {
-        if (member.shouldUpgradePassword(passwordCodec)) {
-            updateMemberEntity(member.withPassword(passwordCodec.encode(password)));
+        if (shouldUpgradePassword(member.password())) {
+            updateMemberEntity(member.withPassword(passwordEncoder.encode(password)));
         }
+    }
+
+    private String encodedPasswordWhenPresent(String password) {
+        if (isBlank(password)) {
+            return password;
+        }
+        return passwordEncoder.encode(password);
+    }
+
+    private boolean matchesPassword(String rawPassword, String storedPassword) {
+        if (isBlank(rawPassword) || isBlank(storedPassword)) {
+            return false;
+        }
+        if (isEncodedPassword(storedPassword)) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return storedPassword.equals(rawPassword);
+    }
+
+    private boolean shouldUpgradePassword(String password) {
+        return !isBlank(password) && !isEncodedPassword(password);
+    }
+
+    private boolean isEncodedPassword(String password) {
+        return password != null && password.startsWith("$2");
     }
 
     private Member createOAuthMember(String provider, String providerUserId, String email, String name) {
@@ -247,7 +272,7 @@ public class MemberService {
                 oauthUserId(provider, providerUserId),
                 name,
                 email,
-                passwordCodec.encode(UUID.randomUUID().toString()),
+                passwordEncoder.encode(UUID.randomUUID().toString()),
                 ""
         );
     }
@@ -309,6 +334,10 @@ public class MemberService {
                     return true;
                 })
                 .orElse(false);
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private static String stringValue(Object value) {

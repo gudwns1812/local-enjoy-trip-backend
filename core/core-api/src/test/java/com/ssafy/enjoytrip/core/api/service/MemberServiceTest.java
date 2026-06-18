@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.enjoytrip.core.domain.Member;
-import com.ssafy.enjoytrip.core.domain.auth.PasswordCodec;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.entity.AuthLogEntity;
 import com.ssafy.enjoytrip.storage.db.core.entity.MemberEntity;
@@ -29,7 +28,6 @@ class MemberServiceTest {
     private MemberJpaRepository memberRepository;
     private AuthLogJpaRepository authLogRepository;
     private PasswordEncoder passwordEncoder;
-    private PasswordCodec passwordCodec;
     private MemberService service;
 
     @BeforeEach
@@ -37,8 +35,7 @@ class MemberServiceTest {
         memberRepository = mock(MemberJpaRepository.class);
         authLogRepository = mock(AuthLogJpaRepository.class);
         passwordEncoder = new BCryptPasswordEncoder();
-        passwordCodec = passwordCodec(passwordEncoder);
-        service = new MemberService(passwordCodec, memberRepository, authLogRepository);
+        service = new MemberService(passwordEncoder, memberRepository, authLogRepository);
     }
 
     @DisplayName("회원가입은 BCrypt 비밀번호를 db-core MemberEntity로 저장한다")
@@ -98,25 +95,4 @@ class MemberServiceTest {
         verify(authLogRepository, never()).save(any());
     }
 
-    private static PasswordCodec passwordCodec(PasswordEncoder passwordEncoder) {
-        return new PasswordCodec() {
-            @Override
-            public String encode(String rawPassword) {
-                return passwordEncoder.encode(rawPassword);
-            }
-
-            @Override
-            public boolean matches(String rawPassword, String encodedPassword) {
-                return passwordEncoder.matches(rawPassword, encodedPassword);
-            }
-
-            @Override
-            public boolean isEncoded(String password) {
-                if (password == null) {
-                    return false;
-                }
-                return password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$");
-            }
-        };
-    }
 }
