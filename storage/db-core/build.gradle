@@ -18,6 +18,7 @@ dependencies {
     runtimeOnly "org.postgresql:postgresql"
 
     testImplementation "org.mybatis.spring.boot:mybatis-spring-boot-starter-test:${rootProject.ext.mybatisSpringBootVersion}"
+    testRuntimeOnly "com.h2database:h2"
     testImplementation "org.springframework.boot:spring-boot-testcontainers"
     testImplementation "org.testcontainers:testcontainers-junit-jupiter"
     testImplementation "org.testcontainers:testcontainers-postgresql"

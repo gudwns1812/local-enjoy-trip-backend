@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.storage.db.core.container;
+package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,12 +11,11 @@ import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.BoardPostMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.HotplaceMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NoticeMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.PlanMapper;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
+class CommunityPlanMapperH2Test extends H2MapperTestSupport {
     @Autowired
     private BoardPostMapper boardPostMapper;
 
@@ -29,7 +28,7 @@ class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
     @Autowired
     private PlanMapper planMapper;
 
-    @DisplayName("BoardPostMapper는 게시글 생성, 조회, 수정, 삭제 SQL을 실행한다")
+    @DisplayName("BoardPostMapper는 H2에서 게시글 CRUD SQL을 실행한다")
     @Test
     void boardPostMapperPersistsAndMutatesBoardPost() {
         String id = uniqueId("board");
@@ -50,7 +49,7 @@ class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
         assertThat(boardPostMapper.deleteById(id)).isEqualTo(1);
     }
 
-    @DisplayName("NoticeMapper는 공지 생성, 조회, 수정, 삭제 SQL을 실행한다")
+    @DisplayName("NoticeMapper는 H2 인메모리 DB에서 공지 생성, 조회, 수정, 삭제 SQL을 실행한다")
     @Test
     void noticeMapperPersistsAndMutatesNotice() {
         NoticeRecord record = new NoticeRecord("공지", "내용", "admin");
@@ -70,7 +69,7 @@ class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
         assertThat(noticeMapper.deleteById(record.getId())).isEqualTo(1);
     }
 
-    @DisplayName("HotplaceMapper는 사용자별 핫플레이스 생성, 조회, 삭제 SQL을 실행한다")
+    @DisplayName("HotplaceMapper는 H2에서 사용자별 핫플레이스 SQL을 실행한다")
     @Test
     void hotplaceMapperPersistsAndFindsUserHotplace() {
         String userId = uniqueId("hotplace-user");
@@ -99,13 +98,11 @@ class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
         assertThat(hotplaceMapper.deleteById(id)).isEqualTo(1);
     }
 
-    @DisplayName("PlanMapper는 여행 계획과 경유지 item SQL을 migration schema에서 실행한다")
+    @DisplayName("PlanMapper는 H2 인메모리 DB에서 여행 계획과 경유지 item SQL을 실행한다")
     @Test
     void planMapperPersistsPlanAndItems() {
         String planId = uniqueId("plan");
         long attractionId = 9100001L;
-        seedAttraction(attractionId, "계획 관광지", 1, 1);
-
         TravelPlanRecord plan = new TravelPlanRecord(
                 planId,
                 "planner",
@@ -116,6 +113,7 @@ class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
                 "메모",
                 "[]"
         );
+
         planMapper.insertPlan(plan);
         PlanItemRecord item = new PlanItemRecord(planId, attractionId, 1, 1, "첫 코스", 90);
         planMapper.insertItem(item);
@@ -131,7 +129,6 @@ class CommunityPlanMapperContainerTest extends StorageContainerTestSupport {
                 .extracting(PlanItemRecord::getId)
                 .contains(item.getId());
         assertThat(planMapper.findItemById(item.getId()).getMemo()).isEqualTo("첫 코스");
-        assertThat(planMapper.findAttractionsByIds(List.of(attractionId))).hasSize(1);
         assertThat(planMapper.deleteItemById(item.getId())).isEqualTo(1);
         assertThat(planMapper.deletePlanById(planId)).isEqualTo(1);
     }

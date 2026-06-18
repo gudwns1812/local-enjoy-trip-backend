@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.storage.db.core.mybatis.mapper;
 
 import com.ssafy.enjoytrip.storage.db.core.model.MemberRecord;
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 public interface MemberMapper {
     List<MemberRecord> findAllOrderByCreatedAtDesc();
@@ -10,7 +11,7 @@ public interface MemberMapper {
 
     MemberRecord findByEmail(String email);
 
-    MemberRecord findByUserIdAndEmail(String userId, String email);
+    MemberRecord findByUserIdAndEmail(@Param("userId") String userId, @Param("email") String email);
 
     int existsByUserId(String userId);
 

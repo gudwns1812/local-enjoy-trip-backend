@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.storage.db.core.container;
+package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class NotificationFriendshipMapperContainerTest extends StorageContainerTestSupport {
+class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
     @Autowired
     private FriendshipMapper friendshipMapper;
 
@@ -28,7 +28,7 @@ class NotificationFriendshipMapperContainerTest extends StorageContainerTestSupp
     @Autowired
     private NotificationOutboxMapper notificationOutboxMapper;
 
-    @DisplayName("FriendshipMapper는 요청 조회와 상태 전이를 실제 DB에서 수행한다")
+    @DisplayName("FriendshipMapper는 H2 인메모리 DB에서 요청 조회와 상태 전이를 수행한다")
     @Test
     void friendshipMapperPersistsAndTransitionsFriendship() {
         String requester = uniqueId("requester");
@@ -61,7 +61,7 @@ class NotificationFriendshipMapperContainerTest extends StorageContainerTestSupp
         )).isEqualTo(1);
     }
 
-    @DisplayName("NotificationOutboxMapper는 outbox 상태 전이를 DB에 반영한다")
+    @DisplayName("NotificationOutboxMapper는 H2 인메모리 DB에서 outbox 상태 전이를 반영한다")
     @Test
     void notificationOutboxMapperPersistsAndTransitionsOutbox() {
         String recipient = uniqueId("outbox-recipient");
@@ -78,18 +78,20 @@ class NotificationFriendshipMapperContainerTest extends StorageContainerTestSupp
         outbox.markProcessed();
         notificationOutboxMapper.markProcessed(outbox);
         NotificationOutboxRecord processed = notificationOutboxMapper.findById(outbox.getId());
+
+        assertThat(processed.getStatus()).isEqualTo(NotificationOutboxStatus.PROCESSED);
+        assertThat(processed.getProcessedAt()).isNotNull();
+
         processed.markFailed("retry");
         notificationOutboxMapper.markFailed(processed);
 
         NotificationOutboxRecord failed = notificationOutboxMapper.findById(outbox.getId());
 
-        assertThat(processed.getStatus()).isEqualTo(NotificationOutboxStatus.PROCESSED);
-        assertThat(processed.getProcessedAt()).isNotNull();
         assertThat(failed.getStatus()).isEqualTo(NotificationOutboxStatus.FAILED);
         assertThat(failed.getLastError()).isEqualTo("retry");
     }
 
-    @DisplayName("NotificationMapper는 outbox 중복 조회와 친구 요청 알림 읽음 처리를 수행한다")
+    @DisplayName("NotificationMapper는 H2에서 중복 조회와 친구 요청 읽음 처리를 수행한다")
     @Test
     void notificationMapperFindsAndMarksFriendRequestNotifications() {
         String requester = uniqueId("noti-requester");

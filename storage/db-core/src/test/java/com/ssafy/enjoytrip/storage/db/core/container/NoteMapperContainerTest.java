@@ -8,9 +8,11 @@ import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NoteMapper;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@Tag("postgis")
 class NoteMapperContainerTest extends StorageContainerTestSupport {
     @Autowired
     private NoteMapper noteMapper;

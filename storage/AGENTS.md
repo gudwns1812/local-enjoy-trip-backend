@@ -5,6 +5,7 @@
 - **Persistence Layer**: The `storage` namespace keeps `storage/db-core`, which handles database schema mapping and persistence infrastructure.
 - **DB Core Only**: `storage/db-core` owns storage Record contracts, MyBatis mapper interfaces, XML SQL, type handlers, Flyway migrations, and database configuration only.
 - **Technology Stack**: Uses MyBatis mapper/XML for persistence SQL. PostGIS, pg_vector, dynamic predicates, joins, projections, native mutations, `on conflict`, and `returning` are expressed as explicit mapper SQL. **JdbcTemplate, Spring Data JPA repositories, and jOOQ runtime/codegen are not used for new persistence paths.**
+- **DB Core Local Rules**: `storage/db-core/AGENTS.md` owns db-core specific Record/MyBatis/test rules. Read it before changing db-core code, XML, migration, or tests.
 
 ## Coding Style
 
@@ -20,3 +21,4 @@
 
 - **Transaction Boundaries**: Core-api service/helper write/delete methods should declare `@Transactional` when needed.
 - **Native Mutations**: Native update/delete/upsert operations must be implemented in MyBatis mapper XML. JPA `@Query(nativeQuery = true)` and jOOQ DSL are prohibited.
+- **Mapper Tests**: General mapper tests use H2 in-memory DB. Testcontainers is reserved for PostGIS/pg_vector paths that H2 cannot validate.

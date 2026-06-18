@@ -17,8 +17,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Tag("container")
-@Tag("postgis")
-@Tag("pgvector")
 @Tag("slow")
 @Testcontainers
 @SpringBootTest(

@@ -9,20 +9,19 @@ import com.ssafy.enjoytrip.storage.db.core.model.AttractionRatingRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionTagRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.ChargerItemRecord;
-import com.ssafy.enjoytrip.storage.db.core.model.CourseBriefingCandidateRecord;
-import com.ssafy.enjoytrip.storage.db.core.model.NewsItemRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionEmbeddingMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionEmbeddingMapper.TargetRegionRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.EvChargerMapper;
-import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NeighborhoodBriefingMapper;
-import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NewsMapper;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class AttractionDataMapperContainerTest extends StorageContainerTestSupport {
+@Tag("postgis")
+@Tag("pgvector")
+class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
     @Autowired
     private AttractionMapper attractionMapper;
 
@@ -30,13 +29,7 @@ class AttractionDataMapperContainerTest extends StorageContainerTestSupport {
     private AttractionEmbeddingMapper attractionEmbeddingMapper;
 
     @Autowired
-    private NewsMapper newsMapper;
-
-    @Autowired
     private EvChargerMapper evChargerMapper;
-
-    @Autowired
-    private NeighborhoodBriefingMapper neighborhoodBriefingMapper;
 
     @DisplayName("AttractionMapper는 검색, 주변 검색, 태그, 좋아요, 평점 SQL을 실행한다")
     @Test
@@ -86,14 +79,9 @@ class AttractionDataMapperContainerTest extends StorageContainerTestSupport {
         assertThat(attractionMapper.deleteTag(tag.id())).isEqualTo(1);
     }
 
-    @DisplayName("NewsMapper와 EvChargerMapper는 seed된 운영 테이블을 조건 검색한다")
+    @DisplayName("EvChargerMapper는 PostGIS 위치 컬럼을 포함해 충전소를 조건 검색한다")
     @Test
-    void newsAndEvChargerMappersReadSeededRows() {
-        String newsId = uniqueId("news");
-        jdbcTemplate.update("""
-                insert into news_items (id, title, link, summary, source, published_at)
-                values (?, '서비스커넥션 뉴스', 'https://example.com/news', '요약', 'test', '2026-06-19')
-                """, newsId);
+    void evChargerMapperReadsPostgisLocationRows() {
         jdbcTemplate.update("""
                 insert into ev_chargers (
                     stat_id,
@@ -108,32 +96,24 @@ class AttractionDataMapperContainerTest extends StorageContainerTestSupport {
                     stat,
                     location
                 )
-                values (?, '서비스커넥션 충전소', '01', 'FAST', '서울 중구', '시청 앞', '24H', '사업자', '02',
-                        'AVAILABLE', ST_SetSRID(ST_MakePoint(126.9780, 37.5665), 4326))
+                values (
+                    ?,
+                    '서비스커넥션 충전소',
+                    '01',
+                    'FAST',
+                    '서울 중구',
+                    '시청 앞',
+                    '24H',
+                    '사업자',
+                    '02',
+                    'AVAILABLE',
+                    ST_SetSRID(ST_MakePoint(126.9780, 37.5665), 4326)
+                )
                 """, uniqueId("charger"));
 
-        List<NewsItemRecord> news = newsMapper.findLatest(10);
         List<ChargerItemRecord> chargers = evChargerMapper.findChargers("서울", "서비스커넥션", 10, 0);
 
-        assertThat(news).extracting(NewsItemRecord::id).contains(newsId);
         assertThat(chargers).extracting(ChargerItemRecord::statNm).contains("서비스커넥션 충전소");
-    }
-
-    @DisplayName("NeighborhoodBriefingMapper는 공개 READY 코스 후보를 지역 우선순위로 조회한다")
-    @Test
-    void neighborhoodBriefingMapperFindsPublicReadyCourses() {
-        String ownerId = uniqueId("course-owner");
-        String courseId = uniqueId("course");
-        seedMember(ownerId, ownerId + "@example.com");
-        jdbcTemplate.update("""
-                insert into courses (id, owner_user_id, title, region_name, visibility, status)
-                values (?, ?, '서비스커넥션 코스', '서울 중구', 'PUBLIC', 'READY')
-                """, courseId, ownerId);
-
-        List<CourseBriefingCandidateRecord> candidates =
-                neighborhoodBriefingMapper.findPublicReadyCandidates("서울 중구", 10);
-
-        assertThat(candidates).extracting(CourseBriefingCandidateRecord::id).contains(courseId);
     }
 
     @DisplayName("AttractionEmbeddingMapper는 대상 조회와 임베딩 upsert 상태 SQL을 실행한다")

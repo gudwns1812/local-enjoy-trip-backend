@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.storage.db.core.container;
+package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,14 +10,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class MemberAuthMapperContainerTest extends StorageContainerTestSupport {
+class MemberAuthMapperH2Test extends H2MapperTestSupport {
     @Autowired
     private MemberMapper memberMapper;
 
     @Autowired
     private AuthLogMapper authLogMapper;
 
-    @DisplayName("MemberMapper는 migration schema에서 회원 생성, 조회, 수정, 삭제를 수행한다")
+    @DisplayName("MemberMapper는 H2 인메모리 DB에서 회원 생성, 조회, 수정, 삭제 SQL을 실행한다")
     @Test
     void memberMapperPersistsAndMutatesMemberRecord() {
         String userId = uniqueId("member");
@@ -61,7 +61,7 @@ class MemberAuthMapperContainerTest extends StorageContainerTestSupport {
         assertThat(memberMapper.findByUserId(userId)).isNull();
     }
 
-    @DisplayName("AuthLogMapper는 auth_logs identity key와 logged_at을 실제 DB에서 채운다")
+    @DisplayName("AuthLogMapper는 H2 인메모리 DB에서 identity key와 logged_at을 채운다")
     @Test
     void authLogMapperPersistsLoginEvent() {
         String userId = uniqueId("auth");

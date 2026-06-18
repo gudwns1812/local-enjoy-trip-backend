@@ -6,8 +6,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("postgis")
+@Tag("pgvector")
 class PostgresExtensionContainerTest extends StorageContainerTestSupport {
     @DisplayName("ServiceConnection으로 연결된 PostgreSQL은 PostGIS와 pgvector extension을 제공한다")
     @Test

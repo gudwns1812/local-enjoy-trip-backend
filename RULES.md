@@ -56,7 +56,8 @@ Controller request/response 계약은 이름 있는 DTO로 표현한다.
 - PostGIS, pg_vector, `on conflict`, `returning`, 동적 조건, projection은 mapper XML에 명시 SQL로 표현한다.
 - `JdbcTemplate`, Spring Data JPA repository, jOOQ runtime/codegen은 새 persistence 경로에 사용하지 않는다.
 - schema 변경은 Flyway migration으로 남긴다.
-- container가 필요한 PostGIS/pg_vector 검증은 별도 sourceSet을 만들지 않고 `src/test`에 `@Tag("container")`로 둔다. 기본 `test`는 container/slow/postgis/pgvector tag를 제외하고, 필요할 때만 `-PincludeContainerTests=true`로 명시 실행한다.
+- 일반 mapper 동작 검증은 H2 인메모리 DB 테스트로 실행한다.
+- container가 필요한 PostGIS/pg_vector 검증만 별도 sourceSet 없이 `src/test`에 `@Tag("container")`로 둔다. 기본 `test`는 container/slow/postgis/pgvector tag를 제외하고, 필요할 때만 `-PincludeContainerTests=true`로 명시 실행한다.
 
 ## 5. 보안과 인증 규칙
 
