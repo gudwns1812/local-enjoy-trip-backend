@@ -10,10 +10,10 @@ import com.ssafy.enjoytrip.core.domain.Friendship;
 import com.ssafy.enjoytrip.core.domain.FriendshipStatus;
 import com.ssafy.enjoytrip.core.domain.NotificationReferenceType;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
-import com.ssafy.enjoytrip.storage.db.core.entity.FriendshipEntity;
-import com.ssafy.enjoytrip.storage.db.core.entity.MemberEntity;
-import com.ssafy.enjoytrip.storage.db.core.jpa.FriendshipJpaRepository;
-import com.ssafy.enjoytrip.storage.db.core.jpa.MemberJpaRepository;
+import com.ssafy.enjoytrip.storage.db.core.model.FriendshipRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.MemberRecord;
+import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.FriendshipMapper;
+import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.MemberMapper;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -23,19 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class FriendshipService {
-    private final FriendshipJpaRepository friendshipJpaRepository;
-    private final MemberJpaRepository memberJpaRepository;
+    private final FriendshipMapper friendshipMapper;
+    private final MemberMapper memberMapper;
     private final NotificationService notificationService;
 
     @Transactional
     public Friendship requestFriendship(String requesterUserId, String targetUserId) {
         Friendship.validateRequestableUsers(requesterUserId, targetUserId);
         Friendship friendship = savePending(requesterUserId, targetUserId);
-        notificationService.saveFriendRequestReceived(
-                friendship.id(),
-                requesterUserId,
-                targetUserId
-        );
+        notificationService.saveFriendRequestReceived(friendship.id(), requesterUserId, targetUserId);
         return friendship;
     }
 
@@ -72,127 +68,111 @@ public class FriendshipService {
     }
 
     public List<Friendship> findFriends(String actorUserId) {
-        return friendshipJpaRepository.findByParticipantAndStatus(actorUserId, ACCEPTED)
-                .stream()
-                .map(entity -> new Friendship(
-                        entity.getId(),
-                        entity.getRequesterUserId(),
-                        displayName(entity.getRequesterUserId()),
-                        entity.getAddresseeUserId(),
-                        displayName(entity.getAddresseeUserId()),
-                        entity.getStatus(),
-                        entity.getRequestedAt(),
-                        entity.getRespondedAt(),
-                        entity.getCreatedAt(),
-                        entity.getUpdatedAt()
+        return friendshipMapper.findByParticipantAndStatus(actorUserId, ACCEPTED).stream()
+                .map(record -> new Friendship(
+                        record.getId(),
+                        record.getRequesterUserId(),
+                        displayName(record.getRequesterUserId()),
+                        record.getAddresseeUserId(),
+                        displayName(record.getAddresseeUserId()),
+                        record.getStatus(),
+                        record.getRequestedAt(),
+                        record.getRespondedAt(),
+                        record.getCreatedAt(),
+                        record.getUpdatedAt()
                 ))
                 .toList();
     }
 
     public List<Friendship> findReceivedPendingRequests(String actorUserId) {
-        return friendshipJpaRepository.findByAddresseeUserIdAndStatusOrderByRequestedAtDescIdDesc(
-                        actorUserId,
-                        PENDING
-                )
-                .stream()
-                .map(entity -> new Friendship(
-                        entity.getId(),
-                        entity.getRequesterUserId(),
-                        displayName(entity.getRequesterUserId()),
-                        entity.getAddresseeUserId(),
-                        displayName(entity.getAddresseeUserId()),
-                        entity.getStatus(),
-                        entity.getRequestedAt(),
-                        entity.getRespondedAt(),
-                        entity.getCreatedAt(),
-                        entity.getUpdatedAt()
+        return friendshipMapper.findReceivedRequests(actorUserId, PENDING).stream()
+                .map(record -> new Friendship(
+                        record.getId(),
+                        record.getRequesterUserId(),
+                        displayName(record.getRequesterUserId()),
+                        record.getAddresseeUserId(),
+                        displayName(record.getAddresseeUserId()),
+                        record.getStatus(),
+                        record.getRequestedAt(),
+                        record.getRespondedAt(),
+                        record.getCreatedAt(),
+                        record.getUpdatedAt()
                 ))
                 .toList();
     }
 
     public List<Friendship> findSentPendingRequests(String actorUserId) {
-        return friendshipJpaRepository.findByRequesterUserIdAndStatusOrderByRequestedAtDescIdDesc(
-                        actorUserId,
-                        PENDING
-                )
-                .stream()
-                .map(entity -> new Friendship(
-                        entity.getId(),
-                        entity.getRequesterUserId(),
-                        displayName(entity.getRequesterUserId()),
-                        entity.getAddresseeUserId(),
-                        displayName(entity.getAddresseeUserId()),
-                        entity.getStatus(),
-                        entity.getRequestedAt(),
-                        entity.getRespondedAt(),
-                        entity.getCreatedAt(),
-                        entity.getUpdatedAt()
+        return friendshipMapper.findSentRequests(actorUserId, PENDING).stream()
+                .map(record -> new Friendship(
+                        record.getId(),
+                        record.getRequesterUserId(),
+                        displayName(record.getRequesterUserId()),
+                        record.getAddresseeUserId(),
+                        displayName(record.getAddresseeUserId()),
+                        record.getStatus(),
+                        record.getRequestedAt(),
+                        record.getRespondedAt(),
+                        record.getCreatedAt(),
+                        record.getUpdatedAt()
                 ))
                 .toList();
     }
 
     public Optional<Friendship> findById(Long id) {
-        return friendshipJpaRepository.findById(id)
-                .map(entity -> new Friendship(
-                        entity.getId(),
-                        entity.getRequesterUserId(),
-                        displayName(entity.getRequesterUserId()),
-                        entity.getAddresseeUserId(),
-                        displayName(entity.getAddresseeUserId()),
-                        entity.getStatus(),
-                        entity.getRequestedAt(),
-                        entity.getRespondedAt(),
-                        entity.getCreatedAt(),
-                        entity.getUpdatedAt()
+        return Optional.ofNullable(friendshipMapper.findById(id))
+                .map(record -> new Friendship(
+                        record.getId(),
+                        record.getRequesterUserId(),
+                        displayName(record.getRequesterUserId()),
+                        record.getAddresseeUserId(),
+                        displayName(record.getAddresseeUserId()),
+                        record.getStatus(),
+                        record.getRequestedAt(),
+                        record.getRespondedAt(),
+                        record.getCreatedAt(),
+                        record.getUpdatedAt()
                 ));
     }
 
     public boolean existsActiveBetween(String userId, String otherUserId) {
-        return friendshipJpaRepository.existsActiveBetween(
-                userId,
-                otherUserId,
-                List.of(PENDING, ACCEPTED)
-        );
+        return friendshipMapper.existsActiveBetween(userId, otherUserId, List.of(PENDING, ACCEPTED)) > 0;
     }
 
     private Friendship savePending(String requesterUserId, String addresseeUserId) {
-        FriendshipEntity entity = friendshipJpaRepository.save(new FriendshipEntity(
-                requesterUserId,
-                addresseeUserId
-        ));
-
+        FriendshipRecord record = new FriendshipRecord(requesterUserId, addresseeUserId);
+        friendshipMapper.insert(record);
         return new Friendship(
-                entity.getId(),
-                entity.getRequesterUserId(),
-                entity.getRequesterUserId(),
-                entity.getAddresseeUserId(),
-                entity.getAddresseeUserId(),
-                entity.getStatus(),
-                entity.getRequestedAt(),
-                entity.getRespondedAt(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                record.getId(),
+                record.getRequesterUserId(),
+                record.getRequesterUserId(),
+                record.getAddresseeUserId(),
+                record.getAddresseeUserId(),
+                record.getStatus(),
+                record.getRequestedAt(),
+                record.getRespondedAt(),
+                record.getCreatedAt(),
+                record.getUpdatedAt()
         );
     }
 
     private Friendship updateStatus(Long id, FriendshipStatus status) {
-        FriendshipEntity entity = friendshipJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException(
-                        "친구 관계를 찾을 수 없습니다: " + id
-        ));
-        entity.transitionTo(status);
-
+        FriendshipRecord record = friendshipMapper.findById(id);
+        if (record == null) {
+            throw new IllegalStateException("친구 관계를 찾을 수 없습니다: " + id);
+        }
+        record.transitionTo(status);
+        friendshipMapper.updateStatus(record);
         return new Friendship(
-                entity.getId(),
-                entity.getRequesterUserId(),
-                displayName(entity.getRequesterUserId()),
-                entity.getAddresseeUserId(),
-                displayName(entity.getAddresseeUserId()),
-                entity.getStatus(),
-                entity.getRequestedAt(),
-                entity.getRespondedAt(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                record.getId(),
+                record.getRequesterUserId(),
+                displayName(record.getRequesterUserId()),
+                record.getAddresseeUserId(),
+                displayName(record.getAddresseeUserId()),
+                record.getStatus(),
+                record.getRequestedAt(),
+                record.getRespondedAt(),
+                record.getCreatedAt(),
+                record.getUpdatedAt()
         );
     }
 
@@ -205,36 +185,35 @@ public class FriendshipService {
     }
 
     private Friendship findFriendship(Long friendshipId) {
-        FriendshipEntity entity = friendshipJpaRepository.findById(friendshipId)
-                .orElseThrow(() -> new CoreException(FRIENDSHIP_NOT_FOUND));
-
+        FriendshipRecord record = friendshipMapper.findById(friendshipId);
+        if (record == null) {
+            throw new CoreException(FRIENDSHIP_NOT_FOUND);
+        }
         return new Friendship(
-                entity.getId(),
-                entity.getRequesterUserId(),
-                displayName(entity.getRequesterUserId()),
-                entity.getAddresseeUserId(),
-                displayName(entity.getAddresseeUserId()),
-                entity.getStatus(),
-                entity.getRequestedAt(),
-                entity.getRespondedAt(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt()
+                record.getId(),
+                record.getRequesterUserId(),
+                displayName(record.getRequesterUserId()),
+                record.getAddresseeUserId(),
+                displayName(record.getAddresseeUserId()),
+                record.getStatus(),
+                record.getRequestedAt(),
+                record.getRespondedAt(),
+                record.getCreatedAt(),
+                record.getUpdatedAt()
         );
     }
 
     private String displayName(String userId) {
-        return memberJpaRepository.findByUserId(userId)
-                .map(FriendshipService::displayName)
-                .orElse(userId);
-    }
-
-    private static String displayName(MemberEntity member) {
+        MemberRecord member = memberMapper.findByUserId(userId);
+        if (member == null) {
+            return userId;
+        }
         if (member.getNickname() != null && !member.getNickname().isBlank()) {
             return member.getNickname();
         }
         if (member.getName() != null && !member.getName().isBlank()) {
             return member.getName();
         }
-        return member.getUserId();
+        return userId;
     }
 }

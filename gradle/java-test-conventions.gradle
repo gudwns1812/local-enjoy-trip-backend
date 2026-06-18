@@ -17,9 +17,17 @@ dependencies {
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+def includeContainerTests = providers.gradleProperty("includeContainerTests")
+        .map { it.toBoolean() }
+        .orElse(false)
+
 tasks.named("test") {
     useJUnitPlatform {
-        excludeTags "suite"
+        if (includeContainerTests.get()) {
+            includeTags "container"
+        } else {
+            excludeTags "suite", "container", "slow", "postgis", "pgvector"
+        }
         excludeEngines "junit-platform-suite"
     }
 }
