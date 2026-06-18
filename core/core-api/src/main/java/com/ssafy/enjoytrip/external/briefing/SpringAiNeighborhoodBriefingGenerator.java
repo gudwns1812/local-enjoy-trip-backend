@@ -1,6 +1,5 @@
 package com.ssafy.enjoytrip.external.briefing;
 
-import com.ssafy.enjoytrip.core.domain.external.briefing.NeighborhoodBriefingGenerator;
 
 import com.ssafy.enjoytrip.core.domain.NeighborhoodBriefingPrompt;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SpringAiNeighborhoodBriefingGenerator implements NeighborhoodBriefingGenerator {
+public class SpringAiNeighborhoodBriefingGenerator {
     private final ObjectProvider<ChatClient.Builder> chatClientBuilderProvider;
     private final GmsNeighborhoodBriefingProperties properties;
 

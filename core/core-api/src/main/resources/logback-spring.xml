@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+    <springProperty
+            scope="context"
+            name="applicationName"
+            source="spring.application.name"
+            defaultValue="enjoytrip"/>
+
+    <property
+            name="CONSOLE_PATTERN"
+            value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [${applicationName}] [%thread] %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <springProfile name="local | dev">
+        <logger name="com.ssafy.enjoytrip" level="DEBUG"/>
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+    </springProfile>
+
+    <springProfile name="worker">
+        <logger name="com.ssafy.enjoytrip.core.api.worker" level="INFO"/>
+        <logger name="org.springframework.kafka" level="INFO"/>
+    </springProfile>
+
+    <springProfile name="test">
+        <logger name="com.ssafy.enjoytrip" level="WARN"/>
+        <logger name="org.springframework" level="WARN"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.ssafy.enjoytrip" level="INFO"/>
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

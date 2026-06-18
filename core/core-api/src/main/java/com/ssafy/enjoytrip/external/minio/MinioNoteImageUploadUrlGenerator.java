@@ -1,6 +1,5 @@
 package com.ssafy.enjoytrip.external.minio;
 
-import com.ssafy.enjoytrip.core.domain.external.minio.NoteImageUploadUrlGenerator;
 
 import com.ssafy.enjoytrip.core.domain.NoteImageUploadUrl;
 import io.minio.GetPresignedObjectUrlArgs;
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class MinioNoteImageUploadUrlGenerator implements NoteImageUploadUrlGenerator {
+public class MinioNoteImageUploadUrlGenerator {
     private final MinioClient minioClient;
     private final MinioProperties properties;
 

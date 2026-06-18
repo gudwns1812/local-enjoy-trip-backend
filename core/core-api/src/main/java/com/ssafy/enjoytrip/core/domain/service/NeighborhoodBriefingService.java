@@ -10,7 +10,7 @@ import com.ssafy.enjoytrip.core.domain.CourseVisibility;
 import com.ssafy.enjoytrip.core.domain.NeighborhoodBriefing;
 import com.ssafy.enjoytrip.core.domain.NeighborhoodBriefingPrompt;
 import com.ssafy.enjoytrip.core.domain.WeatherSummary;
-import com.ssafy.enjoytrip.core.domain.external.briefing.NeighborhoodBriefingGenerator;
+import com.ssafy.enjoytrip.external.briefing.SpringAiNeighborhoodBriefingGenerator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class NeighborhoodBriefingService {
     private static final int COURSE_CANDIDATE_LIMIT = 3;
     private final WeatherService weatherService;
-    private final NeighborhoodBriefingGenerator generator;
+    private final SpringAiNeighborhoodBriefingGenerator generator;
 
     public NeighborhoodBriefing brief(String regionName) {
         WeatherSummary weather = findWeatherForRegion(regionName);

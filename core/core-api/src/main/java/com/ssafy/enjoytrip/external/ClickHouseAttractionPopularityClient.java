@@ -1,6 +1,5 @@
 package com.ssafy.enjoytrip.external;
 
-import com.ssafy.enjoytrip.core.domain.external.AttractionPopularityClient;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ClickHouseAttractionPopularityClient implements AttractionPopularityClient {
+public class ClickHouseAttractionPopularityClient {
     private final ClickHousePopularityProperties properties;
 
     public Map<Long, Long> findFavoriteCounts(Collection<Long> attractionIds) {

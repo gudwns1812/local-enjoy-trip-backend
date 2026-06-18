@@ -16,7 +16,7 @@ import com.ssafy.enjoytrip.core.domain.AttractionStats;
 import com.ssafy.enjoytrip.core.domain.AttractionTag;
 import com.ssafy.enjoytrip.core.domain.NearbyAttractionCandidate;
 import com.ssafy.enjoytrip.core.domain.PopularAttraction;
-import com.ssafy.enjoytrip.core.domain.external.AttractionPopularityClient;
+import com.ssafy.enjoytrip.external.ClickHouseAttractionPopularityClient;
 import com.ssafy.enjoytrip.core.domain.query.AttractionSearchCondition;
 import com.ssafy.enjoytrip.core.domain.query.NearbySearchCondition;
 import java.math.BigDecimal;
@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AttractionService {
-    private final AttractionPopularityClient popularityClient;
+    private final ClickHouseAttractionPopularityClient popularityClient;
 
     public List<PopularAttraction> findPopularNearbyAttractions(NearbySearchCondition condition,
                                                                 String userId) {

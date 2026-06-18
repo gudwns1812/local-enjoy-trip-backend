@@ -1,7 +1,7 @@
 package com.ssafy.enjoytrip.core.domain.service;
 
 import com.ssafy.enjoytrip.core.domain.WeatherSummary;
-import com.ssafy.enjoytrip.core.domain.external.WeatherClient;
+import com.ssafy.enjoytrip.external.OpenWeatherMapWeatherClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ public class WeatherService {
             new WeatherSummary("제주", "바람 강함", 23, 30, "05:35", "19:25")
     );
 
-    private final WeatherClient weatherClient;
+    private final OpenWeatherMapWeatherClient weatherClient;
 
     public List<WeatherSummary> findWeatherBriefings() {
         return completeWithFallback(weatherClient.findWeatherBriefings());

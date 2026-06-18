@@ -1,6 +1,5 @@
 package com.ssafy.enjoytrip.external;
 
-import com.ssafy.enjoytrip.core.domain.external.WeatherClient;
 
 import com.ssafy.enjoytrip.core.domain.WeatherSummary;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class OpenWeatherMapWeatherClient implements WeatherClient {
+public class OpenWeatherMapWeatherClient {
     private static final String CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
     private static final String FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast";
     private static final ZoneId KOREA = ZoneId.of("Asia/Seoul");

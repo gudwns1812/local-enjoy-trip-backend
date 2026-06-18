@@ -1,14 +1,14 @@
 package com.ssafy.enjoytrip.core.domain.service;
 
 import com.ssafy.enjoytrip.core.domain.NoteImageUploadUrl;
-import com.ssafy.enjoytrip.core.domain.external.minio.NoteImageUploadUrlGenerator;
+import com.ssafy.enjoytrip.external.minio.MinioNoteImageUploadUrlGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class NoteImageUploadService {
-    private final NoteImageUploadUrlGenerator uploadUrlGenerator;
+    private final MinioNoteImageUploadUrlGenerator uploadUrlGenerator;
 
     public NoteImageUploadUrl createPresignedUpload(
             String userId,

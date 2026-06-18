@@ -3,7 +3,7 @@ package com.ssafy.enjoytrip.core.domain.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.ssafy.enjoytrip.core.domain.external.AttractionPopularityClient;
+import com.ssafy.enjoytrip.external.ClickHouseAttractionPopularityClient;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,7 +19,7 @@ class DbBackedTravelDataServicesTest {
         @Test
         void constructsWithDirectDbCoreDependencies() {
             AttractionService service = new AttractionService(
-                    mock(AttractionPopularityClient.class),
+                    mock(ClickHouseAttractionPopularityClient.class),
                     mock(DSLContext.class)
             );
 

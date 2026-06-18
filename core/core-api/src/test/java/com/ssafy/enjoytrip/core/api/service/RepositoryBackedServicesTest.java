@@ -16,7 +16,6 @@ import com.ssafy.enjoytrip.core.domain.Hotplace;
 import com.ssafy.enjoytrip.core.domain.Member;
 import com.ssafy.enjoytrip.core.domain.Notice;
 import com.ssafy.enjoytrip.core.domain.TravelPlan;
-import com.ssafy.enjoytrip.core.domain.auth.PasswordCodec;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.entity.BoardPostEntity;
 import com.ssafy.enjoytrip.storage.db.core.entity.HotplaceEntity;
@@ -39,7 +38,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Tag("service")
 class RepositoryBackedServicesTest {
@@ -123,7 +121,7 @@ class RepositoryBackedServicesTest {
         private final AuthLogJpaRepository authLogRepository = mock(AuthLogJpaRepository.class);
         private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         private final MemberService service = new MemberService(
-                new TestPasswordCodec(passwordEncoder),
+                passwordEncoder,
                 repository,
                 authLogRepository
         );
@@ -192,23 +190,6 @@ class RepositoryBackedServicesTest {
             assertThat(service.findPassword("ssafy", "ssafy@example.com")).isEqualTo("legacy-secret");
             service.delete("ssafy");
             verify(repository).deleteByUserId("ssafy");
-        }
-    }
-
-    private record TestPasswordCodec(PasswordEncoder passwordEncoder) implements PasswordCodec {
-        @Override
-        public String encode(String rawPassword) {
-            return passwordEncoder.encode(rawPassword);
-        }
-
-        @Override
-        public boolean matches(String rawPassword, String encodedPassword) {
-            return passwordEncoder.matches(rawPassword, encodedPassword);
-        }
-
-        @Override
-        public boolean isEncoded(String password) {
-            return password != null && password.startsWith("$2");
         }
     }
 }
