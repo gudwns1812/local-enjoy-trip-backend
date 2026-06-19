@@ -24,7 +24,8 @@
 - `core:core-api`: Spring Boot HTTP/API executable이자 background worker entrypoint를 함께 소유하는 주 실행 모듈.
   - HTTP/API 코드는 `com.ssafy.enjoytrip.core.api.web.*` 아래에 둔다.
   - Kafka/Scheduled/background worker ingress는 `com.ssafy.enjoytrip.core.api.worker.*` 아래에 둔다.
-  - domain model, service/application logic, external client 계약, support contract를 소유한다.
+  - domain model, service/application logic, support contract를 소유한다.
+  - API-facing outbound client는 `external`이 공개한 concrete client와 neutral result DTO를 service 경계에서 직접 사용한다.
   - database access는 `storage:db-core`의 MyBatis mapper와 storage Record contract를 service 경계에서 직접 사용한다.
   - 기본 API main class는 `com.ssafy.enjoytrip.EnjoyTripApplication`이다.
   - worker main class는 `com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication`이며 worker 전용 설정은
@@ -32,7 +33,7 @@
 - `core:core-enum`: `core-api`와 `db-core`가 함께 참조해야 하는 enum만 소유한다.
 - `storage:db-core`: MyBatis mapper/XML/type handler, storage Record contract, persistence infrastructure, Flyway migration만
   소유한다.
-- `external`: 현재 core 의존을 갖지 않는 독립 모듈로 유지한다. API-facing outbound integration 구현체와 설정은 `core-api` 안에서 소유하고, batch-only outbound 구현체와 설정은 `batch` 안에서 소유한다. `external`은 `core-api`를 의존하지 않는다.
+- `external`: 현재 core 의존을 갖지 않는 독립 모듈로 유지한다. API-facing outbound integration concrete client, 설정, neutral result DTO를 소유한다. 허용 의존 방향은 `core:core-api -> external`뿐이며, `external`은 `core`, `core-api`, storage/domain/web 타입을 의존하지 않는다.
 - `batch`: 별도 batch runtime으로 보존한다. batch ingress, job parameter parsing, batch-only service, batch-only outbound client는 batch 경계에 둔다.
 
 `app`, `app/web`, `app/worker` 모듈은 target 구조에서 제거한다. 새 코드는 이 경로에
@@ -50,6 +51,7 @@
 - Controller 또는 worker ingress가 repository를 직접 호출하는 것 금지.
 - `storage:db-core`가 web/controller, worker ingress, domain service/application flow, external API client를 소유하는 것 금지.
 - `core:core-enum`에 enum 외 application/domain behavior를 넣는 것 금지.
+- API-facing outbound client를 위해 `core-api`가 interface/port/gateway 계약을 새로 소유하고 `external`이 구현하게 만드는 구조 금지. `core-api` service는 `external` concrete client/result DTO를 직접 사용하고 service call path에서 domain model로 직접 매핑한다.
 
 기본 HTTP 흐름:
 

@@ -1,8 +1,8 @@
-package com.ssafy.enjoytrip.core.domain;
+package com.ssafy.enjoytrip.external.minio;
 
 import java.time.Instant;
 
-public record PresignedNoteImageUpload(
+public record NoteImageUploadResult(
         String objectKey,
         String uploadUrl,
         Instant expiresAt,
