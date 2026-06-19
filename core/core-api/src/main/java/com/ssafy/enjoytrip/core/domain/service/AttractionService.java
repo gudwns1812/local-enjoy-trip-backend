@@ -9,18 +9,11 @@ import com.ssafy.enjoytrip.core.domain.query.AttractionSearchCondition;
 import com.ssafy.enjoytrip.core.domain.query.NearbySearchCondition;
 import com.ssafy.enjoytrip.external.ClickHouseAttractionPopularityClient;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
-import com.ssafy.enjoytrip.storage.db.core.model.AttractionAverageRatingRecord;
-import com.ssafy.enjoytrip.storage.db.core.model.AttractionCountRecord;
-import com.ssafy.enjoytrip.storage.db.core.model.AttractionRatingRecord;
-import com.ssafy.enjoytrip.storage.db.core.model.AttractionRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionTagRecord;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AttractionService {
     private final ClickHouseAttractionPopularityClient popularityClient;
     private final AttractionMapper attractionMapper;
+    private final AttractionStatsService attractionStatsService;
 
     public List<PopularAttraction> findPopularNearbyAttractions(NearbySearchCondition condition,
                                                                 String userId) {
@@ -48,7 +42,11 @@ public class AttractionService {
 
         if (popularityCounts.isEmpty()) {
             return candidates.stream()
-                    .map(candidate -> new PopularAttraction(candidate.attraction(), candidate.distanceMeters(), 0L))
+                    .map(candidate -> new PopularAttraction(
+                            candidate.attraction(),
+                            candidate.distanceMeters(),
+                            0L
+                    ))
                     .toList();
         }
 
@@ -89,13 +87,8 @@ public class AttractionService {
         return attractionId != null && attractionMapper.existsById(attractionId) > 0;
     }
 
-    public AttractionStats findStats(Long attractionId, String userId) {
-        return statsFor(List.of(attractionId), userId)
-                .getOrDefault(attractionId, new AttractionStats(attractionId, 0, 0.0, 0, List.of(), false, null));
-    }
-
     public void addFavorite(Long attractionId, String userId) {
-        if (blankToNull(userId) == null) {
+        if (userId == null) {
             return;
         }
         attractionMapper.insertFavorite(attractionId, userId);
@@ -152,20 +145,15 @@ public class AttractionService {
     }
 
     private List<Attraction> executeAttractionSearch(AttractionSearchCondition condition, String userId) {
-        Double longitude = parseDouble(condition.mapX());
-        Double latitude = parseDouble(condition.mapY());
-        boolean aroundSearch = longitude != null && latitude != null;
-        Double radiusMeters = aroundSearch ? parseRadius(condition.radius()) : null;
-
         List<Attraction> attractions = attractionMapper.search(
-                        blankToNull(condition.contentTypeId()),
-                        blankToNull(condition.keyword()),
-                        aroundSearch ? null : parseInteger(condition.sidoCode()),
-                        aroundSearch ? null : parseInteger(condition.gugunCode()),
-                        longitude,
-                        latitude,
-                        radiusMeters,
-                        aroundSearch,
+                        condition.contentTypeId(),
+                        condition.keyword(),
+                        condition.aroundSearch() ? null : condition.sidoCode(),
+                        condition.aroundSearch() ? null : condition.gugunCode(),
+                        condition.longitude(),
+                        condition.latitude(),
+                        condition.radiusMeters(),
+                        condition.aroundSearch(),
                         200
                 ).stream()
                 .map(record -> new Attraction(
@@ -231,7 +219,10 @@ public class AttractionService {
                 ))
                 .toList(), userId);
         Map<Long, Double> distanceByAttractionId = records.stream()
-                .collect(Collectors.toMap(AttractionSearchRecord::id, AttractionSearchRecord::distanceMeters));
+                .collect(Collectors.toMap(
+                        AttractionSearchRecord::id,
+                        AttractionSearchRecord::distanceMeters
+                ));
 
         return enriched.stream()
                 .map(attraction -> new NearbyAttractionCandidate(
@@ -245,47 +236,13 @@ public class AttractionService {
         if (attractions.isEmpty()) {
             return attractions;
         }
-        Map<Long, AttractionStats> stats = statsFor(
+        Map<Long, AttractionStats> stats = attractionStatsService.findStatsByAttractionId(
                 attractions.stream().map(Attraction::id).toList(),
                 userId
         );
         return attractions.stream()
                 .map(attraction -> enrich(attraction, stats.get(attraction.id())))
                 .toList();
-    }
-
-    private Map<Long, AttractionStats> statsFor(List<Long> attractionIds, String userId) {
-        if (attractionIds.isEmpty()) {
-            return Map.of();
-        }
-        Map<Long, Integer> favoriteCounts = attractionMapper.findFavoriteCounts(attractionIds).stream()
-                .collect(Collectors.toMap(AttractionCountRecord::attractionId, AttractionCountRecord::count));
-        Map<Long, AttractionAverageRatingRecord> ratingStats = attractionMapper.findRatingStats(attractionIds).stream()
-                .collect(Collectors.toMap(AttractionAverageRatingRecord::attractionId, record -> record));
-        Set<Long> favoritedIds = new HashSet<>();
-        Map<Long, Integer> myRatings = Map.of();
-        if (blankToNull(userId) != null) {
-            favoritedIds = new HashSet<>(attractionMapper.findFavoritedIds(attractionIds, userId));
-            myRatings = attractionMapper.findMyRatings(attractionIds, userId).stream()
-                    .collect(Collectors.toMap(AttractionRatingRecord::attractionId, AttractionRatingRecord::rating));
-        }
-
-        Map<Long, AttractionStats> result = new HashMap<>();
-        for (Long attractionId : attractionIds) {
-            AttractionAverageRatingRecord rating = ratingStats.get(attractionId);
-            result.put(attractionId, new AttractionStats(
-                    attractionId,
-                    favoriteCounts.getOrDefault(attractionId, 0),
-                    rating == null ? 0.0 : rating.average(),
-                    rating == null ? 0 : rating.count(),
-                    attractionMapper.findTagsByAttractionId(attractionId).stream()
-                            .map(record -> new AttractionTag(record.id(), record.name()))
-                            .toList(),
-                    favoritedIds.contains(attractionId),
-                    myRatings.get(attractionId)
-            ));
-        }
-        return result;
     }
 
     private static Attraction enrich(Attraction attraction, AttractionStats stats) {
@@ -318,40 +275,4 @@ public class AttractionService {
         );
     }
 
-    private static Integer parseInteger(String value) {
-        try {
-            if (value == null || value.isBlank()) {
-                return null;
-            }
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private static Double parseDouble(String value) {
-        try {
-            if (value == null || value.isBlank()) {
-                return null;
-            }
-            return Double.parseDouble(value.trim());
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private static double parseRadius(String value) {
-        Double parsed = parseDouble(value);
-        if (parsed == null || parsed <= 0) {
-            return 3000.0;
-        }
-        return Math.min(parsed, 20000.0);
-    }
-
-    private static String blankToNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return value.trim();
-    }
 }

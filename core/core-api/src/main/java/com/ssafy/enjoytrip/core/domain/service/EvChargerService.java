@@ -35,9 +35,9 @@ public class EvChargerService {
     public List<ChargerItem> findChargers(String zcode, String keyword, int pageNo, int numOfRows) {
         int limit = Math.max(10, Math.min(500, numOfRows));
         int page = Math.max(1, pageNo);
-        String region = ZCODE_REGIONS.get(trim(zcode));
+        String region = ZCODE_REGIONS.get(zcode);
 
-        return evChargerMapper.findChargers(region, blankToNull(keyword), limit, (page - 1) * limit)
+        return evChargerMapper.findChargers(region, keyword, limit, (page - 1) * limit)
                 .stream()
                 .map(record -> new ChargerItem(
                         record.statId(),
@@ -54,19 +54,5 @@ public class EvChargerService {
                         record.stat()
                 ))
                 .toList();
-    }
-
-    private static String trim(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.trim();
-    }
-
-    private static String blankToNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return value.trim();
     }
 }

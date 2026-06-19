@@ -1,7 +1,6 @@
 package com.ssafy.enjoytrip.core.api.web;
 import com.ssafy.enjoytrip.core.api.web.controller.*;
 
-import com.ssafy.enjoytrip.core.domain.service.RouteOptimizationService;
 import com.ssafy.enjoytrip.core.domain.Attraction;
 import com.ssafy.enjoytrip.core.domain.query.AttractionSearchCondition;
 import com.ssafy.enjoytrip.core.domain.ChargerItem;
@@ -10,6 +9,7 @@ import com.ssafy.enjoytrip.core.domain.NeighborhoodBriefing;
 import com.ssafy.enjoytrip.core.domain.WeatherSummary;
 import com.ssafy.enjoytrip.core.domain.service.DbHealthService;
 import com.ssafy.enjoytrip.core.domain.service.AttractionService;
+import com.ssafy.enjoytrip.core.domain.service.AttractionStatsService;
 import com.ssafy.enjoytrip.core.domain.service.BoardService;
 import com.ssafy.enjoytrip.core.domain.service.EvChargerService;
 import com.ssafy.enjoytrip.core.domain.service.HotplaceService;
@@ -20,7 +20,6 @@ import com.ssafy.enjoytrip.core.domain.service.NewsService;
 import com.ssafy.enjoytrip.core.domain.service.NoticeService;
 import com.ssafy.enjoytrip.core.domain.service.OAuthSignupTicketService;
 import com.ssafy.enjoytrip.core.domain.service.PlanService;
-import com.ssafy.enjoytrip.core.api.web.mapper.PlanResponseAssembler;
 import com.ssafy.enjoytrip.core.domain.service.WeatherService;
 import com.ssafy.enjoytrip.core.domain.BoardPost;
 import com.ssafy.enjoytrip.core.domain.Hotplace;
@@ -53,6 +52,7 @@ import java.util.List;
 class ApiDocumentationTest {
     private MockMvc mockMvc;
     private AttractionService attractionService;
+    private AttractionStatsService attractionStatsService;
     private EvChargerService chargerService;
     private NewsService newsService;
     private WeatherService weatherService;
@@ -68,6 +68,7 @@ class ApiDocumentationTest {
     @BeforeEach
     void setUp(RestDocumentationContextProvider restDocumentation) {
         attractionService = mock(AttractionService.class);
+        attractionStatsService = mock(AttractionStatsService.class);
         chargerService = mock(EvChargerService.class);
         newsService = mock(NewsService.class);
         weatherService = mock(WeatherService.class);
@@ -83,18 +84,14 @@ class ApiDocumentationTest {
         this.mockMvc = MockMvcBuilders
                 .standaloneSetup(
                         new HealthController(mock(DbHealthService.class)),
-                        new RouteController(new RouteOptimizationService()),
-                        new AttractionController(attractionService),
+                        new AttractionController(attractionService, attractionStatsService),
                         new ChargerController(chargerService),
                         new NewsController(newsService),
                         new WeatherController(weatherService),
                         new NeighborhoodBriefingController(neighborhoodBriefingService),
                         new BoardController(boardService),
                         new HotplaceController(hotplaceService),
-                        new PlanController(
-                                planService,
-                                new PlanResponseAssembler(planService)
-                        ),
+                        new PlanController(planService),
                         new NoticeController(noticeService),
                         new MemberController(memberService, tokenService, oauthSignupTicketService)
                 )
@@ -115,35 +112,18 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
-    @DisplayName("경로 최적화 API 문서를 검증한다")
-    @Test
-    void routeOptimize() throws Exception {
-        mockMvc.perform(get("/api/routes/optimizations")
-                        .param("points", "37.5665,126.9780|35.1796,129.0756|33.4996,126.5312"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.order").isArray())
-                .andDo(document("route-optimize",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint())));
-    }
-
-    @DisplayName("일자별 경로 분할 API 문서를 검증한다")
-    @Test
-    void routeSplitByDay() throws Exception {
-        mockMvc.perform(get("/api/routes/day-splits")
-                        .param("points", "37.5665,126.9780|35.1796,129.0756|33.4996,126.5312")
-                        .param("days", "2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.days").isArray())
-                .andDo(document("route-split-by-day",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint())));
-    }
-
     @DisplayName("관광지 API 문서를 검증한다")
     @Test
     void attractions() throws Exception {
-        when(attractionService.searchAttractions(new AttractionSearchCondition("1", "", "", "궁", "", "", "")))
+        when(attractionService.searchAttractions(new AttractionSearchCondition(
+                1,
+                null,
+                null,
+                "궁",
+                null,
+                null,
+                null
+        )))
                 .thenReturn(List.of(
                 new Attraction(
                         1L, "경복궁", "서울 종로구", "", "", "", "", "", 0, 1, 1, 37.5796, 126.9770, "6", "", "",
@@ -161,7 +141,7 @@ class ApiDocumentationTest {
     @DisplayName("충전소 API 문서를 검증한다")
     @Test
     void chargers() throws Exception {
-        when(chargerService.findChargers("", "서울", 1, 150)).thenReturn(List.of(
+        when(chargerService.findChargers(null, "서울", 1, 150)).thenReturn(List.of(
                 new ChargerItem(
                         "ST001", "서울충전소", "01", "06", "서울", "", 37.5, 127.0, "24시간", "환경부", "1661-9408", "2"
                 )

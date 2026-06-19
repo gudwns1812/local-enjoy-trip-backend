@@ -30,6 +30,7 @@ import com.ssafy.enjoytrip.core.support.error.exception.ExternalServiceException
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.core.domain.service.DbHealthService;
 import com.ssafy.enjoytrip.core.domain.service.AttractionService;
+import com.ssafy.enjoytrip.core.domain.service.AttractionStatsService;
 import com.ssafy.enjoytrip.core.domain.service.BoardService;
 import com.ssafy.enjoytrip.core.domain.service.EvChargerService;
 import com.ssafy.enjoytrip.core.domain.service.HotplaceService;
@@ -42,7 +43,6 @@ import com.ssafy.enjoytrip.core.domain.service.NoteService;
 import com.ssafy.enjoytrip.core.domain.service.NoticeService;
 import com.ssafy.enjoytrip.core.domain.service.OAuthSignupTicketService;
 import com.ssafy.enjoytrip.core.domain.service.PlanService;
-import com.ssafy.enjoytrip.core.domain.service.RouteOptimizationService;
 import com.ssafy.enjoytrip.core.domain.service.WeatherService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,12 +50,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import com.ssafy.enjoytrip.core.api.web.mapper.PlanResponseAssembler;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -99,6 +100,7 @@ class ControllerBehaviorTest {
     private JwtTokenService tokenService;
     private OAuthSignupTicketService oauthSignupTicketService;
     private AttractionService attractionService;
+    private AttractionStatsService attractionStatsService;
     private EvChargerService chargerService;
     private WeatherService weatherService;
     private NeighborhoodBriefingService neighborhoodBriefingService;
@@ -118,6 +120,7 @@ class ControllerBehaviorTest {
         tokenService = mock(JwtTokenService.class);
         oauthSignupTicketService = mock(OAuthSignupTicketService.class);
         attractionService = mock(AttractionService.class);
+        attractionStatsService = mock(AttractionStatsService.class);
         chargerService = mock(EvChargerService.class);
         weatherService = mock(WeatherService.class);
         neighborhoodBriefingService = mock(NeighborhoodBriefingService.class);
@@ -127,21 +130,17 @@ class ControllerBehaviorTest {
         mockMvc = MockMvcBuilders.standaloneSetup(
                         new BoardController(boardService),
                         new HotplaceController(hotplaceService),
-                        new PlanController(
-                                planService,
-                                new PlanResponseAssembler(planService)
-                        ),
+                        new PlanController(planService),
                         new NoticeController(noticeService),
                         new NoteController(noteService),
                         new MemberController(memberService, tokenService, oauthSignupTicketService),
-                        new AttractionController(attractionService),
+                        new AttractionController(attractionService, attractionStatsService),
                         new AttractionTagController(attractionService),
                         new ChargerController(chargerService),
                         new WeatherController(weatherService),
                         new NeighborhoodBriefingController(neighborhoodBriefingService),
                         new MapController(mapExploreService),
                         new NoteImageController(noteImageUploadService),
-                        new RouteController(new RouteOptimizationService()),
                         new HealthController(dbHealthService),
                         new FailingController()
                 )
@@ -909,8 +908,8 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.error.message").value("GET /api/attractions를 사용하세요."));
 
             when(attractionService.searchAttractions(
-                    new AttractionSearchCondition("1", "", "", "궁", "", "", ""),
-                    ""
+                    new AttractionSearchCondition(1, null, null, "궁", null, null, null),
+                    null
             ))
                     .thenThrow(new ExternalServiceException(
                             ExternalServiceException.Source.TOUR_API,
@@ -921,8 +920,8 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.error.message").value("Tour API 호출에 실패했습니다."));
 
             when(attractionService.searchAttractions(
-                    new AttractionSearchCondition("", "", "", "", "126.9", "37.5", ""),
-                    ""
+                    new AttractionSearchCondition(null, null, null, null, 126.9, 37.5, 3000.0),
+                    null
             ))
                     .thenThrow(new IllegalStateException("설정되어 있지 않습니다."));
             mockMvc.perform(get("/api/attractions").param("mapX", "126.9").param("mapY", "37.5"))
@@ -934,7 +933,7 @@ class ControllerBehaviorTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
 
-            when(chargerService.findChargers("", "", 1, 150))
+            when(chargerService.findChargers(null, null, 1, 150))
                     .thenThrow(new ExternalServiceException(
                             ExternalServiceException.Source.EV_CHARGER_API,
                             new RuntimeException("요청 시간이 초과되었습니다.")
@@ -955,7 +954,7 @@ class ControllerBehaviorTest {
             );
             when(attractionService.findPopularNearbyAttractions(
                     new NearbySearchCondition(126.9780, 37.5665, 500.0, 20),
-                    ""
+                    null
             )).thenReturn(List.of(new PopularAttraction(attraction, 120.5, 42L)));
 
             mockMvc.perform(get("/api/attractions/popular-nearby"))
@@ -969,7 +968,7 @@ class ControllerBehaviorTest {
 
             verify(attractionService).findPopularNearbyAttractions(
                     new NearbySearchCondition(126.9780, 37.5665, 500.0, 20),
-                    ""
+                    null
             );
         }
 
@@ -986,7 +985,7 @@ class ControllerBehaviorTest {
         @Test
         void attractionEngagementAndTagEndpointsValidateAndDelegate() throws Exception {
             when(attractionService.existsById(1L)).thenReturn(true);
-            when(attractionService.findStats(1L, "ssafy")).thenReturn(new AttractionStats(
+            when(attractionStatsService.findStats(1L, "ssafy")).thenReturn(new AttractionStats(
                     1L, 2, 4.5, 2, List.of(new AttractionTag(3L, "family")), true, 5
             ));
             when(attractionService.findAllTags()).thenReturn(List.of(new AttractionTag(3L, "family")));
@@ -1043,18 +1042,6 @@ class ControllerBehaviorTest {
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.error.code").value("INTERNAL_SERVER_ERROR"));
         }
-    }
-
-    @DisplayName("경로 엔드포인트는 잘못된 입력을 거부한다")
-    @Test
-    void routeEndpointsRejectInvalidInput() throws Exception {
-        mockMvc.perform(get("/api/routes/optimizations").param("points", "37.5|bad"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.message").value("유효하지 않은 경로 좌표입니다."));
-
-        mockMvc.perform(get("/api/routes/day-splits").param("points", "37.5|bad").param("days", "two"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
     }
 
     @DisplayName("컨트롤러 계약은 원시 Map 대신 DTO를 사용한다")
@@ -1125,9 +1112,9 @@ class ControllerBehaviorTest {
                     + "@ModelAttribute"
     );
 
-    @org.springframework.web.bind.annotation.RestController
+    @RestController
     static class FailingController {
-        @org.springframework.web.bind.annotation.GetMapping("/test/fail")
+        @GetMapping("/test/fail")
         String fail(Principal ignored) {
             throw new IllegalStateException("처리 중 오류가 발생했습니다.");
         }
