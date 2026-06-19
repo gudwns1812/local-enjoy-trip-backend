@@ -3,23 +3,23 @@ package com.ssafy.enjoytrip.core.api.web.controller;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.PLAN_NOT_FOUND;
 import static com.ssafy.enjoytrip.core.support.response.ApiResponse.success;
 
-import com.ssafy.enjoytrip.core.domain.service.PlanService;
-import com.ssafy.enjoytrip.core.support.error.CoreException;
-import com.ssafy.enjoytrip.core.support.response.ApiResponse;
+import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserId;
 import com.ssafy.enjoytrip.core.api.web.api.PlanApi;
 import com.ssafy.enjoytrip.core.api.web.dto.request.PlanCreateRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.PlanReplaceItemsRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.PlanUpdateRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.response.PlanResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.PlansResponse;
-import com.ssafy.enjoytrip.core.api.web.mapper.PlanResponseAssembler;
+import com.ssafy.enjoytrip.core.domain.TravelPlan;
+import com.ssafy.enjoytrip.core.domain.service.PlanService;
+import com.ssafy.enjoytrip.core.support.error.CoreException;
+import com.ssafy.enjoytrip.core.support.response.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserId;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,14 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class PlanController implements PlanApi {
     private final PlanService service;
-    private final PlanResponseAssembler responseAssembler;
 
     @GetMapping
     @Override
     public ApiResponse<PlansResponse> find(@RequestParam(required = false) String userId) {
         List<PlanResponse> plans = hasText(userId)
-                ? service.findPlansByUser(userId.strip()).stream().map(responseAssembler::toResponse).toList()
-                : service.findAllPlans().stream().map(responseAssembler::toResponse).toList();
+                ? service.findPlansByUser(userId.strip()).stream().map(this::toResponse).toList()
+                : service.findAllPlans().stream().map(this::toResponse).toList();
         return success(new PlansResponse(plans));
     }
 
@@ -53,7 +52,7 @@ public class PlanController implements PlanApi {
     public ApiResponse<PlanResponse> findOne(
             @PathVariable @NotBlank String id
     ) {
-        return success(responseAssembler.toResponse(service.findPlan(id.strip())
+        return success(toResponse(service.findPlan(id.strip())
                 .orElseThrow(() -> new CoreException(PLAN_NOT_FOUND))));
     }
 
@@ -125,6 +124,10 @@ public class PlanController implements PlanApi {
         return success();
     }
 
+
+    private PlanResponse toResponse(TravelPlan plan) {
+        return PlanResponse.from(plan, service.findPlanItems(plan.id()));
+    }
 
     private static boolean hasText(String value) {
         return value != null && !value.isBlank();

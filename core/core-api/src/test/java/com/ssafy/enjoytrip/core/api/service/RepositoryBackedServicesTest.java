@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,11 +16,14 @@ import com.ssafy.enjoytrip.core.domain.BoardPost;
 import com.ssafy.enjoytrip.core.domain.Hotplace;
 import com.ssafy.enjoytrip.core.domain.Member;
 import com.ssafy.enjoytrip.core.domain.Notice;
+import com.ssafy.enjoytrip.core.domain.PlanItem;
 import com.ssafy.enjoytrip.core.domain.TravelPlan;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
+import com.ssafy.enjoytrip.storage.db.core.model.AttractionRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.HotplaceRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.MemberRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.NoticeRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.PlanItemRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.TravelPlanRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AuthLogMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.BoardPostMapper;
@@ -27,10 +31,12 @@ import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.HotplaceMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.MemberMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NoticeMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.PlanMapper;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Tag("service")
@@ -108,6 +114,56 @@ class RepositoryBackedServicesTest {
 
             verify(mapper).insertPlan(any(TravelPlanRecord.class));
         }
+
+        @DisplayName("여행 계획 코스 저장은 관광지 좌표 기준으로 같은 일자 안에서 순서를 최적화한다")
+        @Test
+        void savesPlanItemsInOptimizedOrderByAttractionCoordinates() {
+            TravelPlan plan = new TravelPlan("p1", "ssafy", "서울", "2026-05-14", "2026-05-15",
+                    1000, "note", "[]", "created");
+            List<PlanItem> items = List.of(
+                    new PlanItem(null, "p1", 1L, 0, 1, "start", 90),
+                    new PlanItem(null, "p1", 2L, 0, 1, "far", 90),
+                    new PlanItem(null, "p1", 3L, 0, 1, "near", 90)
+            );
+            when(mapper.existsById("p1")).thenReturn(1);
+            when(mapper.findAttractionsByIds(List.of(1L, 2L, 3L))).thenReturn(List.of(
+                    attraction(1L, 37.5665, 126.9780),
+                    attraction(2L, 35.1796, 129.0756),
+                    attraction(3L, 37.5700, 126.9820)
+            ));
+
+            service.insertPlan(plan, items);
+
+            ArgumentCaptor<PlanItemRecord> itemCaptor = ArgumentCaptor.forClass(PlanItemRecord.class);
+            verify(mapper, times(3)).insertItem(itemCaptor.capture());
+            assertThat(itemCaptor.getAllValues())
+                    .extracting(PlanItemRecord::getAttractionId)
+                    .containsExactly(1L, 3L, 2L);
+            assertThat(itemCaptor.getAllValues())
+                    .extracting(PlanItemRecord::getPosition)
+                    .containsExactly(1, 2, 3);
+        }
+
+        private AttractionRecord attraction(Long id, Double latitude, Double longitude) {
+            return new AttractionRecord(
+                    id,
+                    "관광지 " + id,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    0,
+                    1,
+                    1,
+                    latitude,
+                    longitude,
+                    "",
+                    "",
+                    ""
+            );
+        }
     }
 
     @Nested
@@ -122,7 +178,9 @@ class RepositoryBackedServicesTest {
         void signupDoesNotInsertDuplicateUser() {
             when(mapper.existsByUserId("ssafy")).thenReturn(1);
 
-            assertThatThrownBy(() -> service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", "")))
+            Member duplicate = new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", "");
+
+            assertThatThrownBy(() -> service.signup(duplicate))
                     .isInstanceOfSatisfying(CoreException.class,
                             exception -> assertThat(exception.errorType()).isEqualTo(USER_ALREADY_EXISTS));
 
@@ -134,7 +192,16 @@ class RepositoryBackedServicesTest {
         void loginRejectsMissingMemberBlankPasswordAndBlankStoredPassword() {
             when(mapper.findByUserId("missing")).thenReturn(null);
             when(mapper.findByUserId("blank-input")).thenReturn(new MemberRecord(
-                    "blank-input", "A", null, "a@example.com", passwordEncoder.encode("secret"), "", null, null, null));
+                    "blank-input",
+                    "A",
+                    null,
+                    "a@example.com",
+                    passwordEncoder.encode("secret"),
+                    "",
+                    null,
+                    null,
+                    null
+            ));
             when(mapper.findByUserId("blank-stored")).thenReturn(new MemberRecord(
                     "blank-stored", "A", null, "a@example.com", " ", "", null, null, null));
 
@@ -163,7 +230,9 @@ class RepositoryBackedServicesTest {
             assertThat(passwordEncoder.matches("new-secret", record.getPassword())).isTrue();
 
             when(mapper.findByUserId("missing")).thenReturn(null);
-            assertThatThrownBy(() -> service.update(new Member("missing", "SSAFY", "ssafy@example.com", " ", "")))
+            Member missing = new Member("missing", "SSAFY", "ssafy@example.com", " ", "");
+
+            assertThatThrownBy(() -> service.update(missing))
                     .isInstanceOfSatisfying(CoreException.class,
                             exception -> assertThat(exception.errorType()).isEqualTo(USER_NOT_FOUND));
         }

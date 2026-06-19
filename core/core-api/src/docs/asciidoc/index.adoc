@@ -13,16 +13,6 @@ Controller request and response contracts must use named DTO objects. Raw map co
 include::{snippets}/health/http-request.adoc[]
 include::{snippets}/health/http-response.adoc[]
 
-== Route Optimize
-
-include::{snippets}/route-optimize/http-request.adoc[]
-include::{snippets}/route-optimize/http-response.adoc[]
-
-== Route Split By Day
-
-include::{snippets}/route-split-by-day/http-request.adoc[]
-include::{snippets}/route-split-by-day/http-response.adoc[]
-
 == Attractions
 
 include::{snippets}/attractions/http-request.adoc[]

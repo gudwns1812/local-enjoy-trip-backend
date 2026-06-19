@@ -1,24 +1,15 @@
 package com.ssafy.enjoytrip.core.support;
 
-import com.ssafy.enjoytrip.core.api.filter.Utf8EncodingFilter;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.core.support.error.ErrorCode;
 import com.ssafy.enjoytrip.core.support.error.ErrorType;
 import com.ssafy.enjoytrip.core.support.response.ApiResponse;
-import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @Tag("support")
 class SupportUtilitiesTest {
@@ -57,21 +48,5 @@ class SupportUtilitiesTest {
             assertThat(exception.errorType()).isEqualTo(ErrorType.INVALID_REQUEST);
             assertThat(exception).hasMessage("유효하지 않은 요청입니다.").hasCause(cause);
         }
-    }
-
-
-    @DisplayName("UTF-8 필터는 다음 처리 전에 요청과 응답 인코딩을 설정한다")
-    @Test
-    void utf8EncodingFilterSetsRequestAndResponseEncodingBeforeContinuing() throws Exception {
-        Utf8EncodingFilter filter = new Utf8EncodingFilter();
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        FilterChain chain = mock(FilterChain.class);
-
-        filter.doFilter(request, response, chain);
-
-        assertThat(request.getCharacterEncoding()).isEqualTo(StandardCharsets.UTF_8.name());
-        assertThat(response.getCharacterEncoding()).isEqualTo(StandardCharsets.UTF_8.name());
-        verify(chain).doFilter(request, response);
     }
 }

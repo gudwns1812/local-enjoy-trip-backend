@@ -20,9 +20,11 @@ class DbBackedTravelDataServicesTest {
         @DisplayName("AttractionService는 MyBatis mapper와 popularity client로 생성된다")
         @Test
         void constructsWithMyBatisMapperDependencies() {
+            AttractionMapper attractionMapper = mock(AttractionMapper.class);
             AttractionService service = new AttractionService(
                     mock(ClickHouseAttractionPopularityClient.class),
-                    mock(AttractionMapper.class)
+                    attractionMapper,
+                    new AttractionStatsService(attractionMapper)
             );
 
             assertThat(service).isNotNull();

@@ -1,12 +1,15 @@
 package com.ssafy.enjoytrip.core.domain.query;
 
 public record AttractionSearchCondition(
-        String sidoCode,
-        String gugunCode,
+        Integer sidoCode,
+        Integer gugunCode,
         String contentTypeId,
         String keyword,
-        String mapX,
-        String mapY,
-        String radius
+        Double longitude,
+        Double latitude,
+        Double radiusMeters
 ) {
+    public boolean aroundSearch() {
+        return longitude != null && latitude != null;
+    }
 }

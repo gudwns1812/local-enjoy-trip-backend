@@ -11,6 +11,7 @@ import static com.ssafy.enjoytrip.core.support.response.ApiResponse.success;
 import com.ssafy.enjoytrip.core.domain.Attraction;
 import com.ssafy.enjoytrip.core.domain.PopularAttraction;
 import com.ssafy.enjoytrip.core.domain.service.AttractionService;
+import com.ssafy.enjoytrip.core.domain.service.AttractionStatsService;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.core.support.response.ApiResponse;
 import com.ssafy.enjoytrip.core.api.web.api.AttractionApi;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AttractionController implements AttractionApi {
     private final AttractionService service;
+    private final AttractionStatsService statsService;
 
     @GetMapping
     @Override
@@ -51,7 +53,7 @@ public class AttractionController implements AttractionApi {
     ) {
         List<Attraction> attractions = service.searchAttractions(
                 request.toCondition(),
-                authenticatedUserId
+                optionalUserId(authenticatedUserId)
         );
 
         return success(new AttractionsResponse(attractions));
@@ -65,7 +67,7 @@ public class AttractionController implements AttractionApi {
     ) {
         List<PopularAttraction> attractions = service.findPopularNearbyAttractions(
                 request.toCondition(),
-                authenticatedUserId
+                optionalUserId(authenticatedUserId)
         );
 
         return success(PopularAttractionsResponse.from(attractions));
@@ -80,7 +82,10 @@ public class AttractionController implements AttractionApi {
 
     @PutMapping("/{id}/favorite")
     @Override
-    public ApiResponse<Void> favorite(@PathVariable Long id, @AuthenticatedUserId String authenticatedUserId) {
+    public ApiResponse<Void> favorite(
+            @PathVariable Long id,
+            @AuthenticatedUserId String authenticatedUserId
+    ) {
         requireAttraction(id);
         service.addFavorite(id, authenticatedUserId);
 
@@ -89,7 +94,10 @@ public class AttractionController implements AttractionApi {
 
     @DeleteMapping("/{id}/favorite")
     @Override
-    public ApiResponse<Void> unfavorite(@PathVariable Long id, @AuthenticatedUserId String authenticatedUserId) {
+    public ApiResponse<Void> unfavorite(
+            @PathVariable Long id,
+            @AuthenticatedUserId String authenticatedUserId
+    ) {
         requireAttraction(id);
         service.removeFavorite(id, authenticatedUserId);
 
@@ -109,7 +117,10 @@ public class AttractionController implements AttractionApi {
 
     @DeleteMapping("/{id}/rating")
     @Override
-    public ApiResponse<Void> deleteRating(@PathVariable Long id, @AuthenticatedUserId String authenticatedUserId) {
+    public ApiResponse<Void> deleteRating(
+            @PathVariable Long id,
+            @AuthenticatedUserId String authenticatedUserId
+    ) {
         requireAttraction(id);
         service.removeRating(id, authenticatedUserId);
 
@@ -123,7 +134,9 @@ public class AttractionController implements AttractionApi {
             @AuthenticatedUserId(unauthenticated = BLANK) String authenticatedUserId
     ) {
         requireAttraction(id);
-        return success(new AttractionStatsResponse(service.findStats(id, authenticatedUserId)));
+        return success(new AttractionStatsResponse(
+                statsService.findStats(id, optionalUserId(authenticatedUserId))
+        ));
     }
 
     @PutMapping("/{id}/tags")
@@ -152,5 +165,12 @@ public class AttractionController implements AttractionApi {
         }
     }
 
+    private static String optionalUserId(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return null;
+        }
+
+        return userId;
+    }
 
 }
