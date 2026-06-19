@@ -62,8 +62,9 @@ existing ingress boundary first.
   fetch required persisted state first, then call domain guard methods such as `require...By(...)`, then invoke
   storage persistence types.
 - **Record to Domain Conversion**: In `core-api` services, convert storage Records to domain models directly with
-  `new DomainModel(...)` at the service call path. Do not add service-local `toModel`/`toDomain` helpers, and do not
-  move those conversions onto storage Records.
+  `new DomainModel(...)` at the service call path for one-off conversions. If the same long storage Record -> domain
+  model conversion repeats inside one service, a private service-local helper is allowed for duplicate removal. Do not
+  add mapper layers, public conversion APIs, or conversion methods on storage Records.
 - **Domain Import Boundary**: Domain objects may use core/support business exceptions as existing domain precedent
   does, but must not import JPA/storage Records, web DTOs, controller contracts, or persistence primitives.
 

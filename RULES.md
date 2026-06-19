@@ -199,14 +199,18 @@ public Member login(String userId, String password) {
 ### 11.1 storage Record -> core domain 변환 규칙
 
 monolithic `core-api` 전환 구조에서는 `core-api` service가 `storage:db-core` storage Record/MyBatis 타입을 직접 사용할 수 있다.
-따라서 storage Record를 domain model로 바꿀 때 별도 mapper 계층이나 service-local `toModel`/`toDomain` helper를 두지 않는다.
+따라서 storage Record를 domain model로 바꿀 때 별도 mapper 계층을 두지 않는다.
 
 - 조회 결과를 domain model로 반환해야 하면 service call path에서 `new DomainModel(...)`로 직접 생성한다.
-- `stream().map(this::toModel)`, `Optional.map(this::toModel)`, `private toModel(StorageRecord record)` 패턴은 새로 만들지 않는다.
+- 단일 call path에서 한 번만 쓰는 변환은 `stream().map(this::toModel)`, `Optional.map(this::toModel)`,
+  `private toModel(StorageRecord record)`처럼 helper로 숨기지 않는다.
+- 같은 storage Record -> domain model 변환이 한 service 안에서 여러 번 반복되고 생성자 인자가 길어 리뷰/유지보수를 해치면
+  service-local private helper를 허용한다. 이 helper는 해당 service 내부 중복 제거용이어야 하며, 별도 mapper 계층,
+  public 변환 API, storage Record 메서드로 확장하지 않는다.
 - `storage:db-core` Record 내부에 core-api domain model을 반환하는 `toModel`/`toDomain` 메서드를 두지 않는다.
   `db-core`는 storage Record contract와 persistence infrastructure를 소유하고, core-api domain model 생성 책임은 service call path에 남긴다.
 - 같은 Record를 여러 유스케이스에서 반환하더라도 mapper 계층을 추가하기 전에 반환 필드와 caller contract가 정말 같은지 먼저 확인한다.
-  중복 제거보다 변환 위치와 의존 방향을 명확히 유지하는 것을 우선한다.
+  중복 제거는 service-local helper까지로 제한하고, 변환 위치와 의존 방향을 명확히 유지한다.
 
 ### 11.2 web request DTO -> core service 전달 규칙
 

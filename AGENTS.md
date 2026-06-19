@@ -23,13 +23,13 @@ The project is organized around the monolithic `core-api` target shape plus lowe
   - Worker entrypoint: `com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication`.
   - HTTP/API code lives under `com.ssafy.enjoytrip.core.api.web.*`.
   - Kafka/Scheduled/background worker ingress lives under `com.ssafy.enjoytrip.core.api.worker.*`.
-  - Domain models, application services, outbound integration clients, and support contracts live here; database access uses storage Record/MyBatis types directly.
-  - Concrete outbound integration clients used by the API are compiled in `core-api`; batch-only embedding clients are compiled in `batch`; the `external` module must not depend on `core-api`.
+  - Domain models, application services, and support contracts live here; database access uses storage Record/MyBatis types directly.
+  - API-facing concrete outbound integration clients and neutral result DTOs live in `external`; `core-api` depends on `external` directly and maps external results to domain models at the service call path. Batch-only embedding clients are compiled in `batch`; the `external` module must not depend on `core-api` or `core`.
   - `:core:core-api:check` is the primary executable-module verification command.
 - `core:core-enum`: enum-only shared module for values used by both `core-api` and `db-core`.
 - `storage:db-core`: storage Record contracts, MyBatis mapper interfaces/XML/type handlers, Flyway migrations, and database configuration.
   - Do not place web/controller, worker ingress, domain service, or external API client code here.
-- `external`: independent placeholder module with no `core-api` dependency. API-facing third-party clients live in `core-api`; batch-only embedding clients live in `batch`.
+- `external`: independent module with no `core-api` or `core` dependency. API-facing third-party concrete clients, configuration, and neutral result DTOs live here; batch-only embedding clients live in `batch`.
 - `batch`: separate batch runtime. Batch job ingress, parameter parsing, batch-only services, and batch-only outbound clients stay in `batch`.
 
 The legacy `app`, `app/web`, and `app/worker` modules are removed in the target shape. Do not add
@@ -56,9 +56,11 @@ Layering rules:
 - Worker packages must not own controllers, OpenAPI contracts, REST Docs, web DTOs, or REST response envelopes.
 - Controllers and workers must not call persistence/MyBatis mappers directly.
 - Services may import storage Record/MyBatis types; web controllers and worker ingress must not call storage/MyBatis mappers directly.
+- Core-api services use `external` concrete client/result DTO types directly for API-facing outbound integrations. Do not add core-owned outbound interface/port/gateway contracts for `external` to implement.
 - When services convert storage Records into core domain models, instantiate the domain model directly with `new` at the
-  service call path. Do not hide entity-to-domain conversion behind service-local `toModel`/`toDomain` helpers, and do
-  not put core-api domain model conversion methods on `storage:db-core` entities.
+  service call path for one-off conversions. If the same long storage Record -> domain model conversion repeats inside
+  one service, a private service-local helper is allowed for duplicate removal. Do not create mapper layers or put
+  core-api domain model conversion methods on `storage:db-core` entities.
 - Web request DTOs must not be passed into `core.domain.service` methods, and web-only command wrapper records should
   not live under `core.domain`. Controllers should pass domain models, existing core query/value objects, or explicitly
   unpacked normalized primitive/value parameters to services.
