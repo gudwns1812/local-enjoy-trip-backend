@@ -1,6 +1,7 @@
 package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
 import org.junit.jupiter.api.BeforeEach;
