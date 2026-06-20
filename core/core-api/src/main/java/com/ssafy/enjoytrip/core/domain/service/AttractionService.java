@@ -7,7 +7,6 @@ import com.ssafy.enjoytrip.core.domain.NearbyAttractionCandidate;
 import com.ssafy.enjoytrip.core.domain.PopularAttraction;
 import com.ssafy.enjoytrip.core.domain.query.AttractionSearchCondition;
 import com.ssafy.enjoytrip.core.domain.query.NearbySearchCondition;
-import com.ssafy.enjoytrip.external.ClickHouseAttractionPopularityClient;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionTagRecord;
@@ -16,15 +15,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AttractionService {
-    private final ClickHouseAttractionPopularityClient popularityClient;
     private final AttractionMapper attractionMapper;
     private final AttractionStatsService attractionStatsService;
+    private final AttractionPopularityStatsService popularityStatsService;
     private final AttractionPopularityDeltaBuffer popularityDeltaBuffer;
 
     public List<PopularAttraction> findPopularNearbyAttractions(NearbySearchCondition condition,
@@ -35,21 +36,11 @@ public class AttractionService {
             return List.of();
         }
 
-        Map<Long, Long> popularityCounts = popularityClient.findFavoriteCounts(
+        Map<Long, Long> popularityCounts = popularityStatsService.findPopularityFavoriteCounts(
                 candidates.stream()
                         .map(candidate -> candidate.attraction().id())
                         .toList()
         );
-
-        if (popularityCounts.isEmpty()) {
-            return candidates.stream()
-                    .map(candidate -> new PopularAttraction(
-                            candidate.attraction(),
-                            candidate.distanceMeters(),
-                            0L
-                    ))
-                    .toList();
-        }
 
         return candidates.stream()
                 .map(candidate -> new PopularAttraction(
@@ -92,18 +83,16 @@ public class AttractionService {
         if (userId == null) {
             return;
         }
-        int insertedCount = attractionMapper.insertFavorite(attractionId, userId);
-        if (insertedCount > 0) {
-            popularityDeltaBuffer.recordFavoriteDelta(attractionId, 1);
+        if (attractionMapper.insertFavorite(attractionId, userId) > 0) {
+            popularityDeltaBuffer.recordFavoriteDelta(attractionId, 1L);
         }
     }
 
     public boolean removeFavorite(Long attractionId, String userId) {
         boolean deleted = attractionMapper.deleteFavorite(attractionId, userId) > 0;
         if (deleted) {
-            popularityDeltaBuffer.recordFavoriteDelta(attractionId, -1);
+            popularityDeltaBuffer.recordFavoriteDelta(attractionId, -1L);
         }
-
         return deleted;
     }
 
