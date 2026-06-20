@@ -24,7 +24,6 @@
 
     <springProfile name="worker">
         <logger name="com.ssafy.enjoytrip.core.api.worker" level="INFO"/>
-        <logger name="org.springframework.kafka" level="INFO"/>
     </springProfile>
 
     <springProfile name="test">

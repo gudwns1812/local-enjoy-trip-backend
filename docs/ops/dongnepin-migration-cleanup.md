@@ -40,7 +40,6 @@ Executed in fresh worktree `feature/dongnepin-migration-cleanup` with a disposab
 - `./gradlew :storage:db-core:test :core:core-api:check :core:core-api:check` → `BUILD SUCCESSFUL`.
 - Runtime/Flyway proof used `./gradlew :core:core-api:bootRun` with:
   - `ENJOYTRIP_DB_URL=jdbc:postgresql://localhost:15433/enjoytrip`
-  - `NOTIFICATION_OUTBOX_CDC_ENABLED=false`
   - dummy Google OAuth client values for local boot only.
 - `GET /health` returned:
 
