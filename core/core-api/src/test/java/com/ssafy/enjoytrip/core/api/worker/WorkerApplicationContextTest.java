@@ -5,15 +5,14 @@ import static org.mockito.Mockito.mock;
 
 import com.ssafy.enjoytrip.core.api.worker.attraction.AttractionPopularityFlushScheduler;
 import com.ssafy.enjoytrip.core.api.worker.attraction.AttractionPopularityReconcileScheduler;
-import com.ssafy.enjoytrip.core.domain.service.AttractionPopularityDeltaBuffer;
-import com.ssafy.enjoytrip.core.domain.service.AttractionPopularityStatsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
+import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 class WorkerApplicationContextTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -34,17 +33,16 @@ class WorkerApplicationContextTest {
     }
 
     @Configuration
-    @ActiveProfiles("worker")
     @Import(WorkerConfiguration.class)
     static class TestWorkerContextConfiguration {
         @Bean
-        AttractionPopularityDeltaBuffer attractionPopularityDeltaBuffer() {
-            return mock(AttractionPopularityDeltaBuffer.class);
+        StringRedisTemplate stringRedisTemplate() {
+            return mock(StringRedisTemplate.class);
         }
 
         @Bean
-        AttractionPopularityStatsService attractionPopularityStatsService() {
-            return mock(AttractionPopularityStatsService.class);
+        AttractionMapper attractionMapper() {
+            return mock(AttractionMapper.class);
         }
     }
 }
