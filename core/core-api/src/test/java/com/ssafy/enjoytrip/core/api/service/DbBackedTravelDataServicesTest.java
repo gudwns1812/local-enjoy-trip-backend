@@ -24,7 +24,8 @@ class DbBackedTravelDataServicesTest {
             AttractionService service = new AttractionService(
                     mock(ClickHouseAttractionPopularityClient.class),
                     attractionMapper,
-                    new AttractionStatsService(attractionMapper)
+                    new AttractionStatsService(attractionMapper),
+                    mock(AttractionPopularityDeltaBuffer.class)
             );
 
             assertThat(service).isNotNull();
