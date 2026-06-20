@@ -3,20 +3,18 @@ package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ssafy.enjoytrip.core.domain.FriendshipStatus;
-import com.ssafy.enjoytrip.core.domain.NotificationOutboxStatus;
 import com.ssafy.enjoytrip.core.domain.NotificationReferenceType;
 import com.ssafy.enjoytrip.core.domain.NotificationType;
 import com.ssafy.enjoytrip.storage.db.core.model.FriendshipRecord;
-import com.ssafy.enjoytrip.storage.db.core.model.NotificationOutboxRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.NotificationRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.FriendshipMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NotificationMapper;
-import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NotificationOutboxMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 
 class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
     @Autowired
@@ -24,9 +22,6 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
 
     @Autowired
     private NotificationMapper notificationMapper;
-
-    @Autowired
-    private NotificationOutboxMapper notificationOutboxMapper;
 
     @DisplayName("FriendshipMapper는 H2 인메모리 DB에서 요청 조회와 상태 전이를 수행한다")
     @Test
@@ -61,37 +56,43 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
         )).isEqualTo(1);
     }
 
-    @DisplayName("NotificationOutboxMapper는 H2 인메모리 DB에서 outbox 상태 전이를 반영한다")
+    @DisplayName("NotificationMapper는 outbox 없이 비즈니스 키로 친구 요청 알림 중복을 막는다")
     @Test
-    void notificationOutboxMapperPersistsAndTransitionsOutbox() {
-        String recipient = uniqueId("outbox-recipient");
+    void notificationMapperPreventsDuplicateFriendRequestNotificationsByBusinessKey() {
+        String requester = uniqueId("noti-requester");
+        String recipient = uniqueId("noti-recipient");
+        seedMember(requester, requester + "@example.com");
         seedMember(recipient, recipient + "@example.com");
-        NotificationOutboxRecord outbox = new NotificationOutboxRecord(
-                NotificationType.FRIEND_REQUEST_RECEIVED,
+        FriendshipRecord friendship = new FriendshipRecord(requester, recipient);
+        friendshipMapper.insert(friendship);
+        NotificationRecord notification = new NotificationRecord(
                 recipient,
+                NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
-                1L,
+                friendship.getId(),
                 "{\"message\":\"hello\"}"
         );
 
-        notificationOutboxMapper.insert(outbox);
-        outbox.markProcessed();
-        notificationOutboxMapper.markProcessed(outbox);
-        NotificationOutboxRecord processed = notificationOutboxMapper.findById(outbox.getId());
+        notificationMapper.insert(notification);
+        NotificationRecord duplicate = new NotificationRecord(
+                recipient,
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                NotificationReferenceType.FRIENDSHIP,
+                friendship.getId(),
+                "{\"message\":\"hello\"}"
+        );
 
-        assertThat(processed.getStatus()).isEqualTo(NotificationOutboxStatus.PROCESSED);
-        assertThat(processed.getProcessedAt()).isNotNull();
-
-        processed.markFailed("retry");
-        notificationOutboxMapper.markFailed(processed);
-
-        NotificationOutboxRecord failed = notificationOutboxMapper.findById(outbox.getId());
-
-        assertThat(failed.getStatus()).isEqualTo(NotificationOutboxStatus.FAILED);
-        assertThat(failed.getLastError()).isEqualTo("retry");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> notificationMapper.insert(duplicate))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(notificationMapper.findByBusinessKey(
+                recipient,
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                NotificationReferenceType.FRIENDSHIP,
+                friendship.getId()
+        ).getId()).isEqualTo(notification.getId());
     }
 
-    @DisplayName("NotificationMapper는 H2에서 중복 조회와 친구 요청 읽음 처리를 수행한다")
+    @DisplayName("NotificationMapper는 친구 요청 알림을 reference 기준으로 읽음 처리한다")
     @Test
     void notificationMapperFindsAndMarksFriendRequestNotifications() {
         String requester = uniqueId("noti-requester");
@@ -100,21 +101,12 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
         seedMember(recipient, recipient + "@example.com");
         FriendshipRecord friendship = new FriendshipRecord(requester, recipient);
         friendshipMapper.insert(friendship);
-        NotificationOutboxRecord outbox = new NotificationOutboxRecord(
-                NotificationType.FRIEND_REQUEST_RECEIVED,
-                recipient,
-                NotificationReferenceType.FRIENDSHIP,
-                friendship.getId(),
-                "{\"message\":\"hello\"}"
-        );
-        notificationOutboxMapper.insert(outbox);
         NotificationRecord notification = new NotificationRecord(
                 recipient,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId(),
-                "{\"message\":\"hello\"}",
-                outbox.getId()
+                "{\"message\":\"hello\"}"
         );
 
         notificationMapper.insert(notification);
@@ -124,11 +116,13 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
                 friendship.getId(),
                 LocalDateTime.now()
         );
-        NotificationRecord saved = notificationMapper.findByOutboxEventId(outbox.getId());
-        saved.markRead();
-        notificationMapper.updateReadAt(saved);
+        NotificationRecord saved = notificationMapper.findByBusinessKey(
+                recipient,
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                NotificationReferenceType.FRIENDSHIP,
+                friendship.getId()
+        );
 
-        assertThat(notificationMapper.existsByOutboxEventId(outbox.getId())).isEqualTo(1);
         assertThat(notificationMapper.existsUnreadFriendRequest(
                 recipient,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
@@ -142,6 +136,7 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
                 FriendshipStatus.PENDING,
                 10
         )).isEmpty();
-        assertThat(notificationMapper.findByOutboxEventId(outbox.getId()).getReadAt()).isNotNull();
+        assertThat(saved.getReadAt()).isNotNull();
     }
 }
+EOF'
