@@ -25,6 +25,7 @@ public class AttractionService {
     private final ClickHouseAttractionPopularityClient popularityClient;
     private final AttractionMapper attractionMapper;
     private final AttractionStatsService attractionStatsService;
+    private final AttractionPopularityDeltaBuffer popularityDeltaBuffer;
 
     public List<PopularAttraction> findPopularNearbyAttractions(NearbySearchCondition condition,
                                                                 String userId) {
@@ -91,11 +92,19 @@ public class AttractionService {
         if (userId == null) {
             return;
         }
-        attractionMapper.insertFavorite(attractionId, userId);
+        int insertedCount = attractionMapper.insertFavorite(attractionId, userId);
+        if (insertedCount > 0) {
+            popularityDeltaBuffer.recordFavoriteDelta(attractionId, 1);
+        }
     }
 
     public boolean removeFavorite(Long attractionId, String userId) {
-        return attractionMapper.deleteFavorite(attractionId, userId) > 0;
+        boolean deleted = attractionMapper.deleteFavorite(attractionId, userId) > 0;
+        if (deleted) {
+            popularityDeltaBuffer.recordFavoriteDelta(attractionId, -1);
+        }
+
+        return deleted;
     }
 
     public void upsertRating(Long attractionId, String userId, int rating) {
