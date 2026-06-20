@@ -37,7 +37,7 @@
 - 기존 `app/web/src/main/java`의 controller, API interface, request/response DTO, web config, exception handler
 - 기존 `app/web/src/test/java`의 web/service/support/security test
 - 기존 `app/web/src/docs`의 REST Docs asciidoc source
-- 기존 `app/worker/src/main/java`의 background worker ingress/error handler
+- 기존 `app/worker/src/main/java`의 legacy async consumer/error handler
 - 기존 `app/worker/src/test/java`의 worker behavior test
 - 기존 `core/src/main/java`의 domain/application service/repository interface/command/query type
 - 기존 `support:error`, `support:auth`, `support:common`
@@ -95,7 +95,7 @@ com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication
 `db-core` entity/JPA가 실제로 공유하는 enum 4개를 `core-enum`에 분리했다.
 
 - `FriendshipStatus`
-- `NotificationOutboxStatus`
+- `legacy notification status enum`
 - `NotificationReferenceType`
 - `NotificationType`
 
@@ -164,7 +164,7 @@ rtk bash -lc "./gradlew :core:core-api:test --console=plain"
 
 - `BUILD SUCCESSFUL`
 - 102 tests completed
-- 기존 worker context test가 `core-api` test suite 안에서 실행됨
+- 기존 worker `legacy async consumer test`가 `core-api` test suite 안에서 실행됨
 
 추가 확인:
 

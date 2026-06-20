@@ -73,7 +73,7 @@ For this Ralph run, the pre-cleanup-history path is documented rather than repai
 to fail validation after this squash because previous migration versions were intentionally consolidated. Use a
 fresh local disposable database for runtime proof.
 
-## 2026-06-20 Debezium/Kafka/ClickHouse removal note
+## 2026-06-20 infra simplification note
 
 The notification delivery path no longer uses a local outbox table. New databases still run the historical
 consolidated baseline and then the follow-up removal migration, which drops the old outbox table and keeps

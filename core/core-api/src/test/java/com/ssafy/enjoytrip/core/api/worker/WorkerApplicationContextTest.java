@@ -22,9 +22,9 @@ class WorkerApplicationContextTest {
                     "spring.profiles.active=worker"
             );
 
-    @DisplayName("worker context는 Kafka outbox 없이 popularity scheduler를 조립한다")
+    @DisplayName("worker context는 popularity scheduler를 조립한다")
     @Test
-    void workerContextWiresPopularitySchedulersWithoutKafkaOutbox() {
+    void workerContextWiresPopularitySchedulers() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(WorkerConfiguration.class);
             assertThat(context).hasSingleBean(AttractionPopularityFlushScheduler.class);

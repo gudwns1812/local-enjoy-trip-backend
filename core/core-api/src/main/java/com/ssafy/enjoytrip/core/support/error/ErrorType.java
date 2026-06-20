@@ -79,7 +79,6 @@ public enum ErrorType {
     ),
     NOTIFICATION_NOT_FOUND(NOT_FOUND, "알림을 찾을 수 없습니다.", WARN),
     NOTIFICATION_ACCESS_DENIED(FORBIDDEN, "다른 사용자의 알림에 접근할 수 없습니다.", WARN),
-    NOTIFICATION_OUTBOX_NOT_FOUND(NOT_FOUND, "알림 outbox 이벤트를 찾을 수 없습니다.", WARN),
 
     USER_ALREADY_EXISTS(CONFLICT, "이미 존재하는 사용자입니다.", WARN),
     EMAIL_ALREADY_EXISTS(CONFLICT, "이미 사용 중인 이메일입니다.", WARN),

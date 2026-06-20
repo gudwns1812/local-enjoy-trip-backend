@@ -1,7 +1,7 @@
 package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static tuple;
 
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionCountRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
