@@ -53,8 +53,8 @@
     <update id="incrementPopularityFavoriteCount">
         merge into attraction_popularity_stats target
         using (
-            select #{attractionId} as attraction_id, #{delta} as delta
-        ) source
+            values (cast(#{attractionId} as bigint), cast(#{delta} as integer))
+        ) as source(attraction_id, delta)
         on target.attraction_id = source.attraction_id
         when matched then update set
             favorite_count = greatest(0, target.favorite_count + source.delta),
@@ -85,7 +85,7 @@
                 from attraction_favorites
                 group by attraction_id
             ) f on f.attraction_id = a.id
-        ) source
+        ) as source
         on target.attraction_id = source.attraction_id
         when matched then update set
             favorite_count = source.favorite_count,
