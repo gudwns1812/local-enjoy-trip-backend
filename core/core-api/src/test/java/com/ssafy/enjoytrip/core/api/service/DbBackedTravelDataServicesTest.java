@@ -6,8 +6,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ssafy.enjoytrip.core.domain.service.AttractionPopularityDeltaBuffer;
-import com.ssafy.enjoytrip.external.ClickHouseAttractionPopularityClient;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionCountRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord;
@@ -95,7 +93,6 @@ class DbBackedTravelDataServicesTest {
         private AttractionService newAttractionService(AttractionMapper attractionMapper,
                                                        AttractionPopularityDeltaBuffer deltaBuffer) {
             return new AttractionService(
-                    mock(ClickHouseAttractionPopularityClient.class),
                     attractionMapper,
                     new AttractionStatsService(attractionMapper),
                     deltaBuffer

@@ -15,6 +15,7 @@ class AttractionPopularityMapperH2Test extends H2MapperTestSupport {
 
     @BeforeEach
     void prepareAttractionPopularityTables() {
+        jdbcTemplate.execute("drop table if exists attraction_popularity_stats");
         jdbcTemplate.execute("""
                 create table if not exists attractions (
                     id bigint primary key,
