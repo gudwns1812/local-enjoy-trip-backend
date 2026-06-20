@@ -1,7 +1,6 @@
 package com.ssafy.enjoytrip.storage.db.core.mybatis.h2;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ssafy.enjoytrip.core.domain.FriendshipStatus;
 import com.ssafy.enjoytrip.core.domain.NotificationReferenceType;
@@ -15,7 +14,6 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 
 class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
     @Autowired
@@ -57,42 +55,6 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
         )).isEqualTo(1);
     }
 
-    @DisplayName("NotificationMapper는 outbox 없이 비즈니스 키로 친구 요청 알림 중복을 막는다")
-    @Test
-    void notificationMapperPreventsDuplicateFriendRequestNotificationsByBusinessKey() {
-        String requester = uniqueId("noti-requester");
-        String recipient = uniqueId("noti-recipient");
-        seedMember(requester, requester + "@example.com");
-        seedMember(recipient, recipient + "@example.com");
-        FriendshipRecord friendship = new FriendshipRecord(requester, recipient);
-        friendshipMapper.insert(friendship);
-        NotificationRecord notification = new NotificationRecord(
-                recipient,
-                NotificationType.FRIEND_REQUEST_RECEIVED,
-                NotificationReferenceType.FRIENDSHIP,
-                friendship.getId(),
-                "{\"message\":\"hello\"}"
-        );
-
-        notificationMapper.insert(notification);
-        NotificationRecord duplicate = new NotificationRecord(
-                recipient,
-                NotificationType.FRIEND_REQUEST_RECEIVED,
-                NotificationReferenceType.FRIENDSHIP,
-                friendship.getId(),
-                "{\"message\":\"hello\"}"
-        );
-
-        assertThatThrownBy(() -> notificationMapper.insert(duplicate))
-                .isInstanceOf(DataIntegrityViolationException.class);
-        assertThat(notificationMapper.findByBusinessKey(
-                recipient,
-                NotificationType.FRIEND_REQUEST_RECEIVED,
-                NotificationReferenceType.FRIENDSHIP,
-                friendship.getId()
-        ).getId()).isEqualTo(notification.getId());
-    }
-
     @DisplayName("NotificationMapper는 친구 요청 알림을 reference 기준으로 읽음 처리한다")
     @Test
     void notificationMapperFindsAndMarksFriendRequestNotifications() {
@@ -102,15 +64,22 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
         seedMember(recipient, recipient + "@example.com");
         FriendshipRecord friendship = new FriendshipRecord(requester, recipient);
         friendshipMapper.insert(friendship);
-        NotificationRecord notification = new NotificationRecord(
+        jdbcTemplate.update("""
+                insert into notifications (
+                    recipient_user_id,
+                    type,
+                    reference_type,
+                    reference_id,
+                    payload,
+                    created_at
+                ) values (?, ?, ?, ?, ?, current_timestamp)
+                """,
                 recipient,
-                NotificationType.FRIEND_REQUEST_RECEIVED,
-                NotificationReferenceType.FRIENDSHIP,
+                NotificationType.FRIEND_REQUEST_RECEIVED.name(),
+                NotificationReferenceType.FRIENDSHIP.name(),
                 friendship.getId(),
                 "{\"message\":\"hello\"}"
         );
-
-        notificationMapper.insert(notification);
         notificationMapper.markReadByReference(
                 recipient,
                 NotificationReferenceType.FRIENDSHIP,

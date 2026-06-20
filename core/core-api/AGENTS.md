@@ -36,9 +36,23 @@
   domain models, existing core query/value objects, or explicitly unpacked normalized primitive/value parameters.
 - Do not reintroduce `app`, `app:web`, or `app:worker`.
 
+
+## Service-to-Service Dependency Boundary
+
+- Core domain/application services must not inject peer `*Service` classes for ordinary data lookup, persistence writes,
+  or side-effect dispatch. Prefer direct storage mapper access in the service that owns the use case, a non-service
+  collaborator with a narrower name, or an event/listener boundary for post-commit side effects.
+- A controller may call an application service, and an application orchestration service may temporarily compose existing
+  services only when it is the explicit product-facing use case owner. Do not introduce new peer service dependencies
+  without documenting that orchestration responsibility.
+- If a method starts needing another service only to update a read model or emit a notification, publish a typed event or
+  use the relevant mapper directly instead of extending the transaction with a service-to-service call.
+
 ## Worker Runtime
 
-- Worker-specific properties live in `src/main/resources/application-worker.yml`.
+- Worker-specific properties live in `src/main/resources/application-worker.yml` only when the worker runtime has
+  properties that differ from the normal core-api runtime. Do not keep an empty profile file just because the worker
+  profile exists.
 - `EnjoyTripWorkerApplication` activates the `worker` profile and must keep `spring.main.web-application-type: none`.
 - Scheduled/background worker behavior must remain observable through logs and durable storage state when retry or reconciliation is required.
 

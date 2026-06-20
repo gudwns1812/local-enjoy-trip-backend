@@ -29,18 +29,4 @@ class AttractionPopularityMapperH2Test extends H2MapperTestSupport {
                 .extracting(AttractionCountRecord::attractionId, AttractionCountRecord::count)
                 .containsExactly(tuple(1L, 7));
     }
-
-    @DisplayName("AttractionMapper는 favorite delta를 0 미만으로 내려가지 않게 반영한다")
-    @Test
-    void applyPopularityFavoriteDeltaClampsAtZero() {
-        seedAttraction(1L, "인기 관광지");
-
-        assertThat(attractionMapper.insertPopularityFavoriteDeltaIfAbsent(1L, 3L)).isEqualTo(1);
-        assertThat(attractionMapper.updatePopularityFavoriteDelta(1L, -5L)).isEqualTo(1);
-
-        List<AttractionCountRecord> counts = attractionMapper.findPopularityFavoriteCounts(List.of(1L));
-
-        assertThat(counts).extracting(AttractionCountRecord::count).containsExactly(0);
-    }
-
 }

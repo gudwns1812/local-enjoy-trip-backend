@@ -125,6 +125,22 @@ class ApiContractModuleBoundaryTest {
                 .noneMatch(source -> source.contains("import com.ssafy.enjoytrip.core.api."));
     }
 
+
+    @DisplayName("리뷰로 제거한 서비스 간 직접 의존을 다시 도입하지 않는다")
+    @Test
+    void reviewedServiceToServiceDependenciesStayRemoved() throws IOException {
+        Path serviceRoot = projectRoot().resolve(
+                "core/core-api/src/main/java/com/ssafy/enjoytrip/core/domain/service"
+        );
+        SourceFile attractionService = readSourceFile(serviceRoot.resolve("AttractionService.java"));
+        SourceFile friendshipService = readSourceFile(serviceRoot.resolve("FriendshipService.java"));
+
+        assertThat(attractionService.content())
+                .doesNotContain("AttractionPopularityStatsService");
+        assertThat(friendshipService.content())
+                .doesNotContain("NotificationService");
+    }
+
     private static void assertRecordComponents(Class<? extends Record> recordType,
                                                List<String> expectedComponents) {
         List<String> actualComponents = Stream.of(recordType.getRecordComponents())

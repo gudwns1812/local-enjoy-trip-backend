@@ -13,9 +13,7 @@ import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NotificationMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +34,6 @@ public class NotificationService {
         ) > 0;
     }
 
-    @Transactional
     public Notification saveFriendRequestReceived(Long friendshipId,
                                                   String requesterUserId,
                                                   String recipientUserId) {
@@ -49,26 +46,15 @@ public class NotificationService {
         );
         markReadIfFriendRequestAlreadyHandled(record);
 
-        try {
-            notificationMapper.insert(record);
-            return toNotification(record);
-        } catch (DataIntegrityViolationException duplicate) {
-            NotificationRecord existing = notificationMapper.findByBusinessKey(
-                    recipientUserId,
-                    FRIEND_REQUEST_RECEIVED,
-                    FRIENDSHIP,
-                    friendshipId
-            );
-            if (existing == null) {
-                throw duplicate;
-            }
-            markReadIfFriendRequestAlreadyHandled(existing);
-            notificationMapper.updateReadAt(existing);
-            return toNotification(existing);
-        }
+        notificationMapper.upsertFriendRequest(record);
+        return toNotification(notificationMapper.findByBusinessKey(
+                recipientUserId,
+                FRIEND_REQUEST_RECEIVED,
+                FRIENDSHIP,
+                friendshipId
+        ));
     }
 
-    @Transactional
     public int markReadByReference(String recipientUserId,
                                    NotificationReferenceType referenceType,
                                    Long referenceId) {

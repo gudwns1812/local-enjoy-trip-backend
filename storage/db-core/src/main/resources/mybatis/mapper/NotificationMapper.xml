@@ -50,7 +50,7 @@
         order by n.created_at desc, n.id desc
         limit #{limit}
     </select>
-    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    <insert id="upsertFriendRequest">
         insert into notifications (
             recipient_user_id,
             type,
@@ -64,10 +64,14 @@
             #{type},
             #{referenceType},
             #{referenceId},
-            #{payload}::jsonb,
+            #{payload},
             #{readAt},
             current_timestamp
         )
+        on conflict (recipient_user_id, type, reference_type, reference_id)
+        do update set payload = excluded.payload,
+                      read_at = excluded.read_at,
+                      updated_at = current_timestamp
     </insert>
     <update id="updateReadAt">
         update notifications

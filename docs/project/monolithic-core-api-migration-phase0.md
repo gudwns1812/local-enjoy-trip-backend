@@ -71,7 +71,7 @@ com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication
 
 `bootJar`/`bootRun`의 기본 main class는 API entrypoint로 고정하고, worker 실행은
 `:core:core-api:bootRunWorker` task를 사용한다. worker 전용 설정은
-`application-worker.yml`이 소유한다.
+일반 core-api 런타임과 다른 값이 실제로 필요할 때만 `application-worker.yml`에 둔다.
 
 ### 2. `db-core` 실제 source/resource 구성
 

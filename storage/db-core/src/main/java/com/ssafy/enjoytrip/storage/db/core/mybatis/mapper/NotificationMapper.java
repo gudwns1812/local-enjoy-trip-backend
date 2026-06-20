@@ -19,13 +19,15 @@ public interface NotificationMapper {
                                   @Param("referenceType") NotificationReferenceType referenceType,
                                   @Param("status") FriendshipStatus status);
 
-    List<NotificationRecord> findUnreadFriendRequests(@Param("recipientUserId") String recipientUserId,
-                                                       @Param("type") NotificationType type,
-                                                       @Param("referenceType") NotificationReferenceType referenceType,
-                                                       @Param("status") FriendshipStatus status,
-                                                       @Param("limit") int limit);
+    List<NotificationRecord> findUnreadFriendRequests(
+            @Param("recipientUserId") String recipientUserId,
+            @Param("type") NotificationType type,
+            @Param("referenceType") NotificationReferenceType referenceType,
+            @Param("status") FriendshipStatus status,
+            @Param("limit") int limit
+    );
 
-    int insert(NotificationRecord record);
+    int upsertFriendRequest(NotificationRecord record);
 
     int updateReadAt(NotificationRecord record);
 

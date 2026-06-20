@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +25,6 @@ public class AttractionPopularityStatsService {
                 ));
     }
 
-    @Transactional
     public int applyFavoriteDeltas(Map<Long, Long> deltas) {
         if (deltas == null || deltas.isEmpty()) {
             return 0;
@@ -44,10 +42,6 @@ public class AttractionPopularityStatsService {
             return 0;
         }
 
-        int updated = attractionMapper.updatePopularityFavoriteDelta(attractionId, delta);
-        if (updated > 0) {
-            return updated;
-        }
-        return attractionMapper.insertPopularityFavoriteDeltaIfAbsent(attractionId, delta);
+        return attractionMapper.applyPopularityFavoriteDelta(attractionId, delta);
     }
 }

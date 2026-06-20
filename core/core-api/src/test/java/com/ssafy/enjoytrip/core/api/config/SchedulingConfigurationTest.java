@@ -24,6 +24,7 @@ class SchedulingConfigurationTest {
     void coreApiContextWiresPopularityFlushSchedulerWithoutWorkerProfile() {
         contextRunner.run(context -> {
             assertThat(context).hasSingleBean(SchedulingConfiguration.class);
+            assertThat(context).hasSingleBean(AsyncEventConfiguration.class);
             assertThat(context).hasSingleBean(AttractionPopularityFlushScheduler.class);
         });
     }
@@ -31,6 +32,7 @@ class SchedulingConfigurationTest {
     @Configuration
     @Import({
             SchedulingConfiguration.class,
+            AsyncEventConfiguration.class,
             RedisAttractionPopularityDeltaCache.class,
             AttractionPopularityStatsService.class,
             AttractionPopularityFlushScheduler.class

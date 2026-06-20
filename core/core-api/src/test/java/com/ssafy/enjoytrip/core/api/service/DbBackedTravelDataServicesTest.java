@@ -29,8 +29,7 @@ class DbBackedTravelDataServicesTest {
             AttractionMapper attractionMapper = mock(AttractionMapper.class);
             AttractionService service = new AttractionService(
                     attractionMapper,
-                    new AttractionStatsService(attractionMapper),
-                    new AttractionPopularityStatsService(attractionMapper),
+                    new AttractionStatsReader(attractionMapper),
                     mock(AttractionPopularityDeltaCache.class)
             );
 
@@ -95,8 +94,7 @@ class DbBackedTravelDataServicesTest {
                                                        AttractionPopularityDeltaCache deltaCache) {
             return new AttractionService(
                     attractionMapper,
-                    new AttractionStatsService(attractionMapper),
-                    new AttractionPopularityStatsService(attractionMapper),
+                    new AttractionStatsReader(attractionMapper),
                     deltaCache
             );
         }

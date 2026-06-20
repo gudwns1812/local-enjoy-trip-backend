@@ -43,27 +43,37 @@ public class RedisAttractionPopularityDeltaCache implements AttractionPopularity
         }
 
         try {
-            List<String> dirtyIds = redisTemplate.opsForSet().pop(DIRTY_IDS_KEY, batchSize);
-            if (dirtyIds == null || dirtyIds.isEmpty()) {
-                return Map.of();
-            }
-
-            Map<Long, Long> deltas = new LinkedHashMap<>();
-            for (String dirtyId : dirtyIds) {
-                Long attractionId = parseAttractionId(dirtyId);
-                if (attractionId == null) {
-                    continue;
-                }
-                Long delta = drainDelta(attractionId);
-                if (delta != null && delta != 0) {
-                    deltas.put(attractionId, delta);
-                }
-            }
-            return deltas;
+            return drainDirtyDeltas(redisTemplate.opsForSet().pop(DIRTY_IDS_KEY, batchSize));
         } catch (RuntimeException exception) {
             log.warn("Failed to drain attraction popularity deltas", exception);
             return Map.of();
         }
+    }
+
+    private Map<Long, Long> drainDirtyDeltas(List<String> dirtyIds) {
+        if (dirtyIds == null || dirtyIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> deltas = new LinkedHashMap<>();
+        for (String dirtyId : dirtyIds) {
+            putDrainedDelta(deltas, dirtyId);
+        }
+        return deltas;
+    }
+
+    private void putDrainedDelta(Map<Long, Long> deltas, String dirtyId) {
+        Long attractionId = parseAttractionId(dirtyId);
+        if (attractionId == null) {
+            return;
+        }
+
+        Long delta = drainDelta(attractionId);
+        if (delta == null || delta == 0) {
+            return;
+        }
+
+        deltas.put(attractionId, delta);
     }
 
     private Long drainDelta(Long attractionId) {
@@ -72,6 +82,7 @@ public class RedisAttractionPopularityDeltaCache implements AttractionPopularity
         if (value == null) {
             return null;
         }
+
         try {
             return Long.valueOf(value);
         } catch (NumberFormatException exception) {

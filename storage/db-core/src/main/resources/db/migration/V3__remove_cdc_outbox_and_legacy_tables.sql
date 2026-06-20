@@ -1,6 +1,7 @@
 alter table if exists notifications drop constraint if exists uk_notifications_outbox_event;
 alter table if exists notifications drop constraint if exists fk_notifications_outbox;
 alter table if exists notifications drop column if exists outbox_event_id;
+alter table if exists notifications alter column payload type text using payload::text;
 
 create unique index if not exists uk_notifications_business_reference
     on notifications (recipient_user_id, type, reference_type, reference_id);
