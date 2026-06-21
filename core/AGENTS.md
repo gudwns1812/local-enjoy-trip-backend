@@ -68,6 +68,18 @@ existing ingress boundary first.
 - **Domain Import Boundary**: Domain objects may use core/support business exceptions as existing domain precedent
   does, but must not import JPA/storage Records, web DTOs, controller contracts, or persistence primitives.
 
+
+## Service-to-Service Dependency Boundary
+
+- Core domain/application services must not inject peer `*Service` classes for ordinary data lookup, persistence writes,
+  or side-effect dispatch. Prefer direct storage mapper access in the service that owns the use case, a non-service
+  collaborator with a narrower name, or an event/listener boundary for post-commit side effects.
+- A controller may call an application service, and an application orchestration service may temporarily compose existing
+  services only when it is the explicit product-facing use case owner. Do not introduce new peer service dependencies
+  without documenting that orchestration responsibility.
+- If a method starts needing another service only to update a read model or emit a notification, publish a typed event or
+  use the relevant mapper directly instead of extending the transaction with a service-to-service call.
+
 ## Verification
 
 - **Unit Testing**: All business logic in services and domain objects should be covered by JUnit 5 tests.

@@ -7,8 +7,8 @@ import com.ssafy.enjoytrip.core.domain.NearbyAttractionCandidate;
 import com.ssafy.enjoytrip.core.domain.PopularAttraction;
 import com.ssafy.enjoytrip.core.domain.query.AttractionSearchCondition;
 import com.ssafy.enjoytrip.core.domain.query.NearbySearchCondition;
-import com.ssafy.enjoytrip.external.ClickHouseAttractionPopularityClient;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
+import com.ssafy.enjoytrip.storage.db.core.model.AttractionCountRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionTagRecord;
 import java.util.Comparator;
@@ -22,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AttractionService {
-    private final ClickHouseAttractionPopularityClient popularityClient;
     private final AttractionMapper attractionMapper;
-    private final AttractionStatsService attractionStatsService;
+    private final AttractionStatsReader attractionStatsReader;
+    private final AttractionPopularityDeltaCache popularityDeltaCache;
 
     public List<PopularAttraction> findPopularNearbyAttractions(NearbySearchCondition condition,
                                                                 String userId) {
@@ -34,21 +34,7 @@ public class AttractionService {
             return List.of();
         }
 
-        Map<Long, Long> popularityCounts = popularityClient.findFavoriteCounts(
-                candidates.stream()
-                        .map(candidate -> candidate.attraction().id())
-                        .toList()
-        );
-
-        if (popularityCounts.isEmpty()) {
-            return candidates.stream()
-                    .map(candidate -> new PopularAttraction(
-                            candidate.attraction(),
-                            candidate.distanceMeters(),
-                            0L
-                    ))
-                    .toList();
-        }
+        Map<Long, Long> popularityCounts = findPopularityFavoriteCounts(candidates);
 
         return candidates.stream()
                 .map(candidate -> new PopularAttraction(
@@ -87,15 +73,32 @@ public class AttractionService {
         return attractionId != null && attractionMapper.existsById(attractionId) > 0;
     }
 
+    private Map<Long, Long> findPopularityFavoriteCounts(List<NearbyAttractionCandidate> candidates) {
+        return attractionMapper.findPopularityFavoriteCounts(candidates.stream()
+                        .map(candidate -> candidate.attraction().id())
+                        .toList())
+                .stream()
+                .collect(Collectors.toMap(
+                        AttractionCountRecord::attractionId,
+                        record -> Long.valueOf(record.count())
+                ));
+    }
+
     public void addFavorite(Long attractionId, String userId) {
         if (userId == null) {
             return;
         }
-        attractionMapper.insertFavorite(attractionId, userId);
+        if (attractionMapper.insertFavorite(attractionId, userId) > 0) {
+            popularityDeltaCache.recordFavoriteDelta(attractionId, 1L);
+        }
     }
 
     public boolean removeFavorite(Long attractionId, String userId) {
-        return attractionMapper.deleteFavorite(attractionId, userId) > 0;
+        boolean deleted = attractionMapper.deleteFavorite(attractionId, userId) > 0;
+        if (deleted) {
+            popularityDeltaCache.recordFavoriteDelta(attractionId, -1L);
+        }
+        return deleted;
     }
 
     public void upsertRating(Long attractionId, String userId, int rating) {
@@ -143,6 +146,7 @@ public class AttractionService {
 
         return true;
     }
+
 
     private List<Attraction> executeAttractionSearch(AttractionSearchCondition condition, String userId) {
         List<Attraction> attractions = attractionMapper.search(
@@ -236,7 +240,7 @@ public class AttractionService {
         if (attractions.isEmpty()) {
             return attractions;
         }
-        Map<Long, AttractionStats> stats = attractionStatsService.findStatsByAttractionId(
+        Map<Long, AttractionStats> stats = attractionStatsReader.findStatsByAttractionId(
                 attractions.stream().map(Attraction::id).toList(),
                 userId
         );

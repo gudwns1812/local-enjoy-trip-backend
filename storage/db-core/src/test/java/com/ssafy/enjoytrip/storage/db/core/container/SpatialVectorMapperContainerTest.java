@@ -37,6 +37,11 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
         long attractionId = 9200001L;
         String userId = uniqueId("attraction-user");
         seedAttraction(attractionId, "서비스커넥션 궁", 1, 1);
+        jdbcTemplate.update("""
+                insert into attraction_popularity_stats (attraction_id, favorite_count)
+                values (?, 7)
+                on conflict (attraction_id) do update set favorite_count = excluded.favorite_count
+                """, attractionId);
 
         AttractionTagRecord tag = attractionMapper.insertTag(uniqueId("tag"));
         attractionMapper.insertTagMapping(attractionId, tag.id());
@@ -57,6 +62,8 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
         List<AttractionSearchRecord> nearby = attractionMapper.findNearby(126.9781, 37.5666, 100, 10);
         List<AttractionCountRecord> favoriteCounts =
                 attractionMapper.findFavoriteCounts(List.of(attractionId));
+        List<AttractionCountRecord> popularityFavoriteCounts =
+                attractionMapper.findPopularityFavoriteCounts(List.of(attractionId));
         List<AttractionAverageRatingRecord> ratings = attractionMapper.findRatingStats(List.of(attractionId));
         List<AttractionRatingRecord> myRatings =
                 attractionMapper.findMyRatings(List.of(attractionId), userId);
@@ -71,6 +78,7 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
                 .contains(tag.id());
         assertThat(attractionMapper.findFavoritedIds(List.of(attractionId), userId)).contains(attractionId);
         assertThat(favoriteCounts).extracting(AttractionCountRecord::count).contains(1);
+        assertThat(popularityFavoriteCounts).extracting(AttractionCountRecord::count).contains(7);
         assertThat(ratings).extracting(AttractionAverageRatingRecord::count).contains(1);
         assertThat(myRatings).extracting(AttractionRatingRecord::rating).contains(5);
         assertThat(attractionMapper.deleteRating(attractionId, userId)).isEqualTo(1);

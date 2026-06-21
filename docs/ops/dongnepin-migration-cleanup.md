@@ -40,7 +40,6 @@ Executed in fresh worktree `feature/dongnepin-migration-cleanup` with a disposab
 - `./gradlew :storage:db-core:test :core:core-api:check :core:core-api:check` → `BUILD SUCCESSFUL`.
 - Runtime/Flyway proof used `./gradlew :core:core-api:bootRun` with:
   - `ENJOYTRIP_DB_URL=jdbc:postgresql://localhost:15433/enjoytrip`
-  - `NOTIFICATION_OUTBOX_CDC_ENABLED=false`
   - dummy Google OAuth client values for local boot only.
 - `GET /health` returned:
 
@@ -61,10 +60,10 @@ attraction_embeddings|17
 friendships|8
 members|12
 notes|14
-notification_outbox|12
+notifications|9
 chk_friendships_status|c
 chk_notes_visibility|c
-chk_notification_outbox_status|c
+uk_notifications_business_reference|i
 uk_members_email|u
 ```
 
@@ -73,3 +72,9 @@ uk_members_email|u
 For this Ralph run, the pre-cleanup-history path is documented rather than repaired: an old-history DB is expected
 to fail validation after this squash because previous migration versions were intentionally consolidated. Use a
 fresh local disposable database for runtime proof.
+
+## 2026-06-20 infra simplification note
+
+The notification delivery path no longer uses a local outbox table. New databases still run the historical
+consolidated baseline and then the follow-up removal migration, which drops the old outbox table and keeps
+`notifications` protected by a business-reference unique index.

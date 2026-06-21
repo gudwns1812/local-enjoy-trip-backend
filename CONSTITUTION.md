@@ -23,13 +23,13 @@
 
 - `core:core-api`: Spring Boot HTTP/API executable이자 background worker entrypoint를 함께 소유하는 주 실행 모듈.
   - HTTP/API 코드는 `com.ssafy.enjoytrip.core.api.web.*` 아래에 둔다.
-  - Kafka/Scheduled/background worker ingress는 `com.ssafy.enjoytrip.core.api.worker.*` 아래에 둔다.
+  - Scheduled/background worker ingress는 `com.ssafy.enjoytrip.core.api.worker.*` 아래에 둔다.
   - domain model, service/application logic, support contract를 소유한다.
   - API-facing outbound client는 `external`이 공개한 concrete client와 neutral result DTO를 service 경계에서 직접 사용한다.
   - database access는 `storage:db-core`의 MyBatis mapper와 storage Record contract를 service 경계에서 직접 사용한다.
   - 기본 API main class는 `com.ssafy.enjoytrip.EnjoyTripApplication`이다.
-  - worker main class는 `com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication`이며 worker 전용 설정은
-    `application-worker.yml`에 둔다.
+  - worker main class는 `com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication`이다.
+    worker entrypoint는 별도 Spring profile을 활성화하지 않고 `WebApplicationType.NONE`으로 실행한다.
 - `core:core-enum`: `core-api`와 `db-core`가 함께 참조해야 하는 enum만 소유한다.
 - `storage:db-core`: MyBatis mapper/XML/type handler, storage Record contract, persistence infrastructure, Flyway migration만
   소유한다.
@@ -44,7 +44,7 @@
 - `settings.gradle`에 `app`, `app:web`, `app:worker` include를 되살리는 것 금지.
 - `app/**` 아래에 새 source/resource/build script를 두는 것 금지.
 - `core-api`의 controller/API/REST Docs/REST response DTO 코드와 worker ingress 코드를 같은 package에 섞는 것 금지.
-- `com.ssafy.enjoytrip.core.api.web.*`에서 Kafka CDC listener, scheduled worker, background-only retry/error handler
+- `com.ssafy.enjoytrip.core.api.web.*`에서 scheduled worker, background-only retry/error handler
   infrastructure를 소유하는 것 금지.
 - `com.ssafy.enjoytrip.core.api.worker.*`에서 controller, OpenAPI contract, REST Docs, web DTO, REST response envelope를
   소유하는 것 금지.

@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${ENJOYTRIP_DB_URL:jdbc:postgresql://localhost:5432/enjoytrip}
+    username: ${ENJOYTRIP_DB_USER:${POSTGRES_USER:ssafy}}
+    password: ${ENJOYTRIP_DB_PASSWORD:${POSTGRES_PASSWORD:ssafy}}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    baseline-on-migrate: true
+
+mybatis:
+  mapper-locations: classpath*:mybatis/mapper/**/*.xml
+  type-aliases-package: com.ssafy.enjoytrip.storage.db.core.model
+  configuration:
+    map-underscore-to-camel-case: true

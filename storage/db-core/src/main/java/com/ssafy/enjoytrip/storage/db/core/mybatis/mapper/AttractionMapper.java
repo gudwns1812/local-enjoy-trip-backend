@@ -53,6 +53,11 @@ public interface AttractionMapper {
 
     List<AttractionCountRecord> findFavoriteCounts(@Param("ids") List<Long> ids);
 
+    List<AttractionCountRecord> findPopularityFavoriteCounts(@Param("ids") List<Long> ids);
+
+    int applyPopularityFavoriteDelta(@Param("attractionId") Long attractionId,
+                                      @Param("delta") Long delta);
+
     List<AttractionAverageRatingRecord> findRatingStats(@Param("ids") List<Long> ids);
 
     List<AttractionTagRecord> findTagsByAttractionId(Long attractionId);

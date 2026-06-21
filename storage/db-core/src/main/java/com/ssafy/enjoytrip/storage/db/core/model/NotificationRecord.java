@@ -26,20 +26,16 @@ public class NotificationRecord extends BaseRecord {
 
     private LocalDateTime readAt;
 
-    private Long outboxEventId;
-
     public NotificationRecord(String recipientUserId,
                               NotificationType type,
                               NotificationReferenceType referenceType,
                               Long referenceId,
-                              String payload,
-                              Long outboxEventId) {
+                              String payload) {
         this.recipientUserId = recipientUserId;
         this.type = type;
         this.referenceType = referenceType;
         this.referenceId = referenceId;
         this.payload = payload;
-        this.outboxEventId = outboxEventId;
     }
 
     public void markRead() {

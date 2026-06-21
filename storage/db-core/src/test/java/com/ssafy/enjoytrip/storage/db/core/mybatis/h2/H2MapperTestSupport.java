@@ -32,7 +32,9 @@ abstract class H2MapperTestSupport {
     @BeforeEach
     void clearStorageRows() {
         jdbcTemplate.update("delete from notifications");
-        jdbcTemplate.update("delete from notification_outbox");
+        jdbcTemplate.update("delete from attraction_popularity_stats");
+        jdbcTemplate.update("delete from attraction_favorites");
+        jdbcTemplate.update("delete from attractions");
         jdbcTemplate.update("delete from friendships");
         jdbcTemplate.update("delete from courses");
         jdbcTemplate.update("delete from plan_items");
@@ -54,6 +56,13 @@ abstract class H2MapperTestSupport {
                 insert into members (user_id, name, email, password, created_at)
                 values (?, ?, ?, ?, current_timestamp)
                 """, userId, userId, email, "encoded-password");
+    }
+
+    protected void seedAttraction(Long attractionId, String title) {
+        jdbcTemplate.update("""
+                insert into attractions (id, title, created_at)
+                values (?, ?, current_timestamp)
+                """, attractionId, title);
     }
 
     @SpringBootConfiguration

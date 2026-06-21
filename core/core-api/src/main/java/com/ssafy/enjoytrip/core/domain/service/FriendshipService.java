@@ -9,14 +9,18 @@ import static com.ssafy.enjoytrip.core.support.error.ErrorType.FRIENDSHIP_NOT_FO
 import com.ssafy.enjoytrip.core.domain.Friendship;
 import com.ssafy.enjoytrip.core.domain.FriendshipStatus;
 import com.ssafy.enjoytrip.core.domain.NotificationReferenceType;
+import com.ssafy.enjoytrip.core.domain.event.FriendshipRequestedEvent;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.model.FriendshipRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.MemberRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.FriendshipMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.MemberMapper;
+import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NotificationMapper;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +29,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class FriendshipService {
     private final FriendshipMapper friendshipMapper;
     private final MemberMapper memberMapper;
-    private final NotificationService notificationService;
+    private final NotificationMapper notificationMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Friendship requestFriendship(String requesterUserId, String targetUserId) {
         Friendship.validateRequestableUsers(requesterUserId, targetUserId);
+
         Friendship friendship = savePending(requesterUserId, targetUserId);
-        notificationService.saveFriendRequestReceived(friendship.id(), requesterUserId, targetUserId);
+        publishFriendshipRequested(friendship, requesterUserId, targetUserId);
+
         return friendship;
     }
 
@@ -176,11 +183,22 @@ public class FriendshipService {
         );
     }
 
+    private void publishFriendshipRequested(Friendship friendship,
+                                            String requesterUserId,
+                                            String targetUserId) {
+        eventPublisher.publishEvent(new FriendshipRequestedEvent(
+                friendship.id(),
+                requesterUserId,
+                targetUserId
+        ));
+    }
+
     private void markFriendRequestNotificationRead(Friendship friendship) {
-        notificationService.markReadByReference(
+        notificationMapper.markReadByReference(
                 friendship.addresseeUserId(),
                 NotificationReferenceType.FRIENDSHIP,
-                friendship.id()
+                friendship.id(),
+                LocalDateTime.now()
         );
     }
 

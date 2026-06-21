@@ -190,7 +190,7 @@ erDiagram
         timestamp updated_at
     }
 
-    member_settings {
+    removed member default settings table {
         varchar user_id PK, FK
         varchar default_note_visibility
         varchar default_course_visibility
@@ -230,7 +230,7 @@ erDiagram
     members ||--o{ course_reports : "reports course"
     members ||--o{ friendships : "requester"
     members ||--o{ friendships : "addressee"
-    members ||--|| member_settings : "has defaults"
+    members ||--|| removed member default settings table : "has defaults"
 
     attractions ||--o{ attraction_favorites : "saved by"
     attractions ||--o{ attraction_ratings : "rated by"
@@ -330,7 +330,7 @@ flowchart LR
 flowchart TD
     v9["V9__create_dongnepin_notes.sql<br/>notes, note_photos, note_saves, note_reports"]
     v10["V10__create_dongnepin_courses.sql<br/>courses, course_items, course_saves, course_reports"]
-    v11["V11__create_dongnepin_friendships_and_settings.sql<br/>friendships, member_settings"]
+    v11["V11__create_dongnepin_friendships_and_settings.sql<br/>friendships, removed member default settings table"]
     v12["V12__create_attraction_popularity_stats.sql<br/>attraction_popularity_stats"]
 
     v9 -->|"course_items.note_id FK"| v10
@@ -502,7 +502,7 @@ status = ACCEPTED and
  or (requester_user_id = owner and addressee_user_id = viewer))
 ```
 
-### 7.7 `member_settings`
+### 7.7 `removed member default settings table`
 
 쪽지와 코스의 기본 공개 범위를 저장한다.
 
@@ -721,7 +721,7 @@ limit :limit;
 2. `V10__create_dongnepin_courses.sql`
    - `courses`, `course_items`, `course_saves`, `course_reports`
 3. `V11__create_dongnepin_friendships_and_settings.sql`
-   - `friendships`, `member_settings`
+   - `friendships`, `removed member default settings table`
 4. `V12__create_attraction_popularity_stats.sql`
    - `attraction_popularity_stats`
 

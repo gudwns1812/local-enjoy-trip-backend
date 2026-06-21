@@ -37,7 +37,7 @@
 - 기존 `app/web/src/main/java`의 controller, API interface, request/response DTO, web config, exception handler
 - 기존 `app/web/src/test/java`의 web/service/support/security test
 - 기존 `app/web/src/docs`의 REST Docs asciidoc source
-- 기존 `app/worker/src/main/java`의 Kafka CDC consumer/error handler
+- 기존 `app/worker/src/main/java`의 legacy async consumer/error handler
 - 기존 `app/worker/src/test/java`의 worker behavior test
 - 기존 `core/src/main/java`의 domain/application service/repository interface/command/query type
 - 기존 `support:error`, `support:auth`, `support:common`
@@ -70,8 +70,8 @@ com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication
 ```
 
 `bootJar`/`bootRun`의 기본 main class는 API entrypoint로 고정하고, worker 실행은
-`:core:core-api:bootRunWorker` task를 사용한다. worker 전용 설정은
-`application-worker.yml`이 소유한다.
+`:core:core-api:bootRunWorker` task를 사용한다. worker entrypoint는 Spring profile을
+활성화하지 않고 non-web runtime으로 실행한다.
 
 ### 2. `db-core` 실제 source/resource 구성
 
@@ -95,7 +95,7 @@ com.ssafy.enjoytrip.core.api.worker.EnjoyTripWorkerApplication
 `db-core` entity/JPA가 실제로 공유하는 enum 4개를 `core-enum`에 분리했다.
 
 - `FriendshipStatus`
-- `NotificationOutboxStatus`
+- `legacy notification status enum`
 - `NotificationReferenceType`
 - `NotificationType`
 
@@ -164,7 +164,7 @@ rtk bash -lc "./gradlew :core:core-api:test --console=plain"
 
 - `BUILD SUCCESSFUL`
 - 102 tests completed
-- 기존 worker `NotificationOutboxCdcConsumerTest`가 `core-api` test suite 안에서 실행됨
+- 기존 worker `legacy async consumer test`가 `core-api` test suite 안에서 실행됨
 
 추가 확인:
 

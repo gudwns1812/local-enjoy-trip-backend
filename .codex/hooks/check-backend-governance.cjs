@@ -152,9 +152,9 @@ function validateChangedFiles(root, paths, failures, warnings) {
 
     if (file.startsWith("core/core-api/src/main/java/com/ssafy/enjoytrip/core/api/web/")) {
       failIf(
-        /@KafkaListener\b|@Scheduled\b|DefaultErrorHandler\b|ConcurrentKafkaListenerContainerFactory\b/.test(content),
+        /@Scheduled\b/.test(content),
         failures,
-        `${file} appears to contain worker-only Kafka/Scheduled logic inside core-api web package.`,
+        `${file} appears to contain worker-only Scheduled logic inside core-api web package.`,
       );
     }
 
