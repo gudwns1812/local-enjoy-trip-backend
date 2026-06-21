@@ -105,7 +105,6 @@ public class MemberService {
     @Transactional
     public Member login(String userId, String password) {
         Member member = findAuthenticatableMember(userId, password);
-        upgradeLegacyPasswordIfNeeded(member, password);
         authLogMapper.insert(new AuthLogRecord(member.userId(), "LOGIN"));
         return member;
     }
@@ -170,16 +169,10 @@ public class MemberService {
 
     private Member findAuthenticatableMember(String userId, String password) {
         Member member = findByUserId(userId);
-        if (member == null || !matchesPassword(password, member.password())) {
+        if (member == null || !passwordEncoder.matches(password, member.password())) {
             throw new CoreException(INVALID_CREDENTIALS);
         }
         return member;
-    }
-
-    private void upgradeLegacyPasswordIfNeeded(Member member, String password) {
-        if (shouldUpgradePassword(member.password())) {
-            updateMemberRecord(member.withPassword(passwordEncoder.encode(password)));
-        }
     }
 
     private String encodedPasswordWhenPresent(String password) {
@@ -187,24 +180,6 @@ public class MemberService {
             return password;
         }
         return passwordEncoder.encode(password);
-    }
-
-    private boolean matchesPassword(String rawPassword, String storedPassword) {
-        if (isBlank(rawPassword) || isBlank(storedPassword)) {
-            return false;
-        }
-        if (isEncodedPassword(storedPassword)) {
-            return passwordEncoder.matches(rawPassword, storedPassword);
-        }
-        return storedPassword.equals(rawPassword);
-    }
-
-    private boolean shouldUpgradePassword(String password) {
-        return !isBlank(password) && !isEncodedPassword(password);
-    }
-
-    private boolean isEncodedPassword(String password) {
-        return password != null && password.startsWith("$2");
     }
 
     private Member createOAuthMember(String provider,

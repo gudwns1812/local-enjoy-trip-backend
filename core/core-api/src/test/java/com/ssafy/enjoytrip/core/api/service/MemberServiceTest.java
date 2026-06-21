@@ -94,6 +94,30 @@ class MemberServiceTest {
         verify(authLogMapper, never()).insert(any());
     }
 
+    @DisplayName("로그인은 평문으로 저장된 이전 비밀번호를 허용하거나 재암호화하지 않는다")
+    @Test
+    void loginRejectsPlainStoredPasswordWithoutUpgrade() {
+        MemberRecord record = new MemberRecord(
+                "ssafy",
+                "SSAFY",
+                null,
+                "ssafy@example.com",
+                "secret",
+                "",
+                null,
+                null,
+                null
+        );
+        when(memberMapper.findByUserId("ssafy")).thenReturn(record);
+
+        assertThatThrownBy(() -> service.login("ssafy", "secret"))
+                .isInstanceOfSatisfying(CoreException.class,
+                        exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
+
+        verify(memberMapper, never()).update(any());
+        verify(authLogMapper, never()).insert(any());
+    }
+
     @DisplayName("OAuth 회원가입은 이름과 닉네임을 분리해 저장한다")
     @Test
     void oauthSignupStoresNicknameSeparatelyFromName() {
