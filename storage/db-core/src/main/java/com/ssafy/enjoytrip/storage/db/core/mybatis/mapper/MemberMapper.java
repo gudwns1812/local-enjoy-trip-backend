@@ -19,5 +19,11 @@ public interface MemberMapper {
 
     int update(MemberRecord record);
 
+    int updateProfileImage(
+            @Param("userId") String userId,
+            @Param("profileImageObjectKey") String profileImageObjectKey,
+            @Param("profileImageUrl") String profileImageUrl
+    );
+
     int deleteByUserId(String userId);
 }

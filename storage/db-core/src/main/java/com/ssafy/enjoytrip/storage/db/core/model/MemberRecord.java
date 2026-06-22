@@ -23,6 +23,8 @@ public class MemberRecord extends BaseRecord {
 
     private String profileImageUrl;
 
+    private String profileImageObjectKey;
+
     public MemberRecord(String userId,
                         String name,
                         String nickname,
@@ -37,8 +39,7 @@ public class MemberRecord extends BaseRecord {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public void update(String nickname, String profileImageUrl) {
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
-        this.profileImageUrl = profileImageUrl;
     }
 }

@@ -9,6 +9,7 @@
 - [health](health.md)
 - [hotplaces](hotplaces.md)
 - [members](members.md)
+- [member-profile-images](member-profile-images.md)
 - [news](news.md)
 - [notices](notices.md)
 - [plans](plans.md)

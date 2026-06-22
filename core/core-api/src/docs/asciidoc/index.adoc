@@ -52,3 +52,11 @@ include::{snippets}/notices/http-response.adoc[]
 
 include::{snippets}/members/http-request.adoc[]
 include::{snippets}/members/http-response.adoc[]
+
+
+== Member Profile Images
+
+include::{snippets}/member-profile-image-presigned-upload/http-request.adoc[]
+include::{snippets}/member-profile-image-presigned-upload/http-response.adoc[]
+include::{snippets}/member-profile-image-update/http-request.adoc[]
+include::{snippets}/member-profile-image-update/http-response.adoc[]

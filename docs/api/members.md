@@ -37,3 +37,9 @@ Content-Length: 224
 ```bash
 $ curl 'http://localhost:8080/api/members' -i -X GET
 ```
+
+## Profile image updates
+
+`PUT /api/members/me` is no longer the profile-image mutation path. Use
+[`Member Profile Images API`](member-profile-images.md) to create a presigned upload URL and persist the uploaded
+`objectKey`. Member read responses continue to expose only `profileImageUrl` for display compatibility.
