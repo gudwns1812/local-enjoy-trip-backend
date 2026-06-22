@@ -55,11 +55,7 @@ public class MemberController implements MemberApi {
                 request.nicknameOrName(),
                 request.email().trim(),
                 request.password(),
-                request.normalizedProfileImageUrl(),
-                request.representativeLatitude(),
-                request.representativeLongitude(),
-                request.normalizedRepresentativeRegionName(),
-                ""
+                request.normalizedProfileImageUrl()
         ));
         return success();
     }
@@ -123,11 +119,7 @@ public class MemberController implements MemberApi {
                 request.normalizedNickname(),
                 null,
                 null,
-                request.normalizedProfileImageUrl(),
-                request.representativeLatitude(),
-                request.representativeLongitude(),
-                request.normalizedRepresentativeRegionName(),
-                ""
+                request.normalizedProfileImageUrl()
         ));
         return success();
     }
@@ -145,10 +137,7 @@ public class MemberController implements MemberApi {
                 member.name(),
                 member.nickname(),
                 member.email(),
-                member.profileImageUrl(),
-                member.representativeLatitude(),
-                member.representativeLongitude(),
-                member.representativeRegionName()
+                member.profileImageUrl()
         );
     }
 }

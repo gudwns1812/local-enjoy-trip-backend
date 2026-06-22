@@ -21,13 +21,13 @@ public record MapExploreRequest(
     private static final String INVALID_COORDINATES_MESSAGE = "위도 또는 경도가 유효하지 않습니다.";
     private static final String INVALID_REQUEST_MESSAGE = "유효하지 않은 요청입니다.";
 
-    public Double normalizedLongitude() {
-        requireCoordinatePair();
+    public double requiredLongitude() {
+        requireCoordinates();
         return mapX;
     }
 
-    public Double normalizedLatitude() {
-        requireCoordinatePair();
+    public double requiredLatitude() {
+        requireCoordinates();
         return mapY;
     }
 
@@ -51,8 +51,8 @@ public record MapExploreRequest(
         return filter == null ? MapExploreFilter.ALL : filter;
     }
 
-    private void requireCoordinatePair() {
-        if ((mapX == null) != (mapY == null)) {
+    private void requireCoordinates() {
+        if (mapX == null || mapY == null) {
             throw new ClientInputException(INVALID_COORDINATES_MESSAGE);
         }
     }

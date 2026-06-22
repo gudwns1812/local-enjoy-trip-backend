@@ -1,7 +1,6 @@
 package com.ssafy.enjoytrip.core.api.web.dto.response;
 
 import com.ssafy.enjoytrip.core.domain.NoteCategory;
-import com.ssafy.enjoytrip.core.domain.NoteMapPin;
 import com.ssafy.enjoytrip.core.domain.NoteViewerRelationship;
 import com.ssafy.enjoytrip.core.domain.NoteVisibility;
 import java.time.LocalDateTime;
@@ -22,22 +21,4 @@ public record NoteMapPinResponse(
         NoteViewerRelationship relationshipToViewer,
         LocalDateTime createdAt
 ) {
-    public static NoteMapPinResponse from(NoteMapPin pin) {
-        return new NoteMapPinResponse(
-                pin.id(),
-                pin.title(),
-                pin.category(),
-                pin.visibility(),
-                pin.latitude(),
-                pin.longitude(),
-                pin.regionName(),
-                pin.distanceMeters(),
-                pin.imageObjectKey(),
-                pin.authorUserId(),
-                pin.authorNickname(),
-                pin.authorProfileImageUrl(),
-                pin.relationshipToViewer(),
-                pin.createdAt()
-        );
-    }
 }

@@ -2,7 +2,6 @@ package com.ssafy.enjoytrip.core.api.web.controller;
 
 import static com.ssafy.enjoytrip.core.support.response.ApiResponse.success;
 
-import com.ssafy.enjoytrip.core.domain.MapExploreResult;
 import com.ssafy.enjoytrip.core.domain.service.MapExploreService;
 import com.ssafy.enjoytrip.core.support.response.ApiResponse;
 import com.ssafy.enjoytrip.core.api.web.api.MapApi;
@@ -26,16 +25,16 @@ public class MapController implements MapApi {
     @Override
     public ApiResponse<MapExploreResponse> explore(@Valid @ModelAttribute MapExploreRequest request,
                                                    @AuthenticatedUserId String authenticatedUserId) {
-        MapExploreResult result = service.explore(
+        MapExploreResponse response = service.explore(
                 authenticatedUserId,
-                request.normalizedLongitude(),
-                request.normalizedLatitude(),
+                request.requiredLongitude(),
+                request.requiredLatitude(),
                 request.normalizedRadiusMeters(),
                 request.normalizedLimit(),
                 request.normalizedFilter(),
                 request.noteCategory()
         );
 
-        return success(MapExploreResponse.from(result));
+        return success(response);
     }
 }
