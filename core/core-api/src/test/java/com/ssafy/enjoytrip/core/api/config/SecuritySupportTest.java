@@ -72,7 +72,7 @@ class SecuritySupportTest {
         JwtTokenService tokenService = new JwtTokenService(securityConfig.jwtEncoder(properties), properties);
 
         IssuedToken issued = tokenService.issue(
-                new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden", "")
+                new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden")
         );
         Jwt decoded = securityConfig.jwtDecoder(properties).decode(issued.accessToken());
 

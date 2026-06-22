@@ -4,8 +4,8 @@ import com.ssafy.enjoytrip.core.api.web.controller.*;
 
 import com.ssafy.enjoytrip.core.domain.Attraction;
 import com.ssafy.enjoytrip.core.domain.query.AttractionSearchCondition;
-import com.ssafy.enjoytrip.core.domain.ChargerItem;
-import com.ssafy.enjoytrip.core.domain.NewsItem;
+import com.ssafy.enjoytrip.core.api.web.dto.response.ChargerItem;
+import com.ssafy.enjoytrip.core.api.web.dto.response.NewsItem;
 import com.ssafy.enjoytrip.core.domain.NeighborhoodBriefing;
 import com.ssafy.enjoytrip.core.domain.WeatherSummary;
 import com.ssafy.enjoytrip.core.domain.service.DbHealthService;
@@ -274,7 +274,7 @@ class ApiDocumentationTest {
     @Test
     void members() throws Exception {
         when(memberService.findAllUsers()).thenReturn(List.of(
-                new Member("ssafy", "SSAFY", "ssafy@example.com", "secret", "2026-05-14 11:00:00")
+                new Member("ssafy", "SSAFY", "ssafy@example.com", "secret")
         ));
 
         mockMvc.perform(get("/api/members"))
