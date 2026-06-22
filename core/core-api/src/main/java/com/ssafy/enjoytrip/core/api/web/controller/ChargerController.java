@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/chargers")
 @RequiredArgsConstructor
-@Validated
 public class ChargerController implements ChargerApi {
     private final EvChargerService service;
 
