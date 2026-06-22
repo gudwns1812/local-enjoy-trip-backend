@@ -20,21 +20,16 @@
         a.contentTypeId,
         a.overview,
         a.distanceMeters,
-        coalesce(stats.favorite_count, 0) as favoriteCount,
         coalesce(stats.save_count, 0) as saveCount,
         coalesce(stats.average_rating, 0) as ratingAverage,
         coalesce(stats.rating_count, 0) as ratingCount,
         t.id as tagId,
         t.name as tagName,
-        case when f.attraction_id is null then false else true end as favorited,
         case when s.attraction_id is null then false else true end as saved,
         my_rating.rating as myRating
     </sql>
     <sql id="searchRowJoins">
         left join attraction_popularity_stats stats on stats.attraction_id = a.id
-        left join attraction_favorites f
-               on f.attraction_id = a.id
-              and f.user_id = #{viewerUserId}
         left join attraction_saves s
                on s.attraction_id = a.id
               and s.user_id = #{viewerUserId}
@@ -137,8 +132,6 @@
         order by a.distanceMeters asc, a.title asc, a.id asc, t.name asc
     </select>
     <select id="existsById" resultType="int">select count(*) from attractions where id = #{attractionId}</select>
-    <insert id="insertFavorite">insert into attraction_favorites (attraction_id, user_id) values (#{attractionId}, #{userId}) on conflict (attraction_id, user_id) do nothing</insert>
-    <delete id="deleteFavorite">delete from attraction_favorites where attraction_id = #{attractionId} and user_id = #{userId}</delete>
     <insert id="insertSave">insert into attraction_saves (attraction_id, user_id) values (#{attractionId}, #{userId}) on conflict (attraction_id, user_id) do nothing</insert>
     <delete id="deleteSave">delete from attraction_saves where attraction_id = #{attractionId} and user_id = #{userId}</delete>
     <insert id="upsertRating">insert into attraction_ratings (attraction_id, user_id, rating) values (#{attractionId}, #{userId}, #{rating}) on conflict (attraction_id, user_id) do update set rating = excluded.rating, updated_at = current_timestamp</insert>
@@ -170,22 +163,17 @@
     <insert id="insertTagMapping">insert into attraction_tag_mappings (attraction_id, tag_id) values (#{attractionId}, #{tagId})</insert>
     <sql id="statsRowColumns">
         a.id as attractionId,
-        coalesce(stats.favorite_count, 0) as favoriteCount,
         coalesce(stats.save_count, 0) as saveCount,
         coalesce(stats.average_rating, 0) as averageRating,
         coalesce(stats.rating_count, 0) as ratingCount,
         t.id as tagId,
         t.name as tagName,
-        case when f.attraction_id is null then false else true end as favorited,
         case when s.attraction_id is null then false else true end as saved,
         my_rating.rating as myRating
     </sql>
     <sql id="statsRowJoins">
         from attractions a
         left join attraction_popularity_stats stats on stats.attraction_id = a.id
-        left join attraction_favorites f
-               on f.attraction_id = a.id
-              and f.user_id = #{userId}
         left join attraction_saves s
                on s.attraction_id = a.id
               and s.user_id = #{userId}
@@ -210,30 +198,11 @@
     </select>
     <select id="findPopularityCounts" resultType="com.ssafy.enjoytrip.storage.db.core.model.AttractionCountRecord">
         select attraction_id as attractionId,
-               (favorite_count + save_count) as count
+               save_count as count
         from attraction_popularity_stats
         where attraction_id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
     </select>
-    <insert id="applyPopularityFavoriteDeltas">
-        merge into attraction_popularity_stats as stats
-        using (
-        values
-        <foreach collection="deltas" item="delta" separator=",">
-            (
-                #{delta.attractionId},
-                #{delta.delta}
-            )
-        </foreach>
-        ) as incoming (attraction_id, delta)
-        on stats.attraction_id = incoming.attraction_id
-        when matched then
-            update set favorite_count = greatest(0, stats.favorite_count + incoming.delta),
-                       updated_at = current_timestamp
-        when not matched then
-            insert (attraction_id, favorite_count, updated_at)
-            values (incoming.attraction_id, greatest(0, incoming.delta), current_timestamp)
-    </insert>
     <insert id="applyPopularitySaveDeltas">
         merge into attraction_popularity_stats as stats
         using (

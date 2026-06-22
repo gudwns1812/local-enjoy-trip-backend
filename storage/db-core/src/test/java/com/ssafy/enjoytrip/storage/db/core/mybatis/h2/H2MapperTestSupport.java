@@ -37,7 +37,6 @@ abstract class H2MapperTestSupport {
         jdbcTemplate.update("delete from attraction_ratings");
         jdbcTemplate.update("delete from attraction_tag_mappings");
         jdbcTemplate.update("delete from attraction_tags");
-        jdbcTemplate.update("delete from attraction_favorites");
         jdbcTemplate.update("delete from attractions");
         jdbcTemplate.update("delete from friendships");
         jdbcTemplate.update("delete from courses");
