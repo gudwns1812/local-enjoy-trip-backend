@@ -30,10 +30,6 @@ public interface AttractionMapper {
 
     int existsById(Long attractionId);
 
-    int insertFavorite(@Param("attractionId") Long attractionId, @Param("userId") String userId);
-
-    int deleteFavorite(@Param("attractionId") Long attractionId, @Param("userId") String userId);
-
     int insertSave(@Param("attractionId") Long attractionId, @Param("userId") String userId);
 
     int deleteSave(@Param("attractionId") Long attractionId, @Param("userId") String userId);
@@ -67,8 +63,6 @@ public interface AttractionMapper {
                                                                 @Param("userId") String userId);
 
     List<AttractionCountRecord> findPopularityCounts(@Param("ids") List<Long> ids);
-
-    int applyPopularityFavoriteDeltas(@Param("deltas") List<AttractionPopularityDeltaRecord> deltas);
 
     int applyPopularitySaveDeltas(@Param("deltas") List<AttractionPopularityDeltaRecord> deltas);
 

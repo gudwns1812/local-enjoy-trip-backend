@@ -73,34 +73,12 @@ class PostgresUpsertMapperContainerTest extends StorageContainerTestSupport {
         assertThat(updated.getPayload()).isEqualTo("updated");
     }
 
-    @DisplayName("AttractionMapper는 PostgreSQL on conflict로 favorite delta를 0 미만으로 내리지 않는다")
-    @Test
-    void attractionMapperAppliesPopularityFavoriteDeltaWithPostgresUpsert() {
-        long attractionId = ATTRACTION_IDS.incrementAndGet();
-        seedAttraction(attractionId, "컨테이너 인기 관광지", 1, 1);
-
-        assertThat(attractionMapper.applyPopularityFavoriteDeltas(List.of(
-                new AttractionPopularityDeltaRecord(attractionId, 3L)
-        ))).isPositive();
-        assertThat(attractionMapper.applyPopularityFavoriteDeltas(List.of(
-                new AttractionPopularityDeltaRecord(attractionId, -5L)
-        ))).isPositive();
-
-        List<AttractionCountRecord> counts = attractionMapper.findPopularityCounts(
-                List.of(attractionId)
-        );
-
-        assertThat(counts).extracting(AttractionCountRecord::count).containsExactly(0);
-    }
     @DisplayName("AttractionMapper는 PostgreSQL on conflict로 save delta를 0 미만으로 내리지 않는다")
     @Test
     void attractionMapperAppliesPopularitySaveDeltaWithPostgresUpsert() {
         long attractionId = ATTRACTION_IDS.incrementAndGet();
         seedAttraction(attractionId, "컨테이너 저장 인기 관광지", 1, 1);
 
-        assertThat(attractionMapper.applyPopularityFavoriteDeltas(List.of(
-                new AttractionPopularityDeltaRecord(attractionId, 2L)
-        ))).isPositive();
         assertThat(attractionMapper.applyPopularitySaveDeltas(List.of(
                 new AttractionPopularityDeltaRecord(attractionId, 4L)
         ))).isPositive();
@@ -112,7 +90,7 @@ class PostgresUpsertMapperContainerTest extends StorageContainerTestSupport {
                 List.of(attractionId)
         );
 
-        assertThat(counts).extracting(AttractionCountRecord::count).containsExactly(2);
+        assertThat(counts).extracting(AttractionCountRecord::count).containsExactly(0);
     }
 
 }

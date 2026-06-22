@@ -30,21 +30,22 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
     @Autowired
     private EvChargerMapper evChargerMapper;
 
-    @DisplayName("AttractionMapper는 검색, 주변 검색, 태그, 좋아요, 평점 SQL을 실행한다")
+    @DisplayName("AttractionMapper는 검색, 주변 검색, 태그, 저장, 평점 SQL을 실행한다")
     @Test
     void attractionMapperRunsSearchAndUserInteractionQueries() {
         long attractionId = 9200001L;
         String userId = uniqueId("attraction-user");
+        seedMember(userId, userId + "@example.com");
         seedAttraction(attractionId, "서비스커넥션 궁", 1, 1);
         jdbcTemplate.update("""
-                insert into attraction_popularity_stats (attraction_id, favorite_count)
+                insert into attraction_popularity_stats (attraction_id, save_count)
                 values (?, 7)
-                on conflict (attraction_id) do update set favorite_count = excluded.favorite_count
+                on conflict (attraction_id) do update set save_count = excluded.save_count
                 """, attractionId);
 
         AttractionTagRecord tag = attractionMapper.insertTag(uniqueId("tag"));
         attractionMapper.insertTagMapping(attractionId, tag.id());
-        attractionMapper.insertFavorite(attractionId, userId);
+        attractionMapper.insertSave(attractionId, userId);
         attractionMapper.upsertRating(attractionId, userId, 5);
         attractionMapper.refreshPopularityRatingStats(attractionId);
 
@@ -76,8 +77,8 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
         assertThat(attractionMapper.existsById(attractionId)).isEqualTo(1);
         assertThat(searched).extracting(AttractionSearchRecord::id).contains(attractionId);
         assertThat(searched).extracting(AttractionSearchRecord::tagId).contains(tag.id());
-        assertThat(searched).extracting(AttractionSearchRecord::favorited).contains(true);
-        assertThat(searched).extracting(AttractionSearchRecord::favoriteCount).contains(7);
+        assertThat(searched).extracting(AttractionSearchRecord::saveCount).contains(7);
+        assertThat(searched).extracting(AttractionSearchRecord::saved).contains(true);
         assertThat(searched).extracting(AttractionSearchRecord::ratingCount).contains(1);
         assertThat(searched).extracting(AttractionSearchRecord::ratingAverage).contains(5.0);
         assertThat(searched).extracting(AttractionSearchRecord::myRating).contains(5);
@@ -86,14 +87,14 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
         assertThat(attractionMapper.countTagsByIds(List.of(tag.id()))).isEqualTo(1);
         assertThat(attractionMapper.findAllTags()).extracting(AttractionTagRecord::id).contains(tag.id());
         assertThat(statsRows).extracting(AttractionStatsRowRecord::tagId).contains(tag.id());
-        assertThat(statsRows).extracting(AttractionStatsRowRecord::favorited).contains(true);
-        assertThat(statsRows).extracting(AttractionStatsRowRecord::favoriteCount).contains(7);
+        assertThat(statsRows).extracting(AttractionStatsRowRecord::saveCount).contains(7);
+        assertThat(statsRows).extracting(AttractionStatsRowRecord::saved).contains(true);
         assertThat(statsRows).extracting(AttractionStatsRowRecord::ratingCount).contains(1);
         assertThat(statsRows).extracting(AttractionStatsRowRecord::averageRating).contains(5.0);
         assertThat(statsRows).extracting(AttractionStatsRowRecord::myRating).contains(5);
         assertThat(popularityCounts).extracting(AttractionCountRecord::count).contains(7);
         assertThat(attractionMapper.deleteRating(attractionId, userId)).isEqualTo(1);
-        assertThat(attractionMapper.deleteFavorite(attractionId, userId)).isEqualTo(1);
+        assertThat(attractionMapper.deleteSave(attractionId, userId)).isEqualTo(1);
         assertThat(attractionMapper.deleteTagMappings(attractionId)).isEqualTo(1);
         assertThat(attractionMapper.deleteTag(tag.id())).isEqualTo(1);
     }

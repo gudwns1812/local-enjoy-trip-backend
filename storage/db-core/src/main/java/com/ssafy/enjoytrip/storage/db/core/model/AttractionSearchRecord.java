@@ -18,13 +18,11 @@ public record AttractionSearchRecord(
         String contentTypeId,
         String overview,
         Double distanceMeters,
-        int favoriteCount,
         int saveCount,
         double ratingAverage,
         int ratingCount,
         Long tagId,
         String tagName,
-        boolean favorited,
         boolean saved,
         Integer myRating
 ) {
