@@ -6,7 +6,6 @@ import com.ssafy.enjoytrip.core.domain.Note;
 import com.ssafy.enjoytrip.core.domain.NoteCategory;
 import com.ssafy.enjoytrip.core.domain.NoteStatus;
 import com.ssafy.enjoytrip.core.domain.NoteViewerRelationship;
-import com.ssafy.enjoytrip.core.api.web.dto.response.NoteMapPinResponse;
 import com.ssafy.enjoytrip.core.domain.NoteVisibility;
 import com.ssafy.enjoytrip.core.domain.query.MapNotesCondition;
 import com.ssafy.enjoytrip.core.domain.query.NearbyNotesCondition;
@@ -112,7 +111,7 @@ public class NoteService {
                 .toList();
     }
 
-    public List<NoteMapPinResponse> findMapNotes(MapNotesCondition condition) {
+    public List<NoteMapPin> findMapNotes(MapNotesCondition condition) {
         return noteMapper.findMapPins(
                         condition.longitude(),
                         condition.latitude(),
@@ -164,8 +163,8 @@ public class NoteService {
         );
     }
 
-    private NoteMapPinResponse toNoteMapPin(NoteMapPinRecord record) {
-        return new NoteMapPinResponse(
+    private NoteMapPin toNoteMapPin(NoteMapPinRecord record) {
+        return new NoteMapPin(
                 record.id(),
                 record.title(),
                 NoteCategory.valueOf(record.category()),

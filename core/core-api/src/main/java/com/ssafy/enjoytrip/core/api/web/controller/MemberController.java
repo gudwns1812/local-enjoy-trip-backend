@@ -14,7 +14,7 @@ import com.ssafy.enjoytrip.core.api.web.dto.request.MemberLogoutRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.MemberOAuthSignupRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.MemberSignupRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.MemberUpdateRequest;
-import com.ssafy.enjoytrip.core.api.web.dto.response.IssuedToken;
+import com.ssafy.enjoytrip.core.domain.service.IssuedToken;
 import com.ssafy.enjoytrip.core.api.web.dto.response.LoginResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.UserEnvelopeResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.UserResponse;

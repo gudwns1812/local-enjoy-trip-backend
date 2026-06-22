@@ -1,5 +1,6 @@
 package com.ssafy.enjoytrip.core.api.web.dto.response;
 
+import com.ssafy.enjoytrip.core.domain.service.ChargerResult;
 public record ChargerItem(
         String statId,
         String statNm,
@@ -14,4 +15,20 @@ public record ChargerItem(
         String busiCall,
         String stat
 ) {
+    public static ChargerItem from(ChargerResult item) {
+        return new ChargerItem(
+                item.statId(),
+                item.statNm(),
+                item.chgerId(),
+                item.chgerType(),
+                item.addr(),
+                item.location(),
+                item.lat(),
+                item.lng(),
+                item.useTime(),
+                item.busiNm(),
+                item.busiCall(),
+                item.stat()
+        );
+    }
 }

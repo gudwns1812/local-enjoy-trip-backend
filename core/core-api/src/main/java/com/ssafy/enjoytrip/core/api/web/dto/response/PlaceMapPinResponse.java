@@ -1,5 +1,7 @@
 package com.ssafy.enjoytrip.core.api.web.dto.response;
 
+import com.ssafy.enjoytrip.core.domain.service.PlaceMapPin;
+
 public record PlaceMapPinResponse(
         Long id,
         String title,
@@ -15,4 +17,21 @@ public record PlaceMapPinResponse(
         double ratingAverage,
         int ratingCount
 ) {
+    public static PlaceMapPinResponse from(PlaceMapPin pin) {
+        return new PlaceMapPinResponse(
+                pin.id(),
+                pin.title(),
+                pin.address(),
+                pin.latitude(),
+                pin.longitude(),
+                pin.imageUrl(),
+                pin.contentTypeId(),
+                pin.distanceMeters(),
+                pin.favorited(),
+                pin.saved(),
+                pin.saveCount(),
+                pin.ratingAverage(),
+                pin.ratingCount()
+        );
+    }
 }

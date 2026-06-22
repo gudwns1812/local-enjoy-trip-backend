@@ -7,6 +7,7 @@ import com.ssafy.enjoytrip.core.support.response.ApiResponse;
 import com.ssafy.enjoytrip.core.api.web.api.MapApi;
 import com.ssafy.enjoytrip.core.api.web.dto.request.MapExploreRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.response.MapExploreResponse;
+import com.ssafy.enjoytrip.core.domain.service.MapExploreResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserId;
@@ -25,7 +26,7 @@ public class MapController implements MapApi {
     @Override
     public ApiResponse<MapExploreResponse> explore(@Valid @ModelAttribute MapExploreRequest request,
                                                    @AuthenticatedUserId String authenticatedUserId) {
-        MapExploreResponse response = service.explore(
+        MapExploreResult result = service.explore(
                 authenticatedUserId,
                 request.requiredLongitude(),
                 request.requiredLatitude(),
@@ -35,6 +36,6 @@ public class MapController implements MapApi {
                 request.noteCategory()
         );
 
-        return success(response);
+        return success(MapExploreResponse.from(result));
     }
 }

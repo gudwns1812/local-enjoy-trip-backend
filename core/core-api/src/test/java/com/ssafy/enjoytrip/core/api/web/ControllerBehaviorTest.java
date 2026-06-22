@@ -1,10 +1,10 @@
 package com.ssafy.enjoytrip.core.api.web;
 
 import com.ssafy.enjoytrip.core.api.web.controller.*;
-import com.ssafy.enjoytrip.core.api.web.dto.response.MapCenterResponse;
-import com.ssafy.enjoytrip.core.api.web.dto.response.MapExploreResponse;
-import com.ssafy.enjoytrip.core.api.web.dto.response.NoteMapPinResponse;
-import com.ssafy.enjoytrip.core.api.web.dto.response.PlaceMapPinResponse;
+import com.ssafy.enjoytrip.core.domain.service.MapCenter;
+import com.ssafy.enjoytrip.core.domain.service.MapExploreResult;
+import com.ssafy.enjoytrip.core.domain.service.NoteMapPin;
+import com.ssafy.enjoytrip.core.domain.service.PlaceMapPin;
 
 import com.ssafy.enjoytrip.core.domain.BoardPost;
 import com.ssafy.enjoytrip.core.domain.Hotplace;
@@ -25,7 +25,7 @@ import com.ssafy.enjoytrip.core.domain.AttractionStats;
 import com.ssafy.enjoytrip.core.domain.AttractionTag;
 import com.ssafy.enjoytrip.core.domain.query.NearbyNotesCondition;
 import com.ssafy.enjoytrip.core.domain.query.NearbySearchCondition;
-import com.ssafy.enjoytrip.core.api.web.dto.response.PopularAttraction;
+import com.ssafy.enjoytrip.core.domain.service.PopularAttractionResult;
 import com.ssafy.enjoytrip.core.domain.WeatherSummary;
 import com.ssafy.enjoytrip.core.support.error.exception.ExternalServiceException;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
@@ -365,8 +365,8 @@ class ControllerBehaviorTest {
                     anyInt(),
                     any(),
                     any()
-            )).thenReturn(new MapExploreResponse(
-                    new MapCenterResponse(127.0276, 37.4979, null),
+            )).thenReturn(new MapExploreResult(
+                    new MapCenter(127.0276, 37.4979, null),
                     750.0,
                     10,
                     MapExploreFilter.NOTE,
@@ -409,8 +409,8 @@ class ControllerBehaviorTest {
                     anyInt(),
                     any(),
                     any()
-            )).thenReturn(new MapExploreResponse(
-                    new MapCenterResponse(126.9780, 37.5665, null),
+            )).thenReturn(new MapExploreResult(
+                    new MapCenter(126.9780, 37.5665, null),
                     500.0,
                     50,
                     MapExploreFilter.SAVED_PLACE,
@@ -440,12 +440,12 @@ class ControllerBehaviorTest {
         @DisplayName("지도 탐색은 장소와 SELF/FRIEND/NONE privacy-projected 쪽지를 반환한다")
         @Test
         void mapExploreReturnsPlaceAndPrivacyProjectedNotePins() throws Exception {
-            MapExploreResponse result = new MapExploreResponse(
-                    new MapCenterResponse(126.9780, 37.5665, "서울 중구"),
+            MapExploreResult result = new MapExploreResult(
+                    new MapCenter(126.9780, 37.5665, "서울 중구"),
                     1000.0,
                     50,
                     MapExploreFilter.ALL,
-                    List.of(new PlaceMapPinResponse(
+                    List.of(new PlaceMapPin(
                             100L,
                             "서울광장",
                             "서울 중구 세종대로",
@@ -461,7 +461,7 @@ class ControllerBehaviorTest {
                             2
                     )),
                     List.of(
-                            new NoteMapPinResponse(
+                            new NoteMapPin(
                                     1L,
                                     "내 쪽지",
                                     NoteCategory.TIP,
@@ -477,7 +477,7 @@ class ControllerBehaviorTest {
                                     NoteViewerRelationship.SELF,
                                     LocalDateTime.of(2026, 6, 15, 10, 0)
                             ),
-                            new NoteMapPinResponse(
+                            new NoteMapPin(
                                     2L,
                                     "친구 쪽지",
                                     NoteCategory.TIP,
@@ -493,7 +493,7 @@ class ControllerBehaviorTest {
                                     NoteViewerRelationship.FRIEND,
                                     LocalDateTime.of(2026, 6, 15, 10, 1)
                             ),
-                            new NoteMapPinResponse(
+                            new NoteMapPin(
                                     3L,
                                     "공개 쪽지",
                                     NoteCategory.TIP,
@@ -974,7 +974,7 @@ class ControllerBehaviorTest {
             when(attractionService.findPopularNearbyAttractions(
                     new NearbySearchCondition(126.9780, 37.5665, 500.0, 20),
                     null
-            )).thenReturn(List.of(new PopularAttraction(attraction, 120.5, 42L)));
+            )).thenReturn(List.of(new PopularAttractionResult(attraction, 120.5, 42L)));
 
             mockMvc.perform(get("/api/attractions/popular-nearby"))
                     .andExpect(status().isOk())

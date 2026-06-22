@@ -2,7 +2,7 @@ package com.ssafy.enjoytrip.core.api.config;
 
 import com.ssafy.enjoytrip.core.domain.Member;
 import com.ssafy.enjoytrip.core.domain.service.JwtTokenService;
-import com.ssafy.enjoytrip.core.api.web.dto.response.IssuedToken;
+import com.ssafy.enjoytrip.core.domain.service.IssuedToken;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserIdArgumentResolver;
