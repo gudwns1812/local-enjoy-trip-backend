@@ -55,6 +55,7 @@ create table members (
     email varchar(255) not null unique,
     password varchar(255) not null,
     profile_image_url varchar(512),
+    profile_image_object_key varchar(512),
     created_at timestamp not null,
     updated_at timestamp
 );

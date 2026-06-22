@@ -32,10 +32,7 @@ class MemberAuthMapperH2Test extends H2MapperTestSupport {
 
         memberMapper.insert(record);
         MemberRecord saved = memberMapper.findByUserId(userId);
-        saved.update(
-                "nickname",
-                null
-        );
+        saved.updateNickname("nickname");
         memberMapper.update(saved);
 
         MemberRecord updated = memberMapper.findByEmail(userId + "@example.com");
@@ -46,15 +43,38 @@ class MemberAuthMapperH2Test extends H2MapperTestSupport {
         assertThat(updated.getName()).isEqualTo("회원");
         assertThat(updated.getNickname()).isEqualTo("nickname");
         assertThat(updated.getPassword()).isEqualTo("encoded-password");
-        updated.update(null, null);
-        memberMapper.update(updated);
+        memberMapper.updateProfileImage(
+                userId,
+                "profiles/" + userId + "/sample.jpg",
+                "http://localhost:9000/dongnepin-notes/profiles/" + userId + "/sample.jpg"
+        );
+        MemberRecord profileUpdated = memberMapper.findByUserId(userId);
+
+        assertThat(profileUpdated.getName()).isEqualTo("회원");
+        assertThat(profileUpdated.getEmail()).isEqualTo(userId + "@example.com");
+        assertThat(profileUpdated.getPassword()).isEqualTo("encoded-password");
+        assertThat(profileUpdated.getNickname()).isEqualTo("nickname");
+        assertThat(profileUpdated.getProfileImageObjectKey()).isEqualTo(
+                "profiles/" + userId + "/sample.jpg"
+        );
+        assertThat(profileUpdated.getProfileImageUrl()).isEqualTo(
+                "http://localhost:9000/dongnepin-notes/profiles/" + userId + "/sample.jpg"
+        );
+
+        profileUpdated.updateNickname(null);
+        memberMapper.update(profileUpdated);
         MemberRecord cleared = memberMapper.findByUserId(userId);
 
         assertThat(cleared.getName()).isEqualTo("회원");
         assertThat(cleared.getEmail()).isEqualTo(userId + "@example.com");
         assertThat(cleared.getPassword()).isEqualTo("encoded-password");
         assertThat(cleared.getNickname()).isNull();
-        assertThat(cleared.getProfileImageUrl()).isNull();
+        assertThat(cleared.getProfileImageUrl()).isEqualTo(
+                "http://localhost:9000/dongnepin-notes/profiles/" + userId + "/sample.jpg"
+        );
+        assertThat(cleared.getProfileImageObjectKey()).isEqualTo(
+                "profiles/" + userId + "/sample.jpg"
+        );
         assertThat(memberMapper.findAllOrderByCreatedAtDesc())
                 .extracting(MemberRecord::getUserId)
                 .contains(userId);
