@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.core.api.web.controller;
+package com.ssafy.enjoytrip.core.api.web.view.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

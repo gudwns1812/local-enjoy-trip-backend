@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.core.api.web.controller;
+package com.ssafy.enjoytrip.core.api.web.view.controller;
 
 import com.ssafy.enjoytrip.core.api.web.dto.request.AdminPlaceForm;
 import com.ssafy.enjoytrip.core.api.web.dto.response.AdminPlaceActionResponse;

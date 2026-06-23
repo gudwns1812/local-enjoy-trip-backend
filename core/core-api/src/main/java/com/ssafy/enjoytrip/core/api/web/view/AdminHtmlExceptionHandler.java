@@ -1,7 +1,7 @@
-package com.ssafy.enjoytrip.core.api.web;
+package com.ssafy.enjoytrip.core.api.web.view;
 
-import com.ssafy.enjoytrip.core.api.web.controller.AdminCourseController;
-import com.ssafy.enjoytrip.core.api.web.controller.AdminPlaceController;
+import com.ssafy.enjoytrip.core.api.web.view.controller.AdminCourseController;
+import com.ssafy.enjoytrip.core.api.web.view.controller.AdminPlaceController;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.Ordered;
