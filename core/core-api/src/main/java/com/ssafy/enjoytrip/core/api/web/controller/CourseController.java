@@ -69,6 +69,13 @@ public class CourseController {
         return success(CourseResponse.from(updated));
     }
 
+    @PostMapping("/{id}/order-recommendation")
+    public ApiResponse<CourseResponse> recommendOrder(@PathVariable @NotBlank String id,
+                                                      @AuthenticatedUserId String authenticatedUserId) {
+        Course recommended = courseService.recommendCourseOrder(authenticatedUserId, id.strip());
+        return success(CourseResponse.from(recommended));
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable @NotBlank String id,
                                     @AuthenticatedUserId String authenticatedUserId) {
