@@ -1,0 +1,42 @@
+package com.ssafy.enjoytrip.core.api.web.dto.response;
+
+import com.ssafy.enjoytrip.core.domain.Course;
+import java.util.List;
+
+public record CourseResponse(
+        String id,
+        String ownerUserId,
+        String title,
+        String regionName,
+        String visibility,
+        String status,
+        String description,
+        String coverImageUrl,
+        String curationSection,
+        Integer curationOrder,
+        int saveCount,
+        String createdAt,
+        String updatedAt,
+        RouteSummaryResponse routeSummary,
+        List<CourseItemResponse> items
+) {
+    public static CourseResponse from(Course course) {
+        return new CourseResponse(
+                course.id(),
+                course.ownerUserId(),
+                course.title(),
+                course.regionName(),
+                course.visibility(),
+                course.status(),
+                course.description(),
+                course.coverImageUrl(),
+                course.curationSection(),
+                course.curationOrder(),
+                course.saveCount(),
+                course.createdAt(),
+                course.updatedAt(),
+                RouteSummaryResponse.from(course.routeSummary()),
+                course.route().stops().stream().map(CourseItemResponse::from).toList()
+        );
+    }
+}
