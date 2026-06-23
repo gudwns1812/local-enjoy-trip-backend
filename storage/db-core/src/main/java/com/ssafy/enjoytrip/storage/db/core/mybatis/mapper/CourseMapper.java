@@ -1,0 +1,42 @@
+package com.ssafy.enjoytrip.storage.db.core.mybatis.mapper;
+
+import com.ssafy.enjoytrip.storage.db.core.model.CourseItemDetailRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.CourseItemRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.CourseRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.CourseRouteSegmentRecord;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+
+public interface CourseMapper {
+    int insert(CourseRecord record);
+
+    CourseRecord findById(String id);
+
+    List<CourseRecord> findByOwnerUserId(String ownerUserId);
+
+    List<CourseRecord> findAdminOwned();
+
+    int updateOwned(CourseRecord record);
+
+    int softDeleteOwned(@Param("id") String id, @Param("ownerUserId") String ownerUserId);
+
+    int deleteSegmentsByCourseId(String courseId);
+
+    int deleteItemsByCourseId(String courseId);
+
+    int insertItem(CourseItemRecord record);
+
+    List<CourseItemRecord> findItemIdsByCourseId(String courseId);
+
+    int insertSegment(CourseRouteSegmentRecord record);
+
+    List<CourseRouteSegmentRecord> findSegmentsByCourseId(String courseId);
+
+    List<CourseItemDetailRecord> findItemsByCourseId(String courseId);
+
+    List<CourseItemDetailRecord> findPublicItemsByCourseId(String courseId);
+
+    List<CourseRecord> findMdRecommendedPublic(@Param("limit") int limit);
+
+    List<CourseRecord> findPopularPublic(@Param("limit") int limit);
+}
