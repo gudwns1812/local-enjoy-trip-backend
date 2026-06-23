@@ -344,7 +344,7 @@ class CourseServiceTest {
                 .contains(
                         "reason=RECOMMENDATION_FAILED",
                         "courseId=course-optimizer",
-                        "ownerUserId=user",
+                        "ownerMemberId=user",
                         "itemCount=3",
                         "providerException=com.ssafy.enjoytrip.external.courseorder."
                                 + "CourseOrderRecommendationException"
@@ -457,7 +457,7 @@ class CourseServiceTest {
                 .contains(
                         "reason=COORDINATE_INSUFFICIENT",
                         "courseId=course-missing-coordinate",
-                        "ownerUserId=user",
+                        "ownerMemberId=user",
                         "itemCount=2",
                         "providerException="
                 );
@@ -484,7 +484,7 @@ class CourseServiceTest {
                 .contains(
                         "reason=RECOMMENDATION_FAILED",
                         "courseId=course-duplicate-ai",
-                        "ownerUserId=user",
+                        "ownerMemberId=user",
                         "itemCount=2",
                         "providerException="
                 );
@@ -559,12 +559,12 @@ class CourseServiceTest {
 
 
     private void stubFoundCourseWithSegment(String courseId,
-                                            String ownerUserId,
+                                            String ownerMemberId,
                                             Long firstItemId,
                                             Long secondItemId,
                                             Long firstAttractionId,
                                             Long secondAttractionId) {
-        when(courseMapper.findById(courseId)).thenReturn(courseRecord(courseId, ownerUserId, null, null, 0));
+        when(courseMapper.findById(courseId)).thenReturn(courseRecord(courseId, ownerMemberId, null, null, 0));
         when(courseMapper.findItemsByCourseId(courseId)).thenReturn(List.of(
                 itemDetail(firstItemId, courseId, firstAttractionId, 1, "첫 장소"),
                 itemDetail(secondItemId, courseId, secondAttractionId, 2, "두 번째 장소")
@@ -575,10 +575,10 @@ class CourseServiceTest {
     }
 
     private void stubFoundCourseWithThreeStops(String courseId,
-                                               String ownerUserId,
+                                               String ownerMemberId,
                                                List<Long> itemIds,
                                                List<Long> attractionIds) {
-        when(courseMapper.findById(courseId)).thenReturn(courseRecord(courseId, ownerUserId, null, null, 0));
+        when(courseMapper.findById(courseId)).thenReturn(courseRecord(courseId, ownerMemberId, null, null, 0));
         when(courseMapper.findItemsByCourseId(courseId)).thenReturn(List.of(
                 itemDetail(itemIds.get(0), courseId, attractionIds.get(0), 1, "첫 장소"),
                 itemDetail(itemIds.get(1), courseId, attractionIds.get(1), 2, "두 번째 장소"),
@@ -591,13 +591,13 @@ class CourseServiceTest {
     }
 
     private static Course course(String id,
-                                 String ownerUserId,
+                                 String ownerMemberId,
                                  String visibility,
                                  String status,
                                  CourseStop... stops) {
         return new Course(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 visibility,
@@ -704,13 +704,13 @@ class CourseServiceTest {
     }
 
     private static CourseRecord courseRecord(String id,
-                                             String ownerUserId,
+                                             String ownerMemberId,
                                              String curationSection,
                                              Integer curationOrder,
                                              Integer saveCount) {
         CourseRecord record = new CourseRecord(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 "PUBLIC",
@@ -721,7 +721,7 @@ class CourseServiceTest {
                 curationOrder
         );
         record.setSaveCount(saveCount);
-        record.setCreatedByAdmin("admin".equals(ownerUserId));
+        record.setCreatedByAdmin("admin".equals(ownerMemberId));
         return record;
     }
 }

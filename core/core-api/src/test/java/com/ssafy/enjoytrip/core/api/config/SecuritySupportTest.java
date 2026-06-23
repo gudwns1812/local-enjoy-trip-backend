@@ -6,7 +6,7 @@ import com.ssafy.enjoytrip.core.support.auth.IssuedToken;
 import com.ssafy.enjoytrip.core.support.auth.JwtProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
-import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserIdArgumentResolver;
+import com.ssafy.enjoytrip.core.api.security.AuthenticatedMemberIdArgumentResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -54,7 +54,7 @@ class SecuritySupportTest {
     void corsAllowsLocalhostDevelopmentOriginsAndJwtHeaders() {
         TestCorsRegistry registry = new TestCorsRegistry();
 
-        new WebConfig(new AuthenticatedUserIdArgumentResolver()).addCorsMappings(registry);
+        new WebConfig(new AuthenticatedMemberIdArgumentResolver()).addCorsMappings(registry);
 
         CorsConfiguration configuration = registry.corsConfigurations().get("/**");
         assertThat(configuration).isNotNull();
@@ -73,14 +73,14 @@ class SecuritySupportTest {
         JwtTokenService tokenService = new JwtTokenService(securityConfig.jwtEncoder(properties), properties);
 
         IssuedToken issued = tokenService.issue(
-                new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden")
+                new Member(1L, "SSAFY", "SSAFY", "ssafy@example.com", "hidden", null)
         );
         Jwt decoded = securityConfig.jwtDecoder(properties).decode(issued.accessToken());
 
         assertThat(issued.tokenType()).isEqualTo("Bearer");
         assertThat(issued.expiresIn()).isEqualTo(120);
         assertThat(decoded.getClaimAsString("iss")).isEqualTo("enjoytrip");
-        assertThat(decoded.getSubject()).isEqualTo("ssafy");
+        assertThat(decoded.getSubject()).isEqualTo("1");
         assertThat(decoded.getClaimAsString("name")).isEqualTo("SSAFY");
         assertThat(decoded.getClaimAsString("email")).isEqualTo("ssafy@example.com");
     }

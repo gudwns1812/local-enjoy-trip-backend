@@ -57,12 +57,11 @@ class NewsBriefingMapperH2Test extends H2MapperTestSupport {
     @DisplayName("NeighborhoodBriefingMapper는 H2에서 공개 READY 코스를 지역 우선으로 조회한다")
     @Test
     void neighborhoodBriefingMapperFindsPublicReadyCourses() {
-        String ownerId = uniqueId("course-owner");
+        Long ownerMemberId = seedMember("course-owner", uniqueId("course-owner") + "@example.com");
         String localCourseId = uniqueId("course-local");
         String otherCourseId = uniqueId("course-other");
-        seedMember(ownerId, ownerId + "@example.com");
         jdbcTemplate.update("""
-                insert into courses (id, owner_user_id, title, region_name, visibility, status, created_at)
+                insert into courses (id, owner_member_id, title, region_name, visibility, status, created_at)
                 values (
                     ?,
                     ?,
@@ -72,9 +71,9 @@ class NewsBriefingMapperH2Test extends H2MapperTestSupport {
                     'READY',
                     timestamp '2026-06-18 00:00:00'
                 )
-                """, localCourseId, ownerId);
+                """, localCourseId, ownerMemberId);
         jdbcTemplate.update("""
-                insert into courses (id, owner_user_id, title, region_name, visibility, status, created_at)
+                insert into courses (id, owner_member_id, title, region_name, visibility, status, created_at)
                 values (
                     ?,
                     ?,
@@ -84,7 +83,7 @@ class NewsBriefingMapperH2Test extends H2MapperTestSupport {
                     'READY',
                     timestamp '2026-06-19 00:00:00'
                 )
-                """, otherCourseId, ownerId);
+                """, otherCourseId, ownerMemberId);
 
         List<CourseBriefingCandidateRecord> candidates =
                 neighborhoodBriefingMapper.findPublicReadyCandidates("서울 중구", 10);

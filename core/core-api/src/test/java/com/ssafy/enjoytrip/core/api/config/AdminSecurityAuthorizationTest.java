@@ -24,11 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,7 +39,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringJUnitWebConfig(AdminSecurityAuthorizationTest.TestConfig.class)
@@ -66,20 +66,12 @@ class AdminSecurityAuthorizationTest {
     @Test
     void jwtConverterReadsMemberRoleFromDatabase() {
         MemberMapper memberMapper = Mockito.mock(MemberMapper.class);
-        MemberRecord admin = new MemberRecord(
-                "admin",
-                "관리자",
-                "관리자",
-                "admin@example.com",
-                "encoded",
-                null
-        );
-        admin.setRole(MemberRole.ADMIN.name());
-        Mockito.when(memberMapper.findByUserId("admin")).thenReturn(admin);
+        MemberRecord admin = member(1L, "관리자", "관리자", "admin@example.com", "encoded", MemberRole.ADMIN.name());
+        Mockito.when(memberMapper.findById(1L)).thenReturn(admin);
 
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "none")
-                .subject("admin")
+                .subject("1")
                 .build();
         JwtAuthenticationToken authentication = (JwtAuthenticationToken)
                 new DbBackedJwtAuthenticationConverter(memberMapper).convert(jwt);
@@ -93,21 +85,13 @@ class AdminSecurityAuthorizationTest {
     @Test
     void adminAccountDetailsServiceLoadsOnlyAdminEmailAccount() {
         MemberMapper memberMapper = Mockito.mock(MemberMapper.class);
-        MemberRecord admin = new MemberRecord(
-                "admin",
-                "관리자",
-                "관리자",
-                "admin@example.com",
-                "encoded",
-                null
-        );
-        admin.setRole(MemberRole.ADMIN.name());
+        MemberRecord admin = member(1L, "관리자", "관리자", "admin@example.com", "encoded", MemberRole.ADMIN.name());
         Mockito.when(memberMapper.findByEmail("admin@example.com")).thenReturn(admin);
 
         UserDetails details = new AdminAccountDetailsService(memberMapper)
                 .loadUserByUsername("admin@example.com");
 
-        assertThat(details.getUsername()).isEqualTo("admin");
+        assertThat(details.getUsername()).isEqualTo("1");
         assertThat(details.getPassword()).isEqualTo("encoded");
         assertThat(details.getAuthorities())
                 .extracting(Object::toString)
@@ -117,51 +101,34 @@ class AdminSecurityAuthorizationTest {
     @DisplayName("관리자 HTML 경로는 DB role USER를 403으로 차단하고 ADMIN만 통과시킨다")
     @Test
     void adminHtmlPathRequiresAdminRole() throws Exception {
-        MemberRecord user = new MemberRecord(
-                "user",
-                "사용자",
-                "사용자",
-                "user@example.com",
-                "encoded",
-                null
-        );
-        user.setRole("USER");
-        MemberRecord admin = new MemberRecord(
-                "admin",
-                "관리자",
-                "관리자",
-                "admin@example.com",
-                "encoded",
-                null
-        );
-        admin.setRole(MemberRole.ADMIN.name());
-        Mockito.when(memberMapper.findByUserId("user")).thenReturn(user);
-        Mockito.when(memberMapper.findByUserId("admin")).thenReturn(admin);
+        MemberRecord user = member(2L, "사용자", "사용자", "user@example.com", "encoded", "USER");
+        MemberRecord admin = member(1L, "관리자", "관리자", "admin@example.com", "encoded", MemberRole.ADMIN.name());
+        Mockito.when(memberMapper.findById(2L)).thenReturn(user);
+        Mockito.when(memberMapper.findById(1L)).thenReturn(admin);
 
         mockMvc.perform(get("/admin/test"))
                 .andExpect(status().is3xxRedirection());
 
-        mockMvc.perform(get("/admin/test").with(user("user")))
+        mockMvc.perform(get("/admin/test").with(user("2")))
                 .andExpect(status().isForbidden());
 
-        mockMvc.perform(get("/admin/test").with(user("admin")))
+        mockMvc.perform(get("/admin/test").with(user("1")))
                 .andExpect(status().isOk());
     }
 
     @DisplayName("관리자 HTML POST는 ADMIN 권한과 CSRF 토큰이 모두 있어야 통과한다")
     @Test
     void adminHtmlPostRequiresCsrfToken() throws Exception {
-        MemberRecord admin = new MemberRecord(
-                "admin",
+        MemberRecord admin = member(
+                1L,
                 "관리자",
                 "관리자",
                 "admin@example.com",
                 passwordEncoder.encode("secret"),
-                null
+                MemberRole.ADMIN.name()
         );
-        admin.setRole(MemberRole.ADMIN.name());
         Mockito.when(memberMapper.findByEmail("admin@example.com")).thenReturn(admin);
-        Mockito.when(memberMapper.findByUserId("admin")).thenReturn(admin);
+        Mockito.when(memberMapper.findById(1L)).thenReturn(admin);
 
         MvcResult login = mockMvc.perform(formLogin("/admin/login")
                         .user("email", "admin@example.com")
@@ -178,6 +145,18 @@ class AdminSecurityAuthorizationTest {
                         .session(session)
                         .with(csrf()))
                 .andExpect(status().isOk());
+    }
+
+    private static MemberRecord member(Long id,
+                                       String name,
+                                       String nickname,
+                                       String email,
+                                       String password,
+                                       String role) {
+        MemberRecord member = new MemberRecord(name, nickname, email, password, null);
+        member.setId(id);
+        member.setRole(role);
+        return member;
     }
 
     @Configuration

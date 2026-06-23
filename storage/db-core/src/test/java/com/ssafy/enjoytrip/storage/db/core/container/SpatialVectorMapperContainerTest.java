@@ -34,8 +34,7 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
     @Test
     void attractionMapperRunsSearchAndUserInteractionQueries() {
         long attractionId = 9200001L;
-        String userId = uniqueId("attraction-user");
-        seedMember(userId, userId + "@example.com");
+        Long memberId = seedMember("attraction-member", uniqueId("attraction") + "@example.com");
         seedAttraction(attractionId, "서비스커넥션 궁", 1, 1);
         jdbcTemplate.update("""
                 insert into attraction_popularity_stats (attraction_id, save_count)
@@ -45,8 +44,8 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
 
         AttractionTagRecord tag = attractionMapper.insertTag(uniqueId("tag"));
         attractionMapper.insertTagMapping(attractionId, tag.id());
-        attractionMapper.insertSave(attractionId, userId);
-        attractionMapper.upsertRating(attractionId, userId, 5);
+        attractionMapper.insertSave(attractionId, memberId);
+        attractionMapper.upsertRating(attractionId, memberId, 5);
         attractionMapper.refreshPopularityRatingStats(attractionId);
 
         List<AttractionSearchRecord> searched = attractionMapper.search(
@@ -59,7 +58,7 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
                 null,
                 false,
                 10,
-                userId
+                memberId
         );
         List<AttractionSearchRecord> nearby = attractionMapper.findNearby(
                 126.9781,
@@ -70,7 +69,7 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
                 null
         );
         List<AttractionStatsRowRecord> statsRows =
-                attractionMapper.findStatsRowsByAttractionIds(List.of(attractionId), userId);
+                attractionMapper.findStatsRowsByAttractionIds(List.of(attractionId), memberId);
         List<AttractionCountRecord> popularityCounts =
                 attractionMapper.findPopularityCounts(List.of(attractionId));
 
@@ -93,8 +92,8 @@ class SpatialVectorMapperContainerTest extends StorageContainerTestSupport {
         assertThat(statsRows).extracting(AttractionStatsRowRecord::averageRating).contains(5.0);
         assertThat(statsRows).extracting(AttractionStatsRowRecord::myRating).contains(5);
         assertThat(popularityCounts).extracting(AttractionCountRecord::count).contains(7);
-        assertThat(attractionMapper.deleteRating(attractionId, userId)).isEqualTo(1);
-        assertThat(attractionMapper.deleteSave(attractionId, userId)).isEqualTo(1);
+        assertThat(attractionMapper.deleteRating(attractionId, memberId)).isEqualTo(1);
+        assertThat(attractionMapper.deleteSave(attractionId, memberId)).isEqualTo(1);
         assertThat(attractionMapper.deleteTagMappings(attractionId)).isEqualTo(1);
         assertThat(attractionMapper.deleteTag(tag.id())).isEqualTo(1);
     }

@@ -50,12 +50,23 @@ abstract class StorageContainerTestSupport {
         return prefix + "-" + UUID.randomUUID();
     }
 
-    protected void seedMember(String userId, String email) {
-        jdbcTemplate.update("""
-                insert into members (user_id, name, email, password, created_at)
-                values (?, ?, ?, ?, current_timestamp)
-                on conflict (user_id) do nothing
-                """, userId, userId, email, "encoded-password");
+    protected Long seedMember(String name, String email) {
+        jdbcTemplate.update(
+                """
+                insert into members (name, email, password, created_at)
+                values (?, ?, ?, current_timestamp)
+                on conflict (email) do nothing
+                """,
+                name,
+                email,
+                "encoded-password"
+        );
+
+        return jdbcTemplate.queryForObject(
+                "select id from members where email = ?",
+                Long.class,
+                email
+        );
     }
 
     protected void seedAttraction(long id, String title, int sidoCode, int gugunCode) {

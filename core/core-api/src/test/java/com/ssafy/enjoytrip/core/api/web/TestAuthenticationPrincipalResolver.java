@@ -1,8 +1,7 @@
 package com.ssafy.enjoytrip.core.api.web;
 
+import com.ssafy.enjoytrip.core.api.security.AuthenticatedMemberId;
 import java.security.Principal;
-
-import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserId;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Component;
@@ -17,8 +16,8 @@ class TestAuthenticationPrincipalResolver implements HandlerMethodArgumentResolv
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(AuthenticatedUserId.class)
-                && String.class.equals(parameter.getParameterType());
+        return parameter.hasParameterAnnotation(AuthenticatedMemberId.class)
+                && Long.class.equals(parameter.getParameterType());
     }
 
     @Override
@@ -26,15 +25,15 @@ class TestAuthenticationPrincipalResolver implements HandlerMethodArgumentResolv
                                   ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest,
                                   WebDataBinderFactory binderFactory) {
-        AuthenticatedUserId annotation = parameter.getParameterAnnotation(AuthenticatedUserId.class);
+        AuthenticatedMemberId annotation = parameter.getParameterAnnotation(AuthenticatedMemberId.class);
         Principal principal = webRequest.getUserPrincipal();
         if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
             return unauthenticatedValue(annotation.unauthenticated());
         }
-        return principal.getName().strip();
+        return Long.valueOf(principal.getName());
     }
 
-    private static String unauthenticatedValue(AuthenticatedUserId.Unauthenticated policy) {
+    private static Long unauthenticatedValue(AuthenticatedMemberId.Unauthenticated policy) {
         return switch (policy) {
             case THROW -> throw new AuthenticationCredentialsNotFoundException(AUTHENTICATION_REQUIRED_MESSAGE);
             case NULL -> null;

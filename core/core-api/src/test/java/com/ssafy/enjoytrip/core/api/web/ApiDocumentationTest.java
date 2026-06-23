@@ -436,10 +436,10 @@ class ApiDocumentationTest {
                         preprocessResponse(prettyPrint())));
     }
 
-    private static Course course(String id, String ownerUserId, Long firstItemId, Long secondItemId) {
+    private static Course course(String id, String ownerMemberId, Long firstItemId, Long secondItemId) {
         return new Course(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 "서울 산책",
                 "서울",
                 "PRIVATE",

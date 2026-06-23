@@ -25,11 +25,9 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
     @DisplayName("FriendshipMapper는 H2 인메모리 DB에서 요청 조회와 상태 전이를 수행한다")
     @Test
     void friendshipMapperPersistsAndTransitionsFriendship() {
-        String requester = uniqueId("requester");
-        String addressee = uniqueId("addressee");
-        seedMember(requester, requester + "@example.com");
-        seedMember(addressee, addressee + "@example.com");
-        FriendshipRecord record = new FriendshipRecord(requester, addressee);
+        Long requesterMemberId = seedMember("requester", uniqueId("requester") + "@example.com");
+        Long addresseeMemberId = seedMember("addressee", uniqueId("addressee") + "@example.com");
+        FriendshipRecord record = new FriendshipRecord(requesterMemberId, addresseeMemberId);
 
         friendshipMapper.insert(record);
         record.transitionTo(FriendshipStatus.ACCEPTED);
@@ -39,18 +37,18 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
 
         assertThat(saved.getStatus()).isEqualTo(FriendshipStatus.ACCEPTED);
         assertThat(saved.getRespondedAt()).isNotNull();
-        assertThat(friendshipMapper.findByParticipantAndStatus(requester, FriendshipStatus.ACCEPTED))
+        assertThat(friendshipMapper.findByParticipantAndStatus(requesterMemberId, FriendshipStatus.ACCEPTED))
                 .extracting(FriendshipRecord::getId)
                 .contains(record.getId());
-        assertThat(friendshipMapper.findReceivedRequests(addressee, FriendshipStatus.ACCEPTED))
+        assertThat(friendshipMapper.findReceivedRequests(addresseeMemberId, FriendshipStatus.ACCEPTED))
                 .extracting(FriendshipRecord::getId)
                 .contains(record.getId());
-        assertThat(friendshipMapper.findSentRequests(requester, FriendshipStatus.ACCEPTED))
+        assertThat(friendshipMapper.findSentRequests(requesterMemberId, FriendshipStatus.ACCEPTED))
                 .extracting(FriendshipRecord::getId)
                 .contains(record.getId());
         assertThat(friendshipMapper.existsActiveBetween(
-                requester,
-                addressee,
+                requesterMemberId,
+                addresseeMemberId,
                 List.of(FriendshipStatus.PENDING, FriendshipStatus.ACCEPTED)
         )).isEqualTo(1);
     }
@@ -58,15 +56,13 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
     @DisplayName("NotificationMapper는 친구 요청 알림을 reference 기준으로 읽음 처리한다")
     @Test
     void notificationMapperFindsAndMarksFriendRequestNotifications() {
-        String requester = uniqueId("noti-requester");
-        String recipient = uniqueId("noti-recipient");
-        seedMember(requester, requester + "@example.com");
-        seedMember(recipient, recipient + "@example.com");
-        FriendshipRecord friendship = new FriendshipRecord(requester, recipient);
+        Long requesterMemberId = seedMember("noti-requester", uniqueId("noti-requester") + "@example.com");
+        Long recipientMemberId = seedMember("noti-recipient", uniqueId("noti-recipient") + "@example.com");
+        FriendshipRecord friendship = new FriendshipRecord(requesterMemberId, recipientMemberId);
         friendshipMapper.insert(friendship);
         jdbcTemplate.update("""
                 insert into notifications (
-                    recipient_user_id,
+                    recipient_member_id,
                     type,
                     reference_type,
                     reference_id,
@@ -74,33 +70,33 @@ class NotificationFriendshipMapperH2Test extends H2MapperTestSupport {
                     created_at
                 ) values (?, ?, ?, ?, ?, current_timestamp)
                 """,
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED.name(),
                 NotificationReferenceType.FRIENDSHIP.name(),
                 friendship.getId(),
-                requester
+                String.valueOf(requesterMemberId)
         );
         notificationMapper.markReadByReference(
-                recipient,
+                recipientMemberId,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId(),
                 LocalDateTime.now()
         );
         NotificationRecord saved = notificationMapper.findByBusinessKey(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId()
         );
 
         assertThat(notificationMapper.existsUnreadFriendRequest(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 FriendshipStatus.PENDING
         )).isZero();
         assertThat(notificationMapper.findUnreadFriendRequests(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 FriendshipStatus.PENDING,

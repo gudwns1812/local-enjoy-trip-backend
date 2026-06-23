@@ -17,89 +17,89 @@ class MemberAuthMapperH2Test extends H2MapperTestSupport {
     @Autowired
     private AuthLogMapper authLogMapper;
 
-    @DisplayName("MemberMapper는 H2 인메모리 DB에서 회원 생성, 조회, 수정, 삭제 SQL을 실행한다")
+    @DisplayName("MemberMapper는 H2 인메모리 DB에서 email/memberId 기반 회원 SQL을 실행한다")
     @Test
     void memberMapperPersistsAndMutatesMemberRecord() {
-        String userId = uniqueId("member");
+        String email = uniqueId("member") + "@example.com";
         MemberRecord record = new MemberRecord(
-                userId,
                 "회원",
                 null,
-                userId + "@example.com",
+                email,
                 "encoded-password",
                 null
         );
 
         memberMapper.insert(record);
-        MemberRecord saved = memberMapper.findByUserId(userId);
+        Long memberId = record.getId();
+        MemberRecord saved = memberMapper.findById(memberId);
         saved.updateNickname("nickname");
         memberMapper.update(saved);
 
-        MemberRecord updated = memberMapper.findByEmail(userId + "@example.com");
+        MemberRecord updated = memberMapper.findByEmail(email);
 
-        assertThat(memberMapper.existsByUserId(userId)).isEqualTo(1);
-        assertThat(memberMapper.existsByUserIdOrEmail(userId, "new@example.com")).isEqualTo(1);
-        assertThat(memberMapper.existsByUserIdOrEmail("new-user", userId + "@example.com")).isEqualTo(1);
+        assertThat(memberMapper.existsByEmail(email)).isEqualTo(1);
+        assertThat(memberMapper.existsByEmail("new@example.com")).isZero();
         assertThat(updated.getName()).isEqualTo("회원");
         assertThat(updated.getNickname()).isEqualTo("nickname");
         assertThat(updated.getPassword()).isEqualTo("encoded-password");
         memberMapper.updateProfileImage(
-                userId,
-                "profiles/" + userId + "/sample.jpg",
-                "http://localhost:9000/dongnepin-notes/profiles/" + userId + "/sample.jpg"
+                memberId,
+                "profiles/" + memberId + "/sample.jpg",
+                "http://localhost:9000/dongnepin-notes/profiles/" + memberId + "/sample.jpg"
         );
-        MemberRecord profileUpdated = memberMapper.findByUserId(userId);
+        MemberRecord profileUpdated = memberMapper.findById(memberId);
 
         assertThat(profileUpdated.getName()).isEqualTo("회원");
-        assertThat(profileUpdated.getEmail()).isEqualTo(userId + "@example.com");
+        assertThat(profileUpdated.getEmail()).isEqualTo(email);
         assertThat(profileUpdated.getPassword()).isEqualTo("encoded-password");
         assertThat(profileUpdated.getNickname()).isEqualTo("nickname");
         assertThat(profileUpdated.getProfileImageObjectKey()).isEqualTo(
-                "profiles/" + userId + "/sample.jpg"
+                "profiles/" + memberId + "/sample.jpg"
         );
         assertThat(profileUpdated.getProfileImageUrl()).isEqualTo(
-                "http://localhost:9000/dongnepin-notes/profiles/" + userId + "/sample.jpg"
+                "http://localhost:9000/dongnepin-notes/profiles/" + memberId + "/sample.jpg"
         );
 
         profileUpdated.updateNickname(null);
         memberMapper.update(profileUpdated);
-        MemberRecord cleared = memberMapper.findByUserId(userId);
+        MemberRecord cleared = memberMapper.findById(memberId);
 
         assertThat(cleared.getName()).isEqualTo("회원");
-        assertThat(cleared.getEmail()).isEqualTo(userId + "@example.com");
+        assertThat(cleared.getEmail()).isEqualTo(email);
         assertThat(cleared.getPassword()).isEqualTo("encoded-password");
         assertThat(cleared.getNickname()).isNull();
         assertThat(cleared.getProfileImageUrl()).isEqualTo(
-                "http://localhost:9000/dongnepin-notes/profiles/" + userId + "/sample.jpg"
+                "http://localhost:9000/dongnepin-notes/profiles/" + memberId + "/sample.jpg"
         );
         assertThat(cleared.getProfileImageObjectKey()).isEqualTo(
-                "profiles/" + userId + "/sample.jpg"
+                "profiles/" + memberId + "/sample.jpg"
         );
         assertThat(memberMapper.findAllOrderByCreatedAtDesc())
-                .extracting(MemberRecord::getUserId)
-                .contains(userId);
-        assertThat(memberMapper.deleteByUserId(userId)).isEqualTo(1);
-        assertThat(memberMapper.findByUserId(userId)).isNull();
+                .extracting(MemberRecord::getEmail)
+                .contains(email);
+        assertThat(memberMapper.deleteById(memberId)).isEqualTo(1);
+
+        assertThat(memberMapper.findById(memberId)).isNull();
     }
 
-    @DisplayName("AuthLogMapper는 H2 인메모리 DB에서 identity key와 logged_at을 채운다")
+    @DisplayName("AuthLogMapper는 H2 인메모리 DB에서 memberId와 logged_at을 채운다")
     @Test
     void authLogMapperPersistsLoginEvent() {
-        String userId = uniqueId("auth");
-        AuthLogRecord record = new AuthLogRecord(userId, "LOGIN");
+        Long memberId = seedMember("auth", uniqueId("auth") + "@example.com");
+        AuthLogRecord record = new AuthLogRecord(memberId, "LOGIN");
 
         authLogMapper.insert(record);
 
         Integer count = jdbcTemplate.queryForObject(
                 """
-                        select count(*)
-                        from auth_logs
-                        where user_id = ?
-                          and event_type = 'LOGIN'
-                          and logged_at is not null
-                        """,
+                select count(*)
+                from auth_logs
+                where member_id = ?
+                  and event_type = 'LOGIN'
+                  and logged_at is not null
+                """,
                 Integer.class,
-                userId
+                memberId
         );
         assertThat(record.getId()).isNotNull();
         assertThat(count).isEqualTo(1);

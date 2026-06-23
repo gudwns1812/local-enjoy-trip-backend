@@ -38,17 +38,17 @@ class AttractionPopularityMapperH2Test extends H2MapperTestSupport {
                 .containsExactly(tuple(1L, 5));
     }
 
-    @DisplayName("AttractionMapper는 통계와 사용자 상태와 태그를 단일 join row로 조회한다")
+    @DisplayName("AttractionMapper는 통계와 회원 상태와 태그를 단일 join row로 조회한다")
     @Test
     void findStatsRowsReadsStatsUserStateAndTagsWithSingleJoinProjection() {
         seedAttraction(1L, "저장 관광지");
         seedAttraction(2L, "다른 저장 관광지");
-        seedMember("ssafy", "ssafy@example.com");
-        seedMember("other", "other@example.com");
-        insertAttractionSave(1L, "ssafy");
-        insertAttractionSave(1L, "other");
-        insertAttractionSave(2L, "ssafy");
-        insertAttractionRating(1L, "ssafy", 5);
+        Long memberId = seedMember("ssafy", "ssafy@example.com");
+        Long otherMemberId = seedMember("other", "other@example.com");
+        insertAttractionSave(1L, memberId);
+        insertAttractionSave(1L, otherMemberId);
+        insertAttractionSave(2L, memberId);
+        insertAttractionRating(1L, memberId, 5);
         insertAttractionTag(10L, "가족");
         insertAttractionTagMapping(1L, 10L);
         jdbcTemplate.update("""
@@ -64,7 +64,7 @@ class AttractionPopularityMapperH2Test extends H2MapperTestSupport {
                 """, 1L, 7, 3, 4.3, 2L, 3, 1, 2.5);
 
         List<AttractionStatsRowRecord> rows =
-                attractionMapper.findStatsRowsByAttractionIds(List.of(1L, 2L), "ssafy");
+                attractionMapper.findStatsRowsByAttractionIds(List.of(1L, 2L), memberId);
 
         assertThat(rows)
                 .extracting(
@@ -112,18 +112,18 @@ class AttractionPopularityMapperH2Test extends H2MapperTestSupport {
                 .containsExactlyInAnyOrder(tuple(1L, 0), tuple(2L, 8));
     }
 
-    private void insertAttractionSave(Long attractionId, String userId) {
+    private void insertAttractionSave(Long attractionId, Long memberId) {
         jdbcTemplate.update("""
-                insert into attraction_saves (attraction_id, user_id)
+                insert into attraction_saves (attraction_id, member_id)
                 values (?, ?)
-                """, attractionId, userId);
+                """, attractionId, memberId);
     }
 
-    private void insertAttractionRating(Long attractionId, String userId, int rating) {
+    private void insertAttractionRating(Long attractionId, Long memberId, int rating) {
         jdbcTemplate.update("""
-                insert into attraction_ratings (attraction_id, user_id, rating)
+                insert into attraction_ratings (attraction_id, member_id, rating)
                 values (?, ?, ?)
-                """, attractionId, userId, rating);
+                """, attractionId, memberId, rating);
     }
 
     private void insertAttractionTag(Long tagId, String name) {

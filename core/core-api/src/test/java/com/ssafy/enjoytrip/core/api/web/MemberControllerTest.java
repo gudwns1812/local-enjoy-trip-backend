@@ -13,19 +13,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ssafy.enjoytrip.core.api.web.controller.MemberController;
 import com.ssafy.enjoytrip.core.domain.Member;
-import com.ssafy.enjoytrip.core.support.auth.JwtTokenService;
 import com.ssafy.enjoytrip.core.domain.service.MemberService;
+import com.ssafy.enjoytrip.core.support.auth.IssuedToken;
+import com.ssafy.enjoytrip.core.support.auth.JwtTokenService;
 import com.ssafy.enjoytrip.core.support.auth.OAuthSignupTicketService;
 import com.ssafy.enjoytrip.core.support.auth.OAuthSignupTicketService.PendingOAuthSignup;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
-import com.ssafy.enjoytrip.core.api.web.controller.MemberController;
-import com.ssafy.enjoytrip.core.support.auth.IssuedToken;
+import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import java.time.Instant;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -54,14 +54,13 @@ class MemberControllerTest {
                 .build();
     }
 
-    @DisplayName("회원가입은 모든 필드를 요구한다")
+    @DisplayName("회원가입은 이메일, 이름, 비밀번호를 요구한다")
     @Test
     void signupRequiresAllFields() throws Exception {
         mockMvc.perform(post("/api/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "userId": "ssafy",
                                   "password": "secret123"
                                 }
                                 """))
@@ -75,34 +74,53 @@ class MemberControllerTest {
 
         mockMvc.perform(post("/api/members")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(signupJson("ssafy", "SSAFY", "ssafy@example.com", "secret123")))
+                        .content(signupJson("SSAFY", "Case@Test.example", "secret123")))
                 .andExpect(status().isConflict());
     }
 
-    @DisplayName("회원가입은 필드와 중복 회원을 검증한다")
+    @DisplayName("회원가입은 legacy userId 필드를 거부한다")
     @Test
-    void signupValidatesFieldsAndDuplicateMember() throws Exception {
+    void signupRejectsLegacyUserIdField() throws Exception {
         mockMvc.perform(post("/api/members")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(signupJson("bad id", "SSAFY", "ssafy@example.com", "secret123")))
+                        .content("""
+                                {
+                                  "userId": "ssafy",
+                                  "name": "SSAFY",
+                                  "email": "Case@Test.example",
+                                  "password": "secret123"
+                                }
+                                """))
                 .andExpect(status().isBadRequest());
-
-        doThrow(new CoreException(USER_ALREADY_EXISTS)).when(memberService).signup(any(Member.class));
-
-        mockMvc.perform(post("/api/members")
-                        .contentType(MediaType.APPLICATION_JSON)
-                .content(signupJson("ssafy", "SSAFY", "ssafy@example.com", "secret123")))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error.message").value("이미 존재하는 사용자입니다."));
     }
 
-    @DisplayName("로그인은 JWT 토큰을 반환한다")
+    @DisplayName("로그인은 JWT 토큰을 반환하고 userId를 응답하지 않는다")
     @Test
     void loginReturnsJwtToken() throws Exception {
-        Member member = new Member("ssafy", "SSAFY", "ssafy@example.com", "hidden");
-        when(memberService.login("ssafy", "secret")).thenReturn(member);
+        Member member = new Member(1L, "SSAFY", "동네핀러", "Case@Test.example", "hidden", null);
+        when(memberService.login("Case@Test.example", "secret")).thenReturn(member);
         when(tokenService.issue(member)).thenReturn(new IssuedToken("jwt-token", "Bearer", 7200));
 
+        mockMvc.perform(post("/api/members/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "Case@Test.example",
+                                  "password": "secret"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.accessToken").value("jwt-token"))
+                .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.data.expiresIn").value(7200))
+                .andExpect(jsonPath("$.data.user.email").value("Case@Test.example"))
+                .andExpect(jsonPath("$.data.user.userId").doesNotExist())
+                .andExpect(jsonPath("$.data.user.password").doesNotExist());
+    }
+
+    @DisplayName("로그인은 legacy userId 필드를 거부한다")
+    @Test
+    void loginRejectsLegacyUserIdField() throws Exception {
         mockMvc.perform(post("/api/members/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -111,25 +129,13 @@ class MemberControllerTest {
                                   "password": "secret"
                                 }
                                 """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").value("jwt-token"))
-                .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.data.expiresIn").value(7200))
-                .andExpect(jsonPath("$.data.user.userId").value("ssafy"))
-                .andExpect(jsonPath("$.data.user.password").doesNotExist());
+                .andExpect(status().isBadRequest());
     }
 
     @DisplayName("OAuth 회원가입은 티켓으로 회원을 만들고 JWT 토큰을 반환한다")
     @Test
     void oauthSignupCreatesMemberFromTicketAndReturnsJwtToken() throws Exception {
-        Member member = new Member(
-                "google_123",
-                "김구글",
-                "트래블러",
-                "google@example.com",
-                "hidden",
-                null
-        );
+        Member member = new Member(2L, "김구글", "트래블러", "google@example.com", "hidden", null);
         when(oauthSignupTicketService.verify("ticket"))
                 .thenReturn(new PendingOAuthSignup("google", "123", "google@example.com", "Google Name"));
         when(memberService.signupWithOAuth(
@@ -224,33 +230,29 @@ class MemberControllerTest {
     @Test
     void meReturnsAuthenticatedUser() throws Exception {
         Member member = new Member(
-                "ssafy",
+                1L,
                 "SSAFY",
                 "동네핀러",
                 "ssafy@example.com",
                 "hidden",
                 "https://cdn.example.com/profile.png"
         );
-        when(memberService.findRequiredByUserId("ssafy")).thenReturn(member);
+        when(memberService.findRequiredById(1L)).thenReturn(member);
 
-        mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ssafy")))
+        mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("1")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.user.userId").value("ssafy"))
+                .andExpect(jsonPath("$.data.user.userId").doesNotExist())
                 .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"))
                 .andExpect(jsonPath("$.data.user.nickname").value("동네핀러"))
                 .andExpect(jsonPath("$.data.user.profileImageUrl")
-                        .value("https://cdn.example.com/profile.png"))
-                .andExpect(jsonPath(userField("representative", "Latitude")).doesNotExist())
-                .andExpect(jsonPath(userField("representative", "Longitude")).doesNotExist())
-                .andExpect(jsonPath(userField("representative", "RegionName")).doesNotExist())
-                .andExpect(jsonPath(userField("created", "At")).doesNotExist());
+                        .value("https://cdn.example.com/profile.png"));
     }
 
     @DisplayName("내 정보 수정은 닉네임만 변경하고 프로필 이미지는 변경하지 않는다")
     @Test
     void updateMeChangesProfile() throws Exception {
         mockMvc.perform(put("/api/members/me")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -265,7 +267,7 @@ class MemberControllerTest {
         ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
         verify(memberService).update(memberCaptor.capture());
         Member member = memberCaptor.getValue();
-        assertThat(member.userId()).isEqualTo("ssafy");
+        assertThat(member.memberId()).isEqualTo(1L);
         assertThat(member.name()).isNull();
         assertThat(member.nickname()).isEqualTo("동네핀러");
         assertThat(member.email()).isNull();
@@ -273,26 +275,21 @@ class MemberControllerTest {
         assertThat(member.profileImageUrl()).isNull();
     }
 
-    private static String userField(String prefix, String suffix) {
-        return "$.data.user." + prefix + suffix;
-    }
-
-    private static String signupJson(String userId, String name, String email, String password) {
+    private static String signupJson(String name, String email, String password) {
         return """
                 {
-                  "userId": "%s",
                   "name": "%s",
                   "email": "%s",
                   "password": "%s"
                 }
-                """.formatted(userId, name, email, password);
+                """.formatted(name, email, password);
     }
 
-    private static JwtAuthenticationToken jwtPrincipal(String userId) {
+    private static JwtAuthenticationToken jwtPrincipal(String subject) {
         Instant now = Instant.now();
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "HS256")
-                .subject(userId)
+                .subject(subject)
                 .claim("name", "SSAFY")
                 .claim("email", "ssafy@example.com")
                 .issuedAt(now)

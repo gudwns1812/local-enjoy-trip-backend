@@ -136,7 +136,7 @@ class CourseControllerTest {
                 course("course-1", "ssafy", "PRIVATE", "READY", 0)
         ));
 
-        mockMvc.perform(get("/api/courses/me").principal(jwtPrincipal("ssafy")))
+        mockMvc.perform(get("/api/courses/me").principal(jwtPrincipal("1")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.courses[0].id").value("course-1"))
@@ -154,7 +154,7 @@ class CourseControllerTest {
         );
 
         mockMvc.perform(post("/api/courses")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -171,7 +171,7 @@ class CourseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value("course-1"))
-                .andExpect(jsonPath("$.data.ownerUserId").value("ssafy"))
+                .andExpect(jsonPath("$.data.ownerMemberId").value("ssafy"))
                 .andExpect(jsonPath("$.data.routeSummary.stopCount").value(2))
                 .andExpect(jsonPath("$.data.items").isArray())
                 .andExpect(jsonPath("$.data.segments[0].distanceMeters").value(140))
@@ -184,7 +184,7 @@ class CourseControllerTest {
     @Test
     void createCourseRejectsSingleItem() throws Exception {
         mockMvc.perform(post("/api/courses")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -209,7 +209,7 @@ class CourseControllerTest {
         when(courseService.createCourse(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         mockMvc.perform(post("/api/courses")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -242,7 +242,7 @@ class CourseControllerTest {
         );
 
         mockMvc.perform(put("/api/courses/course-1")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -272,7 +272,7 @@ class CourseControllerTest {
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
         mockMvc.perform(put("/api/courses/course-1")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -303,7 +303,7 @@ class CourseControllerTest {
         );
 
         mockMvc.perform(post("/api/courses/course-1/order-recommendation")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -334,7 +334,7 @@ class CourseControllerTest {
     @Test
     void rejectsDraftStatus() throws Exception {
         mockMvc.perform(post("/api/courses")
-                        .principal(jwtPrincipal("ssafy"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -355,13 +355,13 @@ class CourseControllerTest {
     }
 
     private static Course course(String id,
-                                 String ownerUserId,
+                                 String ownerMemberId,
                                  String visibility,
                                  String status,
                                  int saveCount) {
         return new Course(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 visibility,
@@ -370,7 +370,7 @@ class CourseControllerTest {
                 null,
                 null,
                 null,
-                "admin".equals(ownerUserId),
+                "admin".equals(ownerMemberId),
                 saveCount,
                 "",
                 "",
@@ -382,12 +382,12 @@ class CourseControllerTest {
     }
 
     private static Course feedCourse(String id,
-                                     String ownerUserId,
+                                     String ownerMemberId,
                                      String curationSection,
                                      Double distanceMeters) {
         return new Course(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 "PUBLIC",
@@ -396,7 +396,7 @@ class CourseControllerTest {
                 null,
                 curationSection,
                 null,
-                "admin".equals(ownerUserId),
+                "admin".equals(ownerMemberId),
                 37.5665,
                 126.9780,
                 distanceMeters,
@@ -411,12 +411,12 @@ class CourseControllerTest {
     }
 
     private static Course courseWithStoredStops(String id,
-                                                String ownerUserId,
+                                                String ownerMemberId,
                                                 Long firstItemId,
                                                 Long secondItemId) {
         return new Course(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 "PRIVATE",
