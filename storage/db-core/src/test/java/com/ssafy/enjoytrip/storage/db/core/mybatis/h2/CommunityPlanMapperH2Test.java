@@ -69,14 +69,14 @@ class CommunityPlanMapperH2Test extends H2MapperTestSupport {
         assertThat(noticeMapper.deleteById(record.getId())).isEqualTo(1);
     }
 
-    @DisplayName("HotplaceMapper는 H2에서 사용자별 핫플레이스 SQL을 실행한다")
+    @DisplayName("HotplaceMapper는 H2에서 회원별 핫플레이스 SQL을 실행한다")
     @Test
     void hotplaceMapperPersistsAndFindsUserHotplace() {
-        String userId = uniqueId("hotplace-user");
+        Long memberId = seedMember("hotplace-member", uniqueId("hotplace") + "@example.com");
         String id = uniqueId("hotplace");
         HotplaceRecord record = new HotplaceRecord(
                 id,
-                userId,
+                memberId,
                 "핫플",
                 "CAFE",
                 "2026-06-19",
@@ -89,7 +89,7 @@ class CommunityPlanMapperH2Test extends H2MapperTestSupport {
         hotplaceMapper.insert(record);
 
         assertThat(hotplaceMapper.existsById(id)).isEqualTo(1);
-        assertThat(hotplaceMapper.findByUserIdOrderByCreatedAtDesc(userId))
+        assertThat(hotplaceMapper.findByMemberIdOrderByCreatedAtDesc(memberId))
                 .extracting(HotplaceRecord::getId)
                 .contains(id);
         assertThat(hotplaceMapper.findAllOrderByCreatedAtDesc())
@@ -103,9 +103,10 @@ class CommunityPlanMapperH2Test extends H2MapperTestSupport {
     void planMapperPersistsPlanAndItems() {
         String planId = uniqueId("plan");
         long attractionId = 9100001L;
+        Long memberId = seedMember("planner", uniqueId("planner") + "@example.com");
         TravelPlanRecord plan = new TravelPlanRecord(
                 planId,
-                "planner",
+                memberId,
                 "서울 여행",
                 "2026-06-19",
                 "2026-06-20",
@@ -122,7 +123,7 @@ class CommunityPlanMapperH2Test extends H2MapperTestSupport {
 
         assertThat(planMapper.existsById(planId)).isEqualTo(1);
         assertThat(planMapper.findById(planId).getTitle()).isEqualTo("서울 여행 수정");
-        assertThat(planMapper.findByUserIdOrderByCreatedAtDesc("planner"))
+        assertThat(planMapper.findByMemberIdOrderByCreatedAtDesc(memberId))
                 .extracting(TravelPlanRecord::getId)
                 .contains(planId);
         assertThat(planMapper.findItemsByPlanIdOrderByPositionAsc(planId))

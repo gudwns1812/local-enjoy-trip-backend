@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserIdArgumentResolver;
+import com.ssafy.enjoytrip.core.api.security.AuthenticatedMemberIdArgumentResolver;
 import com.ssafy.enjoytrip.core.api.web.controller.MemberController;
 import com.ssafy.enjoytrip.core.support.auth.JwtTokenService;
 import com.ssafy.enjoytrip.core.domain.service.MemberService;
@@ -58,7 +58,7 @@ class SecurityErrorResponseTest {
     void postAuthenticationFailureUsesSecurityEntryPoint() throws Exception {
         mockMvc.perform(post("/api/friendships/requests")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"targetUserId\":\"bob\"}"))
+                        .content("{\"targetEmail\":\"bob\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.code").value("S401"))
@@ -140,13 +140,13 @@ class SecurityErrorResponseTest {
     @Import(SecurityConfig.class)
     static class TestConfig {
         @Bean
-        WebConfig webConfig(AuthenticatedUserIdArgumentResolver resolver) {
+        WebConfig webConfig(AuthenticatedMemberIdArgumentResolver resolver) {
             return new WebConfig(resolver);
         }
 
         @Bean
-        AuthenticatedUserIdArgumentResolver authenticatedUserIdArgumentResolver() {
-            return new AuthenticatedUserIdArgumentResolver();
+        AuthenticatedMemberIdArgumentResolver authenticatedUserIdArgumentResolver() {
+            return new AuthenticatedMemberIdArgumentResolver();
         }
 
         @Bean

@@ -26,12 +26,12 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
     @DisplayName("회원 role과 관리자 코스 큐레이션 메타데이터를 저장하고 조회한다")
     @Test
     void storesMemberRoleAndCourseCurationMetadata() {
-        seedMember("admin", "admin@example.com");
-        jdbcTemplate.update("update members set role = 'ADMIN' where user_id = 'admin'");
+        Long adminMemberId = seedMember("admin", "admin@example.com");
+        jdbcTemplate.update("update members set role = 'ADMIN' where id = ?", adminMemberId);
 
         courseMapper.insert(new CourseRecord(
                 "course-md-1",
-                "admin",
+                adminMemberId,
                 "서울 산책",
                 "서울",
                 "PUBLIC",
@@ -44,7 +44,7 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
 
         CourseRecord found = courseMapper.findById("course-md-1");
 
-        assertThat(memberMapper.findByUserId("admin").getRole()).isEqualTo("ADMIN");
+        assertThat(memberMapper.findById(adminMemberId).getRole()).isEqualTo("ADMIN");
         assertThat(found.getId()).isEqualTo("course-md-1");
         assertThat(found.getCurationSection()).isEqualTo("MD_RECOMMENDED");
         assertThat(found.getCurationOrder()).isEqualTo(1);
@@ -54,7 +54,7 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
     @DisplayName("공개 코스 아이템 조회는 숨김 장소와 비공개 노트를 제외한다")
     @Test
     void publicCourseItemsExcludeHiddenPlaceAndPrivateNote() {
-        seedMember("admin", "admin@example.com");
+        Long adminMemberId = seedMember("admin", "admin@example.com");
         seedAttraction(1L, "공개 장소");
         seedAttraction(2L, "숨김 장소");
         jdbcTemplate.update("""
@@ -65,19 +65,19 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
                 """);
         jdbcTemplate.update("""
                 insert into notes (
-                    id, author_user_id, title, content, visibility, latitude, longitude, status
+                    id, author_member_id, title, content, visibility, latitude, longitude, status
                 )
-                values (1, 'admin', '공개 노트', '내용', 'PUBLIC', 37.5, 127.0, 'ACTIVE')
-                """);
+                values (1, ?, '공개 노트', '내용', 'PUBLIC', 37.5, 127.0, 'ACTIVE')
+                """, adminMemberId);
         jdbcTemplate.update("""
                 insert into notes (
-                    id, author_user_id, title, content, visibility, latitude, longitude, status
+                    id, author_member_id, title, content, visibility, latitude, longitude, status
                 )
-                values (2, 'admin', '비공개 노트', '내용', 'PRIVATE', 37.5, 127.0, 'ACTIVE')
-                """);
+                values (2, ?, '비공개 노트', '내용', 'PRIVATE', 37.5, 127.0, 'ACTIVE')
+                """, adminMemberId);
         courseMapper.insert(new CourseRecord(
                 "course-public",
-                "admin",
+                adminMemberId,
                 "공개 코스",
                 "서울",
                 "PUBLIC",
@@ -100,12 +100,12 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
     @DisplayName("코스 상태 기본값은 READY이고 DRAFT 저장은 거부한다")
     @Test
     void courseStatusDefaultsToReadyAndRejectsDraft() {
-        seedMember("admin", "admin@example.com");
+        Long adminMemberId = seedMember("admin", "admin@example.com");
 
         jdbcTemplate.update("""
-                insert into courses (id, owner_user_id, title, visibility)
-                values ('course-default', 'admin', '기본 상태 코스', 'PUBLIC')
-                """);
+                insert into courses (id, owner_member_id, title, visibility)
+                values ('course-default', ?, '기본 상태 코스', 'PUBLIC')
+                """, adminMemberId);
 
         String status = jdbcTemplate.queryForObject(
                 "select status from courses where id = 'course-default'",
@@ -115,7 +115,7 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
         assertThat(status).isEqualTo("READY");
         assertThatThrownBy(() -> courseMapper.insert(new CourseRecord(
                 "course-draft",
-                "admin",
+                adminMemberId,
                 "초안 코스",
                 "서울",
                 "PUBLIC",
@@ -162,10 +162,10 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
     @DisplayName("코스 아이템과 구간은 batch insert로 저장하고 생성 id를 반환한다")
     @Test
     void batchInsertCourseItemsAndSegmentsAssignsGeneratedIds() {
-        seedMember("admin", "admin@example.com");
+        Long adminMemberId = seedMember("admin", "admin@example.com");
         seedAttraction(1L, "첫 장소");
         seedAttraction(2L, "두 번째 장소");
-        courseMapper.insert(publicCourse("course-batch"));
+        courseMapper.insert(publicCourse("course-batch", adminMemberId));
         CourseItemRecord first = new CourseItemRecord(
                 "course-batch",
                 "ATTRACTION",
@@ -210,12 +210,12 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
     @DisplayName("코스 구간 mapper는 생성된 아이템 id로 저장하고 제약 조건을 검증한다")
     @Test
     void courseRouteSegmentsUseReloadedItemIdsAndConstraints() {
-        seedMember("admin", "admin@example.com");
+        Long adminMemberId = seedMember("admin", "admin@example.com");
         seedAttraction(1L, "첫 장소");
         seedAttraction(2L, "두 번째 장소");
         seedAttraction(3L, "다른 코스 장소");
-        courseMapper.insert(publicCourse("course-segments"));
-        courseMapper.insert(publicCourse("course-other"));
+        courseMapper.insert(publicCourse("course-segments", adminMemberId));
+        courseMapper.insert(publicCourse("course-other", adminMemberId));
         insertCourseItem("course-segments", "ATTRACTION", 1L, null, 1);
         insertCourseItem("course-segments", "ATTRACTION", 2L, null, 2);
         insertCourseItem("course-other", "ATTRACTION", 3L, null, 1);
@@ -297,7 +297,7 @@ class CourseCurationMapperH2Test extends H2MapperTestSupport {
         }
         return item.noteTitle();
     }
-    private static CourseRecord publicCourse(String id) {
-        return new CourseRecord(id, "admin", id, "서울", "PUBLIC", "READY", null, null, null, null);
+    private static CourseRecord publicCourse(String id, Long ownerMemberId) {
+        return new CourseRecord(id, ownerMemberId, id, "서울", "PUBLIC", "READY", null, null, null, null);
     }
 }

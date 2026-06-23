@@ -1,6 +1,6 @@
 package com.ssafy.enjoytrip.core.api.config;
 
-import com.ssafy.enjoytrip.core.api.security.AuthenticatedUserIdArgumentResolver;
+import com.ssafy.enjoytrip.core.api.security.AuthenticatedMemberIdArgumentResolver;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -11,12 +11,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-    private final AuthenticatedUserIdArgumentResolver authenticatedUserIdArgumentResolver;
-
+    private final AuthenticatedMemberIdArgumentResolver authenticatedMemberIdArgumentResolver;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(authenticatedUserIdArgumentResolver);
+        resolvers.add(authenticatedMemberIdArgumentResolver);
     }
 
     @Override

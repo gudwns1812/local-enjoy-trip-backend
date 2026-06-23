@@ -247,7 +247,7 @@ class ControllerBehaviorTest {
             when(noteService.createNote(any())).thenReturn(note);
 
             mockMvc.perform(post("/api/notes")
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
@@ -268,7 +268,7 @@ class ControllerBehaviorTest {
 
             ArgumentCaptor<Note> captor = ArgumentCaptor.forClass(Note.class);
             verify(noteService).createNote(captor.capture());
-            assertThat(captor.getValue().authorUserId()).isEqualTo("ssafy");
+            assertThat(captor.getValue().authorMemberId()).isEqualTo("ssafy");
             assertThat(captor.getValue().title()).isEqualTo("서울 산책 메모");
             assertThat(captor.getValue().regionName()).isEqualTo("서울");
         }
@@ -280,7 +280,7 @@ class ControllerBehaviorTest {
             when(noteService.updateNote(any())).thenReturn(updated);
 
             mockMvc.perform(put("/api/notes/1")
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
@@ -299,9 +299,9 @@ class ControllerBehaviorTest {
             ArgumentCaptor<Note> captor = ArgumentCaptor.forClass(Note.class);
             verify(noteService).updateNote(captor.capture());
             assertThat(captor.getValue().id()).isEqualTo(1L);
-            assertThat(captor.getValue().authorUserId()).isEqualTo("ssafy");
+            assertThat(captor.getValue().authorMemberId()).isEqualTo("ssafy");
 
-            mockMvc.perform(delete("/api/notes/1").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(delete("/api/notes/1").principal(jwtPrincipal("1")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true));
             verify(noteService).deleteNote(1L, "ssafy");
@@ -313,18 +313,18 @@ class ControllerBehaviorTest {
             Note note = note(1L, "writer", "저장한 쪽지", NoteVisibility.PUBLIC);
             when(noteService.findSavedNotes("ssafy", 30)).thenReturn(List.of(note));
 
-            mockMvc.perform(put("/api/notes/1/save").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(put("/api/notes/1/save").principal(jwtPrincipal("1")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true));
             verify(noteService).addSave(1L, "ssafy");
 
-            mockMvc.perform(delete("/api/notes/1/save").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(delete("/api/notes/1/save").principal(jwtPrincipal("1")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true));
             verify(noteService).removeSave(1L, "ssafy");
 
             mockMvc.perform(get("/api/notes/saved")
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .param("limit", "30"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.notes[0].id").value(1))
@@ -366,7 +366,7 @@ class ControllerBehaviorTest {
         @Test
         void mapExploreRejectsPartialCoordinates() throws Exception {
             mockMvc.perform(get("/api/map/explore")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .param("mapX", "126.9780"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.message")
@@ -377,7 +377,7 @@ class ControllerBehaviorTest {
         @Test
         void mapExploreRequiresCoordinates() throws Exception {
             mockMvc.perform(get("/api/map/explore")
-                            .principal(jwtPrincipal("viewer")))
+                            .principal(jwtPrincipal("2")))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.message")
                             .value("위도 또는 경도가 유효하지 않습니다."));
@@ -402,7 +402,7 @@ class ControllerBehaviorTest {
             ));
 
             mockMvc.perform(get("/api/map/explore")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .param("mapX", "127.0276")
                             .param("mapY", "37.4979")
                             .param("radius", "750")
@@ -441,7 +441,7 @@ class ControllerBehaviorTest {
             ));
 
             mockMvc.perform(get("/api/map/explore")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .param("mapX", "126.9780")
                             .param("mapY", "37.5665")
                             .param("filter", "SAVED_PLACE"))
@@ -540,7 +540,7 @@ class ControllerBehaviorTest {
             )).thenReturn(result);
 
             mockMvc.perform(get("/api/map/explore")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .param("mapX", "126.9780")
                             .param("mapY", "37.5665"))
                     .andExpect(status().isOk())
@@ -587,7 +587,7 @@ class ControllerBehaviorTest {
             ));
 
             mockMvc.perform(get("/api/map/explore")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .param("mapX", "126.9780")
                             .param("mapY", "37.5665")
                             .param("radius", "10000"))
@@ -612,7 +612,7 @@ class ControllerBehaviorTest {
         @Test
         void profileImageUploadValidatesImageContentType() throws Exception {
             mockMvc.perform(post("/api/members/me/profile-image/presigned-upload")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"contentType":"text/plain","fileExtension":"txt"}
@@ -626,20 +626,20 @@ class ControllerBehaviorTest {
         void profileImageUploadReturnsPresignedResponseShape() throws Exception {
             when(memberProfileImageService.createPresignedUpload(any(), any(), any()))
                     .thenReturn(new ProfileImageUploadUrl(
-                            "profiles/viewer/sample.jpg",
-                            "http://localhost:9000/dongnepin-notes/profiles/viewer/sample.jpg?signature=abc",
+                            "profiles/2/sample.jpg",
+                            "http://localhost:9000/dongnepin-notes/profiles/2/sample.jpg?signature=abc",
                             Instant.parse("2026-06-15T01:10:00Z"),
-                            "http://localhost:9000/dongnepin-notes/profiles/viewer/sample.jpg"
+                            "http://localhost:9000/dongnepin-notes/profiles/2/sample.jpg"
                     ));
 
             mockMvc.perform(post("/api/members/me/profile-image/presigned-upload")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"contentType":"image/jpeg","fileExtension":"jpg"}
                                     """))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.objectKey").value("profiles/viewer/sample.jpg"))
+                    .andExpect(jsonPath("$.data.objectKey").value("profiles/2/sample.jpg"))
                     .andExpect(jsonPath("$.data.uploadUrl").isNotEmpty())
                     .andExpect(jsonPath("$.data.expiresAt").value("2026-06-15T01:10:00Z"))
                     .andExpect(jsonPath("$.data.publicUrl").isNotEmpty());
@@ -655,11 +655,11 @@ class ControllerBehaviorTest {
         @Test
         void profileImageUpdatePassesObjectKeyOnly() throws Exception {
             mockMvc.perform(put("/api/members/me/profile-image")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
-                                      "objectKey":"profiles/viewer/018f0a2a-55c1-7a7c-b3f5-fb2ed9e6b51b.jpg",
+                                      "objectKey":"profiles/2/018f0a2a-55c1-7a7c-b3f5-fb2ed9e6b51b.jpg",
                                       "contentType":"image/jpeg",
                                       "publicUrl":"https://evil.example.com/sample.jpg"
                                     }
@@ -669,7 +669,7 @@ class ControllerBehaviorTest {
 
             verify(memberProfileImageService).updateProfileImage(
                     "viewer",
-                    "profiles/viewer/018f0a2a-55c1-7a7c-b3f5-fb2ed9e6b51b.jpg"
+                    "profiles/2/018f0a2a-55c1-7a7c-b3f5-fb2ed9e6b51b.jpg"
             );
         }
 
@@ -677,10 +677,10 @@ class ControllerBehaviorTest {
         @Test
         void profileImageUpdateValidatesImageContentType() throws Exception {
             mockMvc.perform(put("/api/members/me/profile-image")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"objectKey":"profiles/viewer/sample.txt","contentType":"text/plain"}
+                                    {"objectKey":"profiles/2/sample.txt","contentType":"text/plain"}
                                     """))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value(false));
@@ -690,7 +690,7 @@ class ControllerBehaviorTest {
         @Test
         void profileImageUpdateRejectsForeignObjectKeyAsBadRequest() throws Exception {
             mockMvc.perform(put("/api/members/me/profile-image")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
@@ -711,7 +711,7 @@ class ControllerBehaviorTest {
         @Test
         void noteImageUploadValidatesImageContentType() throws Exception {
             mockMvc.perform(post("/api/note-images/presigned-upload")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"contentType":"text/plain","fileExtension":"txt"}
@@ -725,20 +725,20 @@ class ControllerBehaviorTest {
         void noteImageUploadReturnsPresignedResponseShape() throws Exception {
             when(noteImageUploadService.createPresignedUpload(any(), any(), any()))
                     .thenReturn(new NoteImageUploadUrl(
-                    "notes/viewer/sample.jpg",
-                    "http://localhost:9000/dongnepin-notes/notes/viewer/sample.jpg?signature=abc",
+                    "notes/2/sample.jpg",
+                    "http://localhost:9000/dongnepin-notes/notes/2/sample.jpg?signature=abc",
                     Instant.parse("2026-06-15T01:10:00Z"),
-                    "http://localhost:9000/dongnepin-notes/notes/viewer/sample.jpg"
+                    "http://localhost:9000/dongnepin-notes/notes/2/sample.jpg"
             ));
 
             mockMvc.perform(post("/api/note-images/presigned-upload")
-                            .principal(jwtPrincipal("viewer"))
+                            .principal(jwtPrincipal("2"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"contentType":"image/jpeg","fileExtension":"jpg"}
                                     """))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.objectKey").value("notes/viewer/sample.jpg"))
+                    .andExpect(jsonPath("$.data.objectKey").value("notes/2/sample.jpg"))
                     .andExpect(jsonPath("$.data.uploadUrl").isNotEmpty())
                     .andExpect(jsonPath("$.data.expiresAt").value("2026-06-15T01:10:00Z"))
                     .andExpect(jsonPath("$.data.publicUrl").isNotEmpty());
@@ -812,7 +812,7 @@ class ControllerBehaviorTest {
         @DisplayName("사용자별 핫플레이스를 조회하고 좌표로 생성한다")
         @Test
         void findsHotplacesByUserAndCreatesWithCoordinates() throws Exception {
-            when(hotplaceService.findHotplacesByUser("ssafy")).thenReturn(List.of(
+            when(hotplaceService.findHotplacesByMemberId("ssafy")).thenReturn(List.of(
                     new Hotplace(
                             "h1", "ssafy", "남산", "view", "2026-05-14", 37.55, 126.99, "night", "",
                             "created"
@@ -866,7 +866,7 @@ class ControllerBehaviorTest {
 
             doThrow(new CoreException(HOTPLACE_NOT_FOUND))
                     .when(hotplaceService)
-                    .deleteHotplaceOrThrow("h-missing");
+                    .deleteHotplaceOrThrow("h-missing", 1L);
             mockMvc.perform(delete("/api/hotplaces/h-missing"))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error.message")
@@ -879,7 +879,7 @@ class ControllerBehaviorTest {
         @DisplayName("계획 조회는 정규화된 경로 항목만 반환하고 저장 JSON 대체 파싱을 하지 않는다")
         @Test
         void planFindReturnsOnlyNormalizedRouteItemsAndDoesNotParseStoredJsonFallback() throws Exception {
-            when(planService.findPlansByUser("ssafy")).thenReturn(List.of(
+            when(planService.findPlansByMemberId("ssafy")).thenReturn(List.of(
                     new TravelPlan(
                             "p1", "ssafy", "서울", "2026-05-14", "2026-05-15", 1000, null,
                             "[{\"title\":\"A\"}]", "created"
@@ -902,7 +902,7 @@ class ControllerBehaviorTest {
         void planDeleteMissingReturnsNotFound() throws Exception {
             doThrow(new CoreException(PLAN_NOT_FOUND)).when(planService).deletePlan("ssafy", "missing");
 
-            mockMvc.perform(delete("/api/plans/missing").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(delete("/api/plans/missing").principal(jwtPrincipal("1")))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error.message").value("여행 계획을 찾을 수 없습니다."));
         }
@@ -912,7 +912,7 @@ class ControllerBehaviorTest {
         void canonicalPlanCreateStoresTypedRouteItemsFromAuthenticatedUser() throws Exception {
             mockMvc.perform(post("/api/plans")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .content("""
                                     {
                                       "id":"p-route",
@@ -946,7 +946,7 @@ class ControllerBehaviorTest {
         void canonicalPlanCreateValidationFailureUsesStandardBadRequestEnvelope() throws Exception {
             mockMvc.perform(post("/api/plans")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .content("""
                                     {
                                       "id":"",
@@ -965,7 +965,7 @@ class ControllerBehaviorTest {
         void canonicalPlanUpdateKeepsRouteItemsWhenRouteItemsFieldIsAbsent() throws Exception {
             mockMvc.perform(put("/api/plans/p-route")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .content("""
                                     {
                                       "title":"서울 수정",
@@ -1044,7 +1044,7 @@ class ControllerBehaviorTest {
         @Test
         void updateMeUsesAuthenticatedJwtSubjectWithoutAccountFields() throws Exception {
             mockMvc.perform(put("/api/members/me")
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {
@@ -1063,8 +1063,8 @@ class ControllerBehaviorTest {
             assertThat(captor.getValue().password()).isNull();
             assertThat(captor.getValue().nickname()).isEqualTo("동네핀러");
 
-            when(memberService.findRequiredByUserId("ghost")).thenThrow(new CoreException(USER_NOT_FOUND));
-            mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("ghost")))
+            when(memberService.findRequiredById("ghost")).thenThrow(new CoreException(USER_NOT_FOUND));
+            mockMvc.perform(get("/api/members/me").principal(jwtPrincipal("999")))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error.message").value("사용자를 찾을 수 없습니다."));
         }
@@ -1163,16 +1163,16 @@ class ControllerBehaviorTest {
             when(attractionService.findAllTags()).thenReturn(List.of(new AttractionTag(3L, "family")));
             when(attractionService.replaceTags(1L, List.of(3L))).thenReturn(true);
 
-            mockMvc.perform(put("/api/attractions/1/save").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(put("/api/attractions/1/save").principal(jwtPrincipal("1")))
                     .andExpect(status().isOk());
             verify(attractionService).addSave(1L, "ssafy");
 
-            mockMvc.perform(delete("/api/attractions/1/save").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(delete("/api/attractions/1/save").principal(jwtPrincipal("1")))
                     .andExpect(status().isOk());
             verify(attractionService).removeSave(1L, "ssafy");
 
             mockMvc.perform(put("/api/attractions/1/rating")
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"rating":6}
@@ -1180,14 +1180,14 @@ class ControllerBehaviorTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.message").value("유효하지 않은 요청입니다."));
 
-            mockMvc.perform(get("/api/attractions/1/stats").principal(jwtPrincipal("ssafy")))
+            mockMvc.perform(get("/api/attractions/1/stats").principal(jwtPrincipal("1")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.stats.saveCount").value(3))
                     .andExpect(jsonPath("$.data.stats.saved").value(true))
                     .andExpect(jsonPath("$.data.stats.tags[0].name").value("family"));
 
             mockMvc.perform(put("/api/attractions/1/tags")
-                            .principal(jwtPrincipal("ssafy"))
+                            .principal(jwtPrincipal("1"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
                                     {"tagIds":[3]}
@@ -1233,10 +1233,10 @@ class ControllerBehaviorTest {
         }
     }
 
-    private static Note note(Long id, String authorUserId, String title, NoteVisibility visibility) {
+    private static Note note(Long id, String authorMemberId, String title, NoteVisibility visibility) {
         return new Note(
                 id,
-                authorUserId,
+                authorMemberId,
                 title,
                 "content",
                 NoteCategory.TIP,

@@ -21,15 +21,15 @@ class CourseFeedMapperContainerTest extends StorageContainerTestSupport {
     @DisplayName("공개 코스 피드는 가까운 MD 추천 3개를 먼저 두고 나머지를 거리순으로 채운다")
     @Test
     void publicFeedUsesStartLocationKnnWithMdPriority() {
-        seedMember("admin", "admin@example.com");
-        seedMember("user", "user@example.com");
-        jdbcTemplate.update("update members set role = 'ADMIN' where user_id = 'admin'");
-        seedPublicCourse("md-1", "admin", "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0010);
-        seedPublicCourse("md-2", "admin", "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0020);
-        seedPublicCourse("md-3", "admin", "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0030);
-        seedPublicCourse("md-4", "admin", "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0040);
-        seedPublicCourse("near-user", "user", null, ORIGIN_LONGITUDE + 0.0001);
-        seedPublicCourse("mid-user", "user", null, ORIGIN_LONGITUDE + 0.0025);
+        Long adminMemberId = seedMember("admin", "admin@example.com");
+        Long userMemberId = seedMember("user", "user@example.com");
+        jdbcTemplate.update("update members set role = 'ADMIN' where id = ?", adminMemberId);
+        seedPublicCourse("md-1", adminMemberId, "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0010);
+        seedPublicCourse("md-2", adminMemberId, "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0020);
+        seedPublicCourse("md-3", adminMemberId, "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0030);
+        seedPublicCourse("md-4", adminMemberId, "MD_RECOMMENDED", ORIGIN_LONGITUDE + 0.0040);
+        seedPublicCourse("near-user", userMemberId, null, ORIGIN_LONGITUDE + 0.0001);
+        seedPublicCourse("mid-user", userMemberId, null, ORIGIN_LONGITUDE + 0.0025);
 
         List<CourseRecord> feed = courseMapper.findDistanceOrderedPublicFeed(
                 ORIGIN_LONGITUDE,
@@ -61,12 +61,12 @@ class CourseFeedMapperContainerTest extends StorageContainerTestSupport {
     }
 
     private void seedPublicCourse(String id,
-                                  String ownerUserId,
+                                  Long ownerMemberId,
                                   String curationSection,
                                   double longitude) {
         courseMapper.insert(new CourseRecord(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 "PUBLIC",

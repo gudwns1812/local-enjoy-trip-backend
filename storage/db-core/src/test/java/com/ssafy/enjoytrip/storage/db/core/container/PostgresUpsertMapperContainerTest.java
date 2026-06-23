@@ -32,29 +32,27 @@ class PostgresUpsertMapperContainerTest extends StorageContainerTestSupport {
     @DisplayName("NotificationMapper는 PostgreSQL on conflict로 친구 요청 알림을 upsert한다")
     @Test
     void notificationMapperUpsertsFriendRequestNotificationsByBusinessKey() {
-        String requester = uniqueId("noti-requester");
-        String recipient = uniqueId("noti-recipient");
-        seedMember(requester, requester + "@example.com");
-        seedMember(recipient, recipient + "@example.com");
-        FriendshipRecord friendship = new FriendshipRecord(requester, recipient);
+        Long requesterMemberId = seedMember("noti-requester", uniqueId("noti-requester") + "@example.com");
+        Long recipientMemberId = seedMember("noti-recipient", uniqueId("noti-recipient") + "@example.com");
+        FriendshipRecord friendship = new FriendshipRecord(requesterMemberId, recipientMemberId);
         friendshipMapper.insert(friendship);
         NotificationRecord notification = new NotificationRecord(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId(),
-                requester
+                String.valueOf(requesterMemberId)
         );
 
         notificationMapper.upsertFriendRequest(notification);
         NotificationRecord inserted = notificationMapper.findByBusinessKey(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId()
         );
         NotificationRecord duplicate = new NotificationRecord(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId(),
@@ -63,7 +61,7 @@ class PostgresUpsertMapperContainerTest extends StorageContainerTestSupport {
 
         notificationMapper.upsertFriendRequest(duplicate);
         NotificationRecord updated = notificationMapper.findByBusinessKey(
-                recipient,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 friendship.getId()

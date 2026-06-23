@@ -40,52 +40,61 @@ class MemberServiceTest {
     @DisplayName("회원가입은 BCrypt 비밀번호를 db-core MemberRecord로 저장한다")
     @Test
     void signupStoresBcryptPassword() {
-        when(memberMapper.existsByUserIdOrEmail("ssafy", "ssafy@example.com")).thenReturn(0);
+        when(memberMapper.existsByEmail("Case@Test.example")).thenReturn(0);
 
-        service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret"));
+        service.signup(new Member(null, "SSAFY", "SSAFY", "Case@Test.example", "secret123", null));
 
         ArgumentCaptor<MemberRecord> memberCaptor = ArgumentCaptor.forClass(MemberRecord.class);
         verify(memberMapper).insert(memberCaptor.capture());
         MemberRecord saved = memberCaptor.getValue();
-        assertThat(saved.getPassword()).isNotEqualTo("secret");
-        assertThat(passwordEncoder.matches("secret", saved.getPassword())).isTrue();
+        assertThat(saved.getEmail()).isEqualTo("Case@Test.example");
+        assertThat(saved.getPassword()).isNotEqualTo("secret123");
+        assertThat(passwordEncoder.matches("secret123", saved.getPassword())).isTrue();
     }
 
-    @DisplayName("회원가입은 이미 존재하는 사용자 정보를 거부한다")
+    @DisplayName("회원가입은 이미 존재하는 이메일을 거부한다")
     @Test
-    void signupRejectsExistingMember() {
-        when(memberMapper.existsByUserIdOrEmail("ssafy", "ssafy@example.com")).thenReturn(1);
+    void signupRejectsExistingEmail() {
+        when(memberMapper.existsByEmail("ssafy@example.com")).thenReturn(1);
 
-        assertThatThrownBy(() -> service.signup(new Member("ssafy", "SSAFY", "ssafy@example.com", "secret")))
+        assertThatThrownBy(() -> service.signup(
+                new Member(null, "SSAFY", "SSAFY", "ssafy@example.com", "secret123", null)
+        ))
                 .isInstanceOfSatisfying(CoreException.class,
                         exception -> assertThat(exception.errorType()).isEqualTo(USER_ALREADY_EXISTS));
 
         verify(memberMapper, never()).insert(any());
     }
 
-    @DisplayName("로그인은 비밀번호가 일치하면 회원을 반환하고 로그인 로그를 저장한다")
+    @DisplayName("로그인은 비밀번호가 일치하면 회원을 반환하고 회원 ID로 로그인 로그를 저장한다")
     @Test
     void loginReturnsMemberWhenPasswordMatches() {
         String encodedPassword = passwordEncoder.encode("secret");
-        MemberRecord record = new MemberRecord("ssafy", "SSAFY", null, "ssafy@example.com", encodedPassword,
-                "");
-        when(memberMapper.findByUserId("ssafy")).thenReturn(record);
+        MemberRecord record = member(1L, "SSAFY", null, "Case@Test.example", encodedPassword);
+        when(memberMapper.findByEmail("Case@Test.example")).thenReturn(record);
 
-        Member loggedIn = service.login("ssafy", "secret");
+        Member loggedIn = service.login("Case@Test.example", "secret");
 
-        assertThat(loggedIn.userId()).isEqualTo("ssafy");
-        verify(authLogMapper).insert(any(AuthLogRecord.class));
+        assertThat(loggedIn.memberId()).isEqualTo(1L);
+        ArgumentCaptor<AuthLogRecord> logCaptor = ArgumentCaptor.forClass(AuthLogRecord.class);
+        verify(authLogMapper).insert(logCaptor.capture());
+        assertThat(logCaptor.getValue().getMemberId()).isEqualTo(1L);
         verify(memberMapper, never()).update(any());
     }
 
     @DisplayName("로그인은 비밀번호가 일치하지 않으면 실패한다")
     @Test
     void loginFailsWhenPasswordDoesNotMatch() {
-        MemberRecord record = new MemberRecord("ssafy", "SSAFY", null, "ssafy@example.com",
-                passwordEncoder.encode("secret"), "");
-        when(memberMapper.findByUserId("ssafy")).thenReturn(record);
+        MemberRecord record = member(
+                1L,
+                "SSAFY",
+                null,
+                "ssafy@example.com",
+                passwordEncoder.encode("secret")
+        );
+        when(memberMapper.findByEmail("ssafy@example.com")).thenReturn(record);
 
-        assertThatThrownBy(() -> service.login("ssafy", "wrong"))
+        assertThatThrownBy(() -> service.login("ssafy@example.com", "wrong"))
                 .isInstanceOfSatisfying(CoreException.class,
                         exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
 
@@ -95,17 +104,10 @@ class MemberServiceTest {
     @DisplayName("로그인은 평문으로 저장된 이전 비밀번호를 허용하거나 재암호화하지 않는다")
     @Test
     void loginRejectsPlainStoredPasswordWithoutUpgrade() {
-        MemberRecord record = new MemberRecord(
-                "ssafy",
-                "SSAFY",
-                null,
-                "ssafy@example.com",
-                "secret",
-                ""
-        );
-        when(memberMapper.findByUserId("ssafy")).thenReturn(record);
+        MemberRecord record = member(1L, "SSAFY", null, "ssafy@example.com", "secret");
+        when(memberMapper.findByEmail("ssafy@example.com")).thenReturn(record);
 
-        assertThatThrownBy(() -> service.login("ssafy", "secret"))
+        assertThatThrownBy(() -> service.login("ssafy@example.com", "secret"))
                 .isInstanceOfSatisfying(CoreException.class,
                         exception -> assertThat(exception.errorType()).isEqualTo(INVALID_CREDENTIALS));
 
@@ -116,7 +118,7 @@ class MemberServiceTest {
     @DisplayName("OAuth 회원가입은 이름과 닉네임을 분리해 저장한다")
     @Test
     void oauthSignupStoresNicknameSeparatelyFromName() {
-        when(memberMapper.existsByUserIdOrEmail("google_123", "google@example.com")).thenReturn(0);
+        when(memberMapper.existsByEmail("google@example.com")).thenReturn(0);
 
         Member member = service.signupWithOAuth("google", "123", "google@example.com", "김구글", "트래블러");
 
@@ -129,10 +131,10 @@ class MemberServiceTest {
         assertThat(saved.getNickname()).isEqualTo("트래블러");
     }
 
-    @DisplayName("OAuth 회원가입은 이미 존재하는 사용자 정보를 로그인 처리하지 않고 거부한다")
+    @DisplayName("OAuth 회원가입은 이미 존재하는 이메일이면 충돌로 거부한다")
     @Test
-    void oauthSignupRejectsExistingMember() {
-        when(memberMapper.existsByUserIdOrEmail("google_123", "google@example.com")).thenReturn(1);
+    void oauthSignupRejectsExistingEmail() {
+        when(memberMapper.existsByEmail("google@example.com")).thenReturn(1);
 
         assertThatThrownBy(() -> service.signupWithOAuth(
                 "google",
@@ -146,5 +148,11 @@ class MemberServiceTest {
 
         verify(memberMapper, never()).insert(any());
         verify(authLogMapper, never()).insert(any());
+    }
+
+    private static MemberRecord member(Long id, String name, String nickname, String email, String password) {
+        MemberRecord member = new MemberRecord(name, nickname, email, password, null);
+        member.setId(id);
+        return member;
     }
 }

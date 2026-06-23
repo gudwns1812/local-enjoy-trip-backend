@@ -172,10 +172,10 @@ class AdminCourseServiceTest {
         return itemCaptor.getValue().get(0);
     }
 
-    private static Course course(String id, String ownerUserId, CourseStop... stops) {
+    private static Course course(String id, String ownerMemberId, CourseStop... stops) {
         return new Course(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 "PUBLIC",
@@ -294,10 +294,10 @@ class AdminCourseServiceTest {
         );
     }
 
-    private static CourseRecord courseRecord(String id, String ownerUserId) {
+    private static CourseRecord courseRecord(String id, String ownerMemberId) {
         CourseRecord record = new CourseRecord(
                 id,
-                ownerUserId,
+                ownerMemberId,
                 id,
                 "서울",
                 "PUBLIC",
@@ -307,7 +307,7 @@ class AdminCourseServiceTest {
                 null,
                 null
         );
-        record.setCreatedByAdmin("admin".equals(ownerUserId));
+        record.setCreatedByAdmin("admin".equals(ownerMemberId));
         return record;
     }
 }

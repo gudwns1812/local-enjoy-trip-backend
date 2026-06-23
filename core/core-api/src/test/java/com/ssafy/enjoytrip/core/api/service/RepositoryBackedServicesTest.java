@@ -70,13 +70,13 @@ class RepositoryBackedServicesTest {
             Hotplace hotplace = new Hotplace("h1", "ssafy", "남산", "view", "2026-05-14", 37.55,
                     126.99, "night", "", "created");
             when(mapper.existsById("h1")).thenReturn(1);
-            when(mapper.deleteById("h1")).thenReturn(1);
+            when(mapper.deleteByIdAndMemberId("h1", 1L)).thenReturn(1);
 
             service.insertHotplace(hotplace);
-            assertThat(service.deleteHotplace("h1")).isTrue();
+            assertThat(service.deleteHotplaceOrThrow("h1", 1L)).isTrue();
 
             verify(mapper).insert(any(HotplaceRecord.class));
-            verify(mapper).deleteById("h1");
+            verify(mapper).deleteByIdAndMemberId("h1", 1L);
         }
     }
 
@@ -177,7 +177,7 @@ class RepositoryBackedServicesTest {
         @DisplayName("회원가입은 중복 사용자를 등록하지 않는다")
         @Test
         void signupDoesNotInsertDuplicateUser() {
-            when(mapper.existsByUserIdOrEmail("ssafy", "ssafy@example.com")).thenReturn(1);
+            when(mapper.existsByEmail("ssafy", "ssafy@example.com")).thenReturn(1);
 
             Member duplicate = new Member("ssafy", "SSAFY", "ssafy@example.com", "secret");
 

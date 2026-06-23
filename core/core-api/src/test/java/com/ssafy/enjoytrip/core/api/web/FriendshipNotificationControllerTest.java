@@ -57,9 +57,9 @@ class FriendshipNotificationControllerTest {
                 .thenReturn(friendship(1L, "alice", "bob", FriendshipStatus.PENDING));
 
         mockMvc.perform(post("/api/friendships/requests")
-                        .principal(jwtPrincipal("alice"))
+                        .principal(jwtPrincipal("1"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"targetUserId\":\" bob \"}"))
+                        .content("{\"targetEmail\":\" bob \"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.friendship.id").value(1))
@@ -75,7 +75,7 @@ class FriendshipNotificationControllerTest {
         when(friendshipService.findFriends("alice"))
                 .thenReturn(List.of(friendship(1L, "bob", "alice", FriendshipStatus.ACCEPTED)));
 
-        mockMvc.perform(get("/api/friendships").principal(jwtPrincipal("alice")))
+        mockMvc.perform(get("/api/friendships").principal(jwtPrincipal("1")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.friends[0].friendshipId").value(1))
@@ -89,7 +89,7 @@ class FriendshipNotificationControllerTest {
                 .thenReturn(List.of(notification(3L, "bob", null)));
 
         mockMvc.perform(get("/api/notifications?limit=10")
-                        .principal(jwtPrincipal("bob")))
+                        .principal(jwtPrincipal("2")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.notifications[0].id").value(3))
@@ -106,7 +106,7 @@ class FriendshipNotificationControllerTest {
                 .thenReturn(true);
 
         mockMvc.perform(get("/api/notifications/unread-status")
-                        .principal(jwtPrincipal("bob")))
+                        .principal(jwtPrincipal("2")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.hasUnread").value(true));
@@ -115,15 +115,15 @@ class FriendshipNotificationControllerTest {
     }
 
     private static Friendship friendship(Long id,
-                                         String requesterUserId,
-                                         String addresseeUserId,
+                                         String requesterEmail,
+                                         String addresseeEmail,
                                          FriendshipStatus status) {
         return new Friendship(
                 id,
-                requesterUserId,
-                requesterUserId,
-                addresseeUserId,
-                addresseeUserId,
+                requesterEmail,
+                requesterEmail,
+                addresseeEmail,
+                addresseeEmail,
                 status,
                 LocalDateTime.of(2026, 6, 12, 10, 0),
                 null,
@@ -132,10 +132,10 @@ class FriendshipNotificationControllerTest {
         );
     }
 
-    private static Notification notification(Long id, String recipientUserId, LocalDateTime readAt) {
+    private static Notification notification(Long id, String recipientMemberId, LocalDateTime readAt) {
         return new Notification(
                 id,
-                recipientUserId,
+                recipientMemberId,
                 NotificationType.FRIEND_REQUEST_RECEIVED,
                 NotificationReferenceType.FRIENDSHIP,
                 1L,
