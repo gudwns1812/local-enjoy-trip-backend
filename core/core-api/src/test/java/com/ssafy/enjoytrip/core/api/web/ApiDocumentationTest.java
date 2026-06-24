@@ -3,6 +3,7 @@ package com.ssafy.enjoytrip.core.api.web;
 import com.ssafy.enjoytrip.core.api.web.controller.*;
 
 import com.ssafy.enjoytrip.core.domain.Attraction;
+import com.ssafy.enjoytrip.core.domain.AttractionTag;
 import com.ssafy.enjoytrip.core.domain.Course;
 import com.ssafy.enjoytrip.core.domain.CourseRoute;
 import com.ssafy.enjoytrip.core.domain.CourseRouteSegment;
@@ -156,6 +157,45 @@ class ApiDocumentationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.attractions").isArray())
                 .andDo(document("attractions",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    @DisplayName("관광지 상세 API 문서를 검증한다")
+    @Test
+    void attractionDetail() throws Exception {
+        when(attractionService.findAttractionDetail(1L, null))
+                .thenReturn(new Attraction(
+                        1L,
+                        "경복궁",
+                        "서울 종로구",
+                        "",
+                        "03045",
+                        "02-3700-3900",
+                        "https://example.com/gyeongbokgung.jpg",
+                        "",
+                        42,
+                        1,
+                        1,
+                        37.5796,
+                        126.9770,
+                        "6",
+                        "12",
+                        "조선 시대 궁궐입니다.",
+                        12,
+                        4.5,
+                        8,
+                        List.of(new AttractionTag(1L, "역사")),
+                        false,
+                        null
+                ));
+
+        mockMvc.perform(get("/api/attractions/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.imageUrl").value("https://example.com/gyeongbokgung.jpg"))
+                .andExpect(jsonPath("$.data.overview").value("조선 시대 궁궐입니다."))
+                .andDo(document("attraction-detail",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }

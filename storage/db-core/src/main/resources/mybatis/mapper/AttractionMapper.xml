@@ -142,6 +142,18 @@
         <include refid="searchRowJoins"/>
         order by a.distanceMeters asc, a.title asc, a.id asc, t.name asc
     </select>
+    <select id="findDetailRowsById" resultType="com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord">
+        select <include refid="searchRowColumns"/>
+        from (
+            select <include refid="baseColumns"/>,
+                   null as distanceMeters
+            from attractions
+            where id = #{attractionId}
+              and <include refid="publicAttractionPredicate"/>
+        ) a
+        <include refid="searchRowJoins"/>
+        order by t.name asc
+    </select>
     <select id="existsById" resultType="int">select count(*) from attractions where id = #{attractionId}</select>
     <select id="existsPublicVisibleById" resultType="int">
         select count(*)

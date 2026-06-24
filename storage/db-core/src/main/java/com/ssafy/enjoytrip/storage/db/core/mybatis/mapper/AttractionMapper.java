@@ -29,6 +29,9 @@ public interface AttractionMapper {
                                             @Param("savedOnly") boolean savedOnly,
                                             @Param("viewerMemberId") Long viewerMemberId);
 
+    List<AttractionSearchRecord> findDetailRowsById(@Param("attractionId") Long attractionId,
+                                                    @Param("viewerMemberId") Long viewerMemberId);
+
     int existsById(Long attractionId);
 
     int existsPublicVisibleById(Long attractionId);

@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.INVALID_CREDENTIALS;
+import static com.ssafy.enjoytrip.core.support.error.ErrorType.ATTRACTION_NOT_FOUND;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.PLAN_NOT_FOUND;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.NOTICE_NOT_FOUND;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.HOTPLACE_NOT_FOUND;
@@ -345,7 +346,10 @@ class ControllerBehaviorTest {
                     .andExpect(jsonPath("$.data.notes[0].title").value("근처 쪽지"))
                     .andExpect(jsonPath("$.data.notes[0].visibility").value("PUBLIC"));
 
-            verify(noteService).findNearbyNotes(new DistanceSearchCondition(126.9780, 37.5665, 20, 500.0), null);
+            verify(noteService).findNearbyNotes(
+                    new DistanceSearchCondition(126.9780, 37.5665, 20, 500.0),
+                    null
+            );
         }
 
         @DisplayName("주변 쪽지는 일부 좌표만 전달되면 검증 오류를 반환한다")
@@ -1017,7 +1021,9 @@ class ControllerBehaviorTest {
         @DisplayName("로그인 실패와 로그아웃 검증을 확인한다")
         @Test
         void loginFailureAndLogoutValidation() throws Exception {
-            doThrow(new CoreException(INVALID_CREDENTIALS)).when(memberService).login("ssafy@example.com", "wrong123");
+            doThrow(new CoreException(INVALID_CREDENTIALS))
+                    .when(memberService)
+                    .login("ssafy@example.com", "wrong123");
 
             mockMvc.perform(post("/api/members/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -1147,6 +1153,67 @@ class ControllerBehaviorTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.message")
                             .value("위도 또는 경도가 유효하지 않습니다."));
+        }
+
+        @DisplayName("관광지 상세 조회는 단건 장소 상세와 내 참여 상태를 반환한다")
+        @Test
+        void attractionDetailReturnsSingleAttractionWithViewerState() throws Exception {
+            Attraction attraction = new Attraction(
+                    1L,
+                    "경복궁",
+                    "서울 종로구",
+                    "",
+                    "03045",
+                    "02-3700-3900",
+                    "image",
+                    "image2",
+                    7,
+                    1,
+                    2,
+                    37.579617,
+                    126.977041,
+                    "6",
+                    "12",
+                    "조선 시대 궁궐입니다.",
+                    2,
+                    4.5,
+                    2,
+                    List.of(new AttractionTag(3L, "역사")),
+                    true,
+                    5
+            );
+            when(attractionService.findAttractionDetail(1L, 11L)).thenReturn(attraction);
+
+            mockMvc.perform(get("/api/attractions/1").principal(jwtPrincipal(11L)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").value(1))
+                    .andExpect(jsonPath("$.data.title").value("경복궁"))
+                    .andExpect(jsonPath("$.data.imageUrl").value("image"))
+                    .andExpect(jsonPath("$.data.overview").value("조선 시대 궁궐입니다."))
+                    .andExpect(jsonPath("$.data.saveCount").value(2))
+                    .andExpect(jsonPath("$.data.saved").value(true))
+                    .andExpect(jsonPath("$.data.myRating").value(5))
+                    .andExpect(jsonPath("$.data.tags[0].name").value("역사"))
+                    .andExpect(jsonPath("$.data.attraction").doesNotExist())
+                    .andExpect(jsonPath("$.data.firstImage").doesNotExist())
+                    .andExpect(jsonPath("$.data.firstImage2").doesNotExist())
+                    .andExpect(jsonPath("$.data.sidoCode").doesNotExist())
+                    .andExpect(jsonPath("$.data.gugunCode").doesNotExist())
+                    .andExpect(jsonPath("$.data.mlevel").doesNotExist());
+
+            verify(attractionService).findAttractionDetail(1L, 11L);
+        }
+
+        @DisplayName("관광지 상세 조회는 없는 장소이면 404를 반환한다")
+        @Test
+        void attractionDetailReturnsNotFoundWhenMissing() throws Exception {
+            when(attractionService.findAttractionDetail(999L, null))
+                    .thenThrow(new CoreException(ATTRACTION_NOT_FOUND));
+
+            mockMvc.perform(get("/api/attractions/999"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error.message").value("관광지를 찾을 수 없습니다."));
         }
 
         @DisplayName("관광지 참여와 태그 엔드포인트는 검증 후 위임한다")
