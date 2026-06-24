@@ -5,6 +5,7 @@ import com.ssafy.enjoytrip.core.api.web.dto.request.AttractionTagsRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.AttractionSearchRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.NearbySectionRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.RatingRequest;
+import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionDetailResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionStatsResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionsResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.PopularAttractionsResponse;
@@ -115,6 +116,64 @@ public interface AttractionApi {
     })
     ApiResponse<PopularAttractionsResponse> popularNearby(
             @ParameterObject NearbySectionRequest request,
+            @Parameter(hidden = true) Long memberId
+    );
+
+    @Operation(
+            summary = "관광지 상세 조회",
+            description = """
+                    공개 활성 관광지의 상세 정보를 조회합니다.
+
+                    - `overview`, 이미지, 좌표, 저장 수, 평점, 태그를 함께 반환합니다.
+                    - 로그인 사용자는 `saved`, `myRating`에 본인 상태가 반영됩니다.
+                    - 비로그인 응답에서는 `saved=false`, `myRating=null`입니다.
+                    """,
+            operationId = "getAttractionDetail"
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "관광지 상세 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AttractionDetailResponse.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "success": true,
+                                      "data": {
+                                        "id": 125405,
+                                        "title": "경복궁",
+                                        "address": "서울 종로구 사직로 161",
+                                        "addressDetail": "",
+                                        "zipcode": "03045",
+                                        "tel": "02-3700-3900",
+                                        "imageUrl": "https://example.com/gyeongbokgung.jpg",
+                                        "readcount": 42,
+                                        "latitude": 37.579617,
+                                        "longitude": 126.977041,
+                                        "contentTypeId": "12",
+                                        "overview": "조선 시대 궁궐입니다.",
+                                        "saveCount": 12,
+                                        "ratingAverage": 4.5,
+                                        "ratingCount": 8,
+                                        "tags": [
+                                          {"id": 1, "name": "역사"}
+                                        ],
+                                        "saved": true,
+                                        "myRating": 5
+                                      },
+                                      "error": null
+                                    }
+                                    """)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "관광지를 찾을 수 없음"
+            )
+    })
+    ApiResponse<AttractionDetailResponse> detail(
+            @Parameter(description = "조회할 관광지 ID", example = "125405", required = true) Long id,
             @Parameter(hidden = true) Long memberId
     );
 

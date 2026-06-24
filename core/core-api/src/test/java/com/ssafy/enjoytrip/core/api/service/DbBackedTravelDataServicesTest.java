@@ -1,18 +1,23 @@
 package com.ssafy.enjoytrip.core.domain.service;
 
+import static com.ssafy.enjoytrip.core.support.error.ErrorType.ATTRACTION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ssafy.enjoytrip.core.domain.Attraction;
 import com.ssafy.enjoytrip.core.domain.AttractionPopularityDeltaCache;
+import com.ssafy.enjoytrip.core.support.error.CoreException;
+import com.ssafy.enjoytrip.external.minio.MinioNoteImageUploadUrlGenerator;
+import com.ssafy.enjoytrip.storage.db.core.model.AttractionSearchRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.EvChargerMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NewsMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NoteMapper;
-import com.ssafy.enjoytrip.core.support.error.CoreException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -105,6 +110,78 @@ class DbBackedTravelDataServicesTest {
             verify(attractionMapper, never()).refreshPopularityRatingStats(2L);
         }
 
+        @DisplayName("AttractionService는 상세 join row를 단건 상세 도메인으로 묶어 반환한다")
+        @Test
+        void findsAttractionDetailFromJoinedRows() {
+            AttractionMapper attractionMapper = mock(AttractionMapper.class);
+            AttractionService service = newAttractionService(
+                    attractionMapper,
+                    mock(AttractionPopularityDeltaCache.class)
+            );
+            when(attractionMapper.findDetailRowsById(1L, 11L)).thenReturn(List.of(
+                    attractionRow(1L, 3L, "역사"),
+                    attractionRow(1L, 4L, "야경")
+            ));
+
+            Attraction attraction = service.findAttractionDetail(1L, 11L);
+
+            assertThat(attraction.id()).isEqualTo(1L);
+            assertThat(attraction.title()).isEqualTo("경복궁");
+            assertThat(attraction.saved()).isTrue();
+            assertThat(attraction.myRating()).isEqualTo(5);
+            assertThat(attraction.tags())
+                    .extracting("id", "name")
+                    .containsExactly(
+                            tuple(3L, "역사"),
+                            tuple(4L, "야경")
+                    );
+        }
+
+        @DisplayName("AttractionService는 상세 row가 없으면 관광지 없음 예외를 던진다")
+        @Test
+        void throwsWhenAttractionDetailRowsAreEmpty() {
+            AttractionMapper attractionMapper = mock(AttractionMapper.class);
+            AttractionService service = newAttractionService(
+                    attractionMapper,
+                    mock(AttractionPopularityDeltaCache.class)
+            );
+            when(attractionMapper.findDetailRowsById(999L, null)).thenReturn(List.of());
+
+            assertThatThrownBy(() -> service.findAttractionDetail(999L, null))
+                    .isInstanceOf(CoreException.class)
+                    .extracting("errorType")
+                    .isEqualTo(ATTRACTION_NOT_FOUND);
+        }
+
+        private AttractionSearchRecord attractionRow(Long attractionId, Long tagId, String tagName) {
+            return new AttractionSearchRecord(
+                    attractionId,
+                    "경복궁",
+                    "서울 종로구",
+                    "",
+                    "03045",
+                    "02-3700-3900",
+                    "image",
+                    "image2",
+                    7,
+                    1,
+                    2,
+                    37.579617,
+                    126.977041,
+                    "6",
+                    "12",
+                    "조선 시대 궁궐입니다.",
+                    null,
+                    2,
+                    4.5,
+                    2,
+                    tagId,
+                    tagName,
+                    true,
+                    5
+            );
+        }
+
         private AttractionService newAttractionService(AttractionMapper attractionMapper,
                                                        AttractionPopularityDeltaCache deltaCache) {
             return new AttractionService(
@@ -120,7 +197,7 @@ class DbBackedTravelDataServicesTest {
         @Test
         void savesOnlyAccessibleActiveNotes() {
             NoteMapper noteMapper = mock(NoteMapper.class);
-            NoteService service = new NoteService(noteMapper);
+            NoteService service = new NoteService(noteMapper, mock(MinioNoteImageUploadUrlGenerator.class));
             when(noteMapper.existsAccessibleActive(1L, 11L)).thenReturn(1);
 
             service.addSave(1L, 11L);
@@ -132,7 +209,7 @@ class DbBackedTravelDataServicesTest {
         @Test
         void rejectsInaccessibleNoteSave() {
             NoteMapper noteMapper = mock(NoteMapper.class);
-            NoteService service = new NoteService(noteMapper);
+            NoteService service = new NoteService(noteMapper, mock(MinioNoteImageUploadUrlGenerator.class));
             when(noteMapper.existsAccessibleActive(1L, 11L)).thenReturn(0);
 
             assertThatThrownBy(() -> service.addSave(1L, 11L))

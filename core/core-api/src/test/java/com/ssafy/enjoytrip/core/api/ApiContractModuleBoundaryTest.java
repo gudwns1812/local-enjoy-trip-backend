@@ -2,6 +2,7 @@ package com.ssafy.enjoytrip.core.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionDetailResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.NotificationResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.NotificationUnreadStatusResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.NotificationsResponse;
@@ -24,7 +25,7 @@ class ApiContractModuleBoundaryTest {
             "clickhouse"
     );
 
-    @DisplayName("공개 알림/인기 관광지 응답 DTO는 인프라 내부 필드를 노출하지 않는다")
+    @DisplayName("공개 알림/관광지 응답 DTO는 내부 필드를 노출하지 않는다")
     @Test
     void apiResponseDtosDoNotExposeInfrastructureInternals() {
         assertRecordComponents(
@@ -68,6 +69,29 @@ class ApiContractModuleBoundaryTest {
                         "saved",
                         "popularityCount",
                         "distanceMeters"
+                )
+        );
+        assertRecordComponents(
+                AttractionDetailResponse.class,
+                List.of(
+                        "id",
+                        "title",
+                        "address",
+                        "addressDetail",
+                        "zipcode",
+                        "tel",
+                        "imageUrl",
+                        "readcount",
+                        "latitude",
+                        "longitude",
+                        "contentTypeId",
+                        "overview",
+                        "saveCount",
+                        "ratingAverage",
+                        "ratingCount",
+                        "tags",
+                        "saved",
+                        "myRating"
                 )
         );
     }

@@ -13,12 +13,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.enjoytrip.core.domain.BoardPost;
+import com.ssafy.enjoytrip.core.domain.CoordinateRouteOrderOptimizer;
 import com.ssafy.enjoytrip.core.domain.Hotplace;
 import com.ssafy.enjoytrip.core.domain.Member;
 import com.ssafy.enjoytrip.core.domain.Notice;
 import com.ssafy.enjoytrip.core.domain.PlanItem;
 import com.ssafy.enjoytrip.core.domain.TravelPlan;
-import com.ssafy.enjoytrip.core.domain.CoordinateRouteOrderOptimizer;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.model.AttractionRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.HotplaceRecord;
@@ -103,7 +103,10 @@ class RepositoryBackedServicesTest {
     @Nested
     class PlanServiceTests {
         private final PlanMapper mapper = mock(PlanMapper.class);
-        private final PlanService service = new PlanService(mapper, new CoordinateRouteOrderOptimizer());
+        private final PlanService service = new PlanService(
+                mapper,
+                new CoordinateRouteOrderOptimizer()
+        );
 
         @DisplayName("여행 계획 등록은 db-core TravelPlanRecord를 MyBatis mapper로 저장한다")
         @Test
@@ -111,7 +114,7 @@ class RepositoryBackedServicesTest {
             TravelPlan plan = new TravelPlan("p1", 1L, "서울", "2026-05-14", "2026-05-15",
                     1000, "note", "[]", "created");
 
-            service.insertPlan(plan);
+            service.createPlan(plan, List.of());
 
             verify(mapper).insertPlan(any(TravelPlanRecord.class));
         }
@@ -133,7 +136,7 @@ class RepositoryBackedServicesTest {
                     attraction(3L, 37.5700, 126.9820)
             ));
 
-            service.insertPlan(plan, items);
+            service.createPlan(plan, items);
 
             ArgumentCaptor<PlanItemRecord> itemCaptor = ArgumentCaptor.forClass(PlanItemRecord.class);
             verify(mapper, times(3)).insertItem(itemCaptor.capture());

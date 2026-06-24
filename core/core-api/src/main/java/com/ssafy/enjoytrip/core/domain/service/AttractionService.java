@@ -1,5 +1,6 @@
 package com.ssafy.enjoytrip.core.domain.service;
 
+import static com.ssafy.enjoytrip.core.support.error.ErrorType.ATTRACTION_NOT_FOUND;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.TAG_ALREADY_EXISTS;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.TAG_NOT_FOUND;
 
@@ -32,7 +33,11 @@ public class AttractionService {
             DistanceSearchCondition condition,
             Long memberId
     ) {
-        List<NearbyAttractionCandidate> candidates = findNearbyAttractionCandidates(condition, memberId, false);
+        List<NearbyAttractionCandidate> candidates = findNearbyAttractionCandidates(
+                condition,
+                memberId,
+                false
+        );
 
         if (candidates.isEmpty()) {
             return List.of();
@@ -64,6 +69,15 @@ public class AttractionService {
 
     public List<Attraction> searchAttractions(AttractionSearchCondition condition, Long memberId) {
         return executeAttractionSearch(condition, memberId);
+    }
+
+    public Attraction findAttractionDetail(Long attractionId, Long memberId) {
+        List<AttractionSearchRecord> rows = attractionMapper.findDetailRowsById(attractionId, memberId);
+        if (rows.isEmpty()) {
+            throw new CoreException(ATTRACTION_NOT_FOUND);
+        }
+
+        return toAttraction(rows);
     }
 
     public List<NearbyAttractionCandidate> findNearbyCandidates(
@@ -246,7 +260,9 @@ public class AttractionService {
 
     private NearbyAttractionCandidate toNearbyCandidate(List<AttractionSearchRecord> attractionRows) {
         AttractionSearchRecord first = attractionRows.get(0);
-        return new NearbyAttractionCandidate(toAttraction(attractionRows), first.distanceMeters() == null ? 0.0 : first.distanceMeters());
+        double distanceMeters = first.distanceMeters() == null ? 0.0 : first.distanceMeters();
+
+        return new NearbyAttractionCandidate(toAttraction(attractionRows), distanceMeters);
     }
 
     private Attraction toAttraction(List<AttractionSearchRecord> attractionRows) {

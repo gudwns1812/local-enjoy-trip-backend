@@ -14,6 +14,7 @@ import com.ssafy.enjoytrip.core.api.web.dto.request.AttractionTagsRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.AttractionSearchRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.NearbySectionRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.RatingRequest;
+import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionDetailResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionStatsResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.AttractionsResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.PopularAttractionsResponse;
@@ -66,6 +67,17 @@ public class AttractionController implements AttractionApi {
         );
 
         return success(PopularAttractionsResponse.from(attractions));
+    }
+
+    @GetMapping("/{id}")
+    @Override
+    public ApiResponse<AttractionDetailResponse> detail(
+            @PathVariable Long id,
+            @AuthenticatedMemberId(unauthenticated = NULL) Long memberId
+    ) {
+        Attraction attraction = service.findAttractionDetail(id, memberId);
+
+        return success(new AttractionDetailResponse(attraction));
     }
 
     @PostMapping
