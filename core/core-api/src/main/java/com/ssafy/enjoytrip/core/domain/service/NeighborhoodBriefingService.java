@@ -39,8 +39,8 @@ public class NeighborhoodBriefingService {
                         weather.rainChance(),
                         weather.sunrise(),
                         weather.sunset(),
-                        weather.tempMin(),
-                        weather.tempMax()
+                        weather.temperatureRange() != null ? weather.temperatureRange().tempMin() : null,
+                        weather.temperatureRange() != null ? weather.temperatureRange().tempMax() : null
                 ),
                 localPlaces
         );
