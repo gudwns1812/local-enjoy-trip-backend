@@ -60,7 +60,17 @@ public class MapExploreService {
             return List.of();
         }
 
-        List<AttractionSearchRecord> records = attractionMapper.findNearby(
+        List<AttractionSearchRecord> records = fetchNearbyPlaces(viewerMemberId, radiusMeters, filter, center);
+        return toPlacePins(records);
+    }
+
+    private List<AttractionSearchRecord> fetchNearbyPlaces(
+            Long viewerMemberId,
+            double radiusMeters,
+            MapExploreFilter filter,
+            MapCenter center
+    ) {
+        return attractionMapper.findNearby(
                 center.longitude(),
                 center.latitude(),
                 radiusMeters,
@@ -68,7 +78,9 @@ public class MapExploreService {
                 filter.savedPlacesOnly(),
                 viewerMemberId
         );
+    }
 
+    private List<PlaceMapPin> toPlacePins(List<AttractionSearchRecord> records) {
         List<PlaceMapPin> pins = new ArrayList<>();
         Long currentId = null;
         for (AttractionSearchRecord r : records) {
@@ -109,7 +121,18 @@ public class MapExploreService {
             return List.of();
         }
 
-        List<NoteMapPinRecord> records = noteMapper.findMapPins(
+        List<NoteMapPinRecord> records = fetchNearbyNotes(viewerMemberId, radiusMeters, filter, noteCategory, center);
+        return toNotePins(records);
+    }
+
+    private List<NoteMapPinRecord> fetchNearbyNotes(
+            Long viewerMemberId,
+            double radiusMeters,
+            MapExploreFilter filter,
+            NoteCategory noteCategory,
+            MapCenter center
+    ) {
+        return noteMapper.findMapPins(
                 center.longitude(),
                 center.latitude(),
                 radiusMeters,
@@ -118,7 +141,9 @@ public class MapExploreService {
                 noteCategory == null ? null : noteCategory.name(),
                 filter.friendNotesOnly()
         );
+    }
 
+    private List<NoteMapPin> toNotePins(List<NoteMapPinRecord> records) {
         return records.stream()
                 .map(r -> new NoteMapPin(
                         r.id(),
@@ -134,7 +159,7 @@ public class MapExploreService {
                         r.authorProfileImageUrl(),
                         NoteViewerRelationship.valueOf(r.relationship()),
                         r.createdAt(),
-                        0 // matchTier defaults to 0 for explore
+                        0
                 ))
                 .toList();
     }

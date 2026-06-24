@@ -37,76 +37,114 @@ public class MapSearchService {
 
         List<MapPin> merged = new ArrayList<>();
 
-        // 1. 장소(PLACE) 검색
         if (target.includesPlaces()) {
-            List<AttractionSearchRecord> records = attractionMapper.searchMapPlaces(
-                    keyword,
-                    escapedKeyword,
-                    longitude,
-                    latitude,
-                    radius,
-                    limit,
-                    viewerMemberId
-            );
-            for (AttractionSearchRecord r : records) {
-                int matchTier = r.title().equalsIgnoreCase(keyword) ? 0 : 1;
-                merged.add(new PlaceMapPin(
-                        r.id(),
-                        r.title(),
-                        r.addr1(),
-                        r.latitude(),
-                        r.longitude(),
-                        r.firstImage(),
-                        r.contentTypeId(),
-                        r.distanceMeters(),
-                        r.saved(),
-                        r.saveCount(),
-                        r.ratingAverage(),
-                        r.ratingCount(),
-                        matchTier
-                ));
-            }
+            List<AttractionSearchRecord> records = fetchPlaces(keyword, escapedKeyword, longitude, latitude, radius, limit, viewerMemberId);
+            merged.addAll(toPlacePins(records, keyword));
         }
 
-        // 2. 쪽지(NOTE) 검색
         if (target.includesNotes()) {
-            String categoryStr = noteCategory == null ? null : noteCategory.name();
-            List<NoteMapPinRecord> records = noteMapper.searchMapNotes(
-                    keyword,
-                    escapedKeyword,
-                    longitude,
-                    latitude,
-                    radius,
-                    categoryStr,
-                    limit,
-                    viewerMemberId
-            );
-            for (NoteMapPinRecord r : records) {
-                int matchTier = r.title().equalsIgnoreCase(keyword) ? 0 : 1;
-                merged.add(new NoteMapPin(
-                        r.id(),
-                        r.title(),
-                        NoteCategory.valueOf(r.category()),
-                        NoteVisibility.valueOf(r.visibility()),
-                        r.latitude().doubleValue(),
-                        r.longitude().doubleValue(),
-                        r.regionName(),
-                        r.distanceMeters(),
-                        r.imageObjectKey(),
-                        r.authorNickname(),
-                        r.authorProfileImageUrl(),
-                        NoteViewerRelationship.valueOf(r.relationship()),
-                        r.createdAt(),
-                        matchTier
-                ));
-            }
+            List<NoteMapPinRecord> records = fetchNotes(keyword, escapedKeyword, longitude, latitude, radius, noteCategory, limit, viewerMemberId);
+            merged.addAll(toNotePins(records, keyword));
         }
 
-        // 3. 통합 정렬 (matchTier 오름차순, distanceMeters 오름차순)
-        merged.sort(Comparator.comparingInt(MapPin::matchTier)
-                .thenComparingDouble(MapPin::distanceMeters));
+        sortPins(merged);
 
         return merged;
+    }
+
+    private List<AttractionSearchRecord> fetchPlaces(
+            String keyword,
+            String escapedKeyword,
+            double longitude,
+            double latitude,
+            Double radius,
+            int limit,
+            Long viewerMemberId
+    ) {
+        return attractionMapper.searchMapPlaces(
+                keyword,
+                escapedKeyword,
+                longitude,
+                latitude,
+                radius,
+                limit,
+                viewerMemberId
+        );
+    }
+
+    private List<MapPin> toPlacePins(List<AttractionSearchRecord> records, String keyword) {
+        List<MapPin> pins = new ArrayList<>();
+        for (AttractionSearchRecord r : records) {
+            int matchTier = r.title().equalsIgnoreCase(keyword) ? 0 : 1;
+            pins.add(new PlaceMapPin(
+                    r.id(),
+                    r.title(),
+                    r.addr1(),
+                    r.latitude(),
+                    r.longitude(),
+                    r.firstImage(),
+                    r.contentTypeId(),
+                    r.distanceMeters(),
+                    r.saved(),
+                    r.saveCount(),
+                    r.ratingAverage(),
+                    r.ratingCount(),
+                    matchTier
+            ));
+        }
+        return pins;
+    }
+
+    private List<NoteMapPinRecord> fetchNotes(
+            String keyword,
+            String escapedKeyword,
+            double longitude,
+            double latitude,
+            Double radius,
+            NoteCategory noteCategory,
+            int limit,
+            Long viewerMemberId
+    ) {
+        String categoryStr = noteCategory == null ? null : noteCategory.name();
+        return noteMapper.searchMapNotes(
+                keyword,
+                escapedKeyword,
+                longitude,
+                latitude,
+                radius,
+                categoryStr,
+                limit,
+                viewerMemberId
+        );
+    }
+
+    private List<MapPin> toNotePins(List<NoteMapPinRecord> records, String keyword) {
+        List<MapPin> pins = new ArrayList<>();
+        for (NoteMapPinRecord r : records) {
+            int matchTier = r.title().equalsIgnoreCase(keyword) ? 0 : 1;
+            pins.add(new NoteMapPin(
+                    r.id(),
+                    r.title(),
+                    NoteCategory.valueOf(r.category()),
+                    NoteVisibility.valueOf(r.visibility()),
+                    r.latitude().doubleValue(),
+                    r.longitude().doubleValue(),
+                    r.regionName(),
+                    r.distanceMeters(),
+                    r.imageObjectKey(),
+                    r.authorNickname(),
+                    r.authorProfileImageUrl(),
+                    NoteViewerRelationship.valueOf(r.relationship()),
+                    r.createdAt(),
+                    matchTier
+            ));
+        }
+        return pins;
+    }
+
+    private void sortPins(List<MapPin> pins) {
+        pins.sort(Comparator.comparingInt(MapPin::matchTier)
+                .thenComparingDouble(MapPin::distanceMeters));
     }
 
     private String escapeIlikeWildcards(String keyword) {
