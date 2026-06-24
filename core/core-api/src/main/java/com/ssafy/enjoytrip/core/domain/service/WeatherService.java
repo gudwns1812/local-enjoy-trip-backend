@@ -14,8 +14,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WeatherService {
@@ -31,18 +33,23 @@ public class WeatherService {
     private final OpenWeatherMapWeatherClient weatherClient;
 
     public List<WeatherSummary> findWeatherBriefings() {
-        return completeWithFallback(weatherClient.findWeatherBriefings().stream()
-                .map(briefing -> new WeatherSummary(
-                        briefing.region(),
-                        briefing.condition(),
-                        briefing.temperature(),
-                        briefing.rainChance(),
-                        briefing.sunrise(),
-                        briefing.sunset(),
-                        briefing.tempMin(),
-                        briefing.tempMax()
-                ))
-                .toList());
+        try {
+            return completeWithFallback(weatherClient.findWeatherBriefings().stream()
+                    .map(briefing -> new WeatherSummary(
+                            briefing.region(),
+                            briefing.condition(),
+                            briefing.temperature(),
+                            briefing.rainChance(),
+                            briefing.sunrise(),
+                            briefing.sunset(),
+                            briefing.tempMin(),
+                            briefing.tempMax()
+                    ))
+                    .toList());
+        } catch (Exception e) {
+            log.error("날씨 브리핑 호출 에러 발생 : ", e);
+            return FALLBACK_BRIEFINGS;
+        }
     }
 
     public WeatherBriefingWithForecastDomain findWeatherWithForecast(Double latitude,
@@ -90,6 +97,7 @@ public class WeatherService {
 
             return new WeatherBriefingWithForecastDomain(weather, forecasts);
         } catch (Exception e) {
+            log.error("날씨 호출 에러 발생 : " , e);
             WeatherSummary fallbackWeather = new WeatherSummary(
                     regionName,
                     "맑음",
