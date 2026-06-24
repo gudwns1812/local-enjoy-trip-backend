@@ -90,6 +90,20 @@ class CourseServiceTest {
         verify(courseMapper, never()).insert(any(CourseRecord.class));
     }
 
+    @DisplayName("코스 생성은 항목이 없는(0개) 코스도 안전하게 생성한다")
+    @Test
+    void createCourseSupportsEmptyItems() {
+        Course course = course("course-empty", 11L);
+
+        Course created = service.createCourse(course);
+
+        assertThat(created.stops()).isEmpty();
+        verify(courseMapper).insert(any(CourseRecord.class));
+        verify(courseMapper).updateStartLocation("course-empty", null, null);
+    }
+
+
+
     @DisplayName("코스 생성은 장소 항목 저장 시 attraction_id만 채운다")
     @Test
     void createCoursePersistsAttractionTargetOnly() {
