@@ -3,16 +3,14 @@ package com.ssafy.enjoytrip.core.domain.service;
 import static com.ssafy.enjoytrip.core.support.error.ErrorType.PLAN_NOT_FOUND;
 
 import com.ssafy.enjoytrip.core.domain.Attraction;
+import com.ssafy.enjoytrip.core.domain.CoordinateRouteOrderOptimizer;
 import com.ssafy.enjoytrip.core.domain.PlanItem;
 import com.ssafy.enjoytrip.core.domain.PlanRouteItem;
-import com.ssafy.enjoytrip.core.domain.CoordinateRouteOrderOptimizer;
-
 import com.ssafy.enjoytrip.core.domain.TravelPlan;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.model.PlanItemRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.TravelPlanRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.PlanMapper;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,36 +25,15 @@ public class PlanService {
     private final PlanMapper planMapper;
     private final CoordinateRouteOrderOptimizer routeOrderOptimizer;
 
-
     public List<TravelPlan> findAllPlans() {
         return planMapper.findAllOrderByCreatedAtDesc().stream()
-                .map(record -> new TravelPlan(
-                        record.getId(),
-                        record.getMemberId(),
-                        record.getTitle(),
-                        record.getStartDate(),
-                        record.getEndDate(),
-                        record.getBudget(),
-                        record.getNote(),
-                        record.getRouteItemsJson(),
-                        stringValue(record.getCreatedAt())
-                ))
+                .map(PlanService::toTravelPlan)
                 .toList();
     }
 
     public List<TravelPlan> findPlansByMemberId(Long memberId) {
         return planMapper.findByMemberIdOrderByCreatedAtDesc(memberId).stream()
-                .map(record -> new TravelPlan(
-                        record.getId(),
-                        record.getMemberId(),
-                        record.getTitle(),
-                        record.getStartDate(),
-                        record.getEndDate(),
-                        record.getBudget(),
-                        record.getNote(),
-                        record.getRouteItemsJson(),
-                        stringValue(record.getCreatedAt())
-                ))
+                .map(PlanService::toTravelPlan)
                 .toList();
     }
 
@@ -66,17 +43,7 @@ public class PlanService {
 
     public Optional<TravelPlan> findPlan(String id) {
         return Optional.ofNullable(planMapper.findById(id))
-                .map(record -> new TravelPlan(
-                        record.getId(),
-                        record.getMemberId(),
-                        record.getTitle(),
-                        record.getStartDate(),
-                        record.getEndDate(),
-                        record.getBudget(),
-                        record.getNote(),
-                        record.getRouteItemsJson(),
-                        stringValue(record.getCreatedAt())
-                ));
+                .map(PlanService::toTravelPlan);
     }
 
     @Transactional
@@ -127,29 +94,7 @@ public class PlanService {
         }
     }
 
-    public void insertPlan(TravelPlan plan) {
-        savePlan(plan);
-    }
 
-    @Transactional
-    public void insertPlan(TravelPlan plan, List<PlanItem> items) {
-        savePlanWithItems(plan, items);
-    }
-
-    @Transactional
-    public boolean updatePlan(TravelPlan plan) {
-        return updateStoredPlan(plan);
-    }
-
-    @Transactional
-    public boolean updatePlan(TravelPlan plan, List<PlanItem> items) {
-        return updateStoredPlanWithItems(plan, items);
-    }
-
-    @Transactional
-    public boolean deletePlan(String id) {
-        return deleteStoredPlan(id);
-    }
 
     public List<PlanRouteItem> findPlanItems(String planId) {
         List<PlanItemRecord> items = planMapper.findItemsByPlanIdOrderByPositionAsc(planId);
@@ -175,20 +120,25 @@ public class PlanService {
                 .toList();
     }
 
-    @Transactional
-    public boolean replacePlanItems(String planId, List<PlanItem> items) {
-        return replaceStoredPlanItems(planId, items);
-    }
-
-    @Transactional
-    public boolean deletePlanItem(String planId, Long itemId) {
-        return deleteStoredPlanItem(planId, itemId);
-    }
 
     private TravelPlan requireOwnedPlan(String planId, Long memberId) {
         TravelPlan plan = findRequiredPlan(planId);
         plan.requireOwnedBy(memberId);
         return plan;
+    }
+
+    private static TravelPlan toTravelPlan(TravelPlanRecord record) {
+        return new TravelPlan(
+                record.getId(),
+                record.getMemberId(),
+                record.getTitle(),
+                record.getStartDate(),
+                record.getEndDate(),
+                record.getBudget(),
+                record.getNote(),
+                record.getRouteItemsJson(),
+                stringValue(record.getCreatedAt())
+        );
     }
 
     private void savePlan(TravelPlan plan) {
