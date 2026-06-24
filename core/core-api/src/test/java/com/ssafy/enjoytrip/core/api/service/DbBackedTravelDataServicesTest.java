@@ -8,11 +8,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ssafy.enjoytrip.core.domain.AttractionPopularityDeltaCache;
+import com.ssafy.enjoytrip.core.support.error.CoreException;
+import com.ssafy.enjoytrip.external.minio.MinioNoteImageUploadUrlGenerator;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.AttractionMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.EvChargerMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NewsMapper;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NoteMapper;
-import com.ssafy.enjoytrip.core.support.error.CoreException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -120,7 +121,7 @@ class DbBackedTravelDataServicesTest {
         @Test
         void savesOnlyAccessibleActiveNotes() {
             NoteMapper noteMapper = mock(NoteMapper.class);
-            NoteService service = new NoteService(noteMapper);
+            NoteService service = new NoteService(noteMapper, mock(MinioNoteImageUploadUrlGenerator.class));
             when(noteMapper.existsAccessibleActive(1L, 11L)).thenReturn(1);
 
             service.addSave(1L, 11L);
@@ -132,7 +133,7 @@ class DbBackedTravelDataServicesTest {
         @Test
         void rejectsInaccessibleNoteSave() {
             NoteMapper noteMapper = mock(NoteMapper.class);
-            NoteService service = new NoteService(noteMapper);
+            NoteService service = new NoteService(noteMapper, mock(MinioNoteImageUploadUrlGenerator.class));
             when(noteMapper.existsAccessibleActive(1L, 11L)).thenReturn(0);
 
             assertThatThrownBy(() -> service.addSave(1L, 11L))

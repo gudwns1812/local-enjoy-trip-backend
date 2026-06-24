@@ -39,7 +39,7 @@ public class MinioNoteImageUploadUrlGenerator {
         return "notes/" + memberId + "/" + UUID.randomUUID() + "." + extension;
     }
 
-    private String publicUrl(String objectKey) {
+    public String publicUrl(String objectKey) {
         return properties.getPublicBaseUrl().replaceAll("/+$", "") + "/" + objectKey;
     }
 }

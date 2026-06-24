@@ -4,19 +4,22 @@ import static com.ssafy.enjoytrip.core.support.error.ErrorType.NOTE_NOT_FOUND;
 
 import com.ssafy.enjoytrip.core.domain.Note;
 import com.ssafy.enjoytrip.core.domain.NoteCategory;
+import com.ssafy.enjoytrip.core.domain.NoteMapPin;
 import com.ssafy.enjoytrip.core.domain.NoteStatus;
 import com.ssafy.enjoytrip.core.domain.NoteViewerRelationship;
 import com.ssafy.enjoytrip.core.domain.NoteVisibility;
-import com.ssafy.enjoytrip.core.domain.NoteMapPin;
-import com.ssafy.enjoytrip.core.domain.query.MapNotesCondition;
 import com.ssafy.enjoytrip.core.domain.query.DistanceSearchCondition;
+import com.ssafy.enjoytrip.core.domain.query.MapNotesCondition;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
+import com.ssafy.enjoytrip.core.support.error.exception.ClientInputException;
 import com.ssafy.enjoytrip.storage.db.core.model.NoteMapPinRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.NoteRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.NoteMapper;
+import com.ssafy.enjoytrip.external.minio.MinioNoteImageUploadUrlGenerator;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +27,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class NoteService {
+    private static final String INVALID_NOTE_IMAGE_OBJECT_KEY_MESSAGE = "쪽지 이미지 경로가 올바르지 않습니다.";
+    private static final Pattern NOTE_IMAGE_FILE_NAME_PATTERN = Pattern.compile(
+            "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}"
+                    + "-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\.[A-Za-z0-9]{1,10}$"
+    );
+
     private final NoteMapper noteMapper;
+    private final MinioNoteImageUploadUrlGenerator noteImageUploadUrlGenerator;
 
     public Note createNote(Note note) {
         NoteRecord record = new NoteRecord(
@@ -36,8 +46,8 @@ public class NoteService {
                 BigDecimal.valueOf(note.latitude()),
                 BigDecimal.valueOf(note.longitude()),
                 note.regionName(),
-                note.imageObjectKey(),
-                note.imageUrl(),
+                noteImageObjectKey(note.authorMemberId(), note.imageObjectKey()),
+                noteImagePublicUrl(note.authorMemberId(), note.imageObjectKey()),
                 note.imageContentType()
         );
         NoteRecord saved = noteMapper.insert(record);
@@ -61,8 +71,8 @@ public class NoteService {
                 BigDecimal.valueOf(requestedNote.latitude()),
                 BigDecimal.valueOf(requestedNote.longitude()),
                 requestedNote.regionName(),
-                requestedNote.imageObjectKey(),
-                requestedNote.imageUrl(),
+                noteImageObjectKey(requestedNote.authorMemberId(), requestedNote.imageObjectKey()),
+                noteImagePublicUrl(requestedNote.authorMemberId(), requestedNote.imageObjectKey()),
                 requestedNote.imageContentType()
         );
         NoteRecord updated = noteMapper.updateOwned(record);
@@ -71,6 +81,39 @@ public class NoteService {
         }
 
         return toNote(updated);
+    }
+
+    private String noteImageObjectKey(Long memberId, String objectKey) {
+        if (objectKey == null) {
+            return null;
+        }
+
+        String normalized = objectKey.strip();
+        if (!matchesNoteImageObjectKey(memberId, normalized)) {
+            throw new ClientInputException(INVALID_NOTE_IMAGE_OBJECT_KEY_MESSAGE);
+        }
+
+        return normalized;
+    }
+
+    private String noteImagePublicUrl(Long memberId, String objectKey) {
+        String normalizedObjectKey = noteImageObjectKey(memberId, objectKey);
+        if (normalizedObjectKey == null) {
+            return null;
+        }
+
+        return noteImageUploadUrlGenerator.publicUrl(normalizedObjectKey);
+    }
+
+    private static boolean matchesNoteImageObjectKey(Long memberId, String objectKey) {
+        String requiredPrefix = "notes/" + memberId + "/";
+        if (!objectKey.startsWith(requiredPrefix)) {
+            return false;
+        }
+
+        return NOTE_IMAGE_FILE_NAME_PATTERN.matcher(
+                objectKey.substring(requiredPrefix.length())
+        ).matches();
     }
 
     @Transactional
