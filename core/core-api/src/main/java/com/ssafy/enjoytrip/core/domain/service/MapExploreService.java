@@ -17,10 +17,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * 지도를 통한 주변 탐색(관광지 및 쪽지)을 수행하는 서비스.
- * 서비스 간의 결합도를 줄이기 위해 직접 Mappers에 접근하여 Read-Only 조회를 수행한다.
- */
 @Service
 @RequiredArgsConstructor
 public class MapExploreService {
