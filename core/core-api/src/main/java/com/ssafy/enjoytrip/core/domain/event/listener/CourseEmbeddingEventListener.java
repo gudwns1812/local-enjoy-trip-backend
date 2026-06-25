@@ -36,68 +36,70 @@ public class CourseEmbeddingEventListener {
     public void handleCourseEmbeddingRequested(CourseEmbeddingRequestedEvent event) {
         String courseId = event.courseId();
 
+        CourseEmbeddingInputRecord record = loadCourseRecord(courseId);
+        if (record == null) {
+            return;
+        }
+
+        CourseEmbeddingInput input = toEmbeddingInput(record);
+        String sourceHash = computeSourceHash(input);
+        if (isUnchanged(courseId, sourceHash)) {
+            return;
+        }
+
+        embed(courseId, input, record.getDominantCategory(), sourceHash);
+    }
+
+    private CourseEmbeddingInputRecord loadCourseRecord(String courseId) {
         CourseEmbeddingInputRecord record =
                 courseEmbeddingMapper.findCourseEmbeddingInputById(courseId);
         if (record == null) {
             log.debug("코스 임베딩 건너뜀 - 코스를 찾을 수 없음, courseId: {}", courseId);
-            return;
         }
+        return record;
+    }
 
-        CourseEmbeddingInput input = new CourseEmbeddingInput(
-                record.getCourseId(),
-                record.getTitle(),
-                record.getRegionName(),
-                record.getTagNames(),
-                record.getStopTitles()
-        );
-        String sourceHash = computeSourceHash(input);
-
+    private boolean isUnchanged(String courseId, String sourceHash) {
         String existingHash = courseEmbeddingMapper.findSourceHashByCourseId(courseId);
         if (Objects.equals(existingHash, sourceHash)) {
             log.debug("코스 임베딩 건너뜀 - 변경 없음, courseId: {}", courseId);
-            return;
+            return true;
         }
+        return false;
+    }
 
+    private void embed(String courseId, CourseEmbeddingInput input,
+                       String dominantCategory, String sourceHash) {
         try {
             CourseEmbeddingResult result = courseEmbeddingClient.embed(input);
             courseEmbeddingMapper.upsertEmbedded(
-                    courseId,
-                    result.description(),
-                    toVectorLiteral(result.embedding()),
-                    record.getDominantCategory(),
-                    SOURCE_VERSION,
-                    sourceHash,
-                    result.dimension(),
-                    result.provider(),
-                    result.model()
+                    courseId, result.description(), toVectorLiteral(result.embedding()),
+                    dominantCategory, SOURCE_VERSION, sourceHash,
+                    result.dimension(), result.provider(), result.model()
             );
             log.info("코스 임베딩 저장 완료 - courseId: {}", courseId);
         } catch (CourseEmbeddingException ex) {
-            log.error(
-                    "코스 임베딩 실패 - courseId: {}, code: {}, message: {}",
-                    courseId, ex.failureCode(), ex.getMessage()
-            );
-            courseEmbeddingMapper.upsertFailed(
-                    courseId,
-                    SOURCE_VERSION,
-                    sourceHash,
-                    "openai",
-                    "unknown",
-                    ex.failureCode(),
-                    limitMessage(ex.getMessage())
-            );
+            log.error("코스 임베딩 실패 - courseId: {}, code: {}, message: {}",
+                    courseId, ex.failureCode(), ex.getMessage());
+            saveFailure(courseId, sourceHash, ex.failureCode(), ex.getMessage());
         } catch (RuntimeException ex) {
             log.error("코스 임베딩 예기치 않은 실패 - courseId: {}", courseId, ex);
-            courseEmbeddingMapper.upsertFailed(
-                    courseId,
-                    SOURCE_VERSION,
-                    sourceHash,
-                    "openai",
-                    "unknown",
-                    "COURSE_EMBEDDING_ERROR",
-                    limitMessage(ex.getMessage())
-            );
+            saveFailure(courseId, sourceHash, "COURSE_EMBEDDING_ERROR", ex.getMessage());
         }
+    }
+
+    private void saveFailure(String courseId, String sourceHash, String failureCode, String message) {
+        courseEmbeddingMapper.upsertFailed(
+                courseId, SOURCE_VERSION, sourceHash, "openai", "unknown",
+                failureCode, limitMessage(message)
+        );
+    }
+
+    private static CourseEmbeddingInput toEmbeddingInput(CourseEmbeddingInputRecord record) {
+        return new CourseEmbeddingInput(
+                record.getCourseId(), record.getTitle(), record.getRegionName(),
+                record.getTagNames(), record.getStopTitles()
+        );
     }
 
     private static String computeSourceHash(CourseEmbeddingInput input) {

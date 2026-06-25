@@ -22,11 +22,21 @@ public class CourseRecommendationRanker {
             RerankingContext context,
             int limit
     ) {
-        List<ScoredCandidate> scored = candidates.stream()
+        List<ScoredCandidate> scored = scoreAndSort(candidates, context);
+        return selectWithCategoryQuota(scored, limit);
+    }
+
+    private List<ScoredCandidate> scoreAndSort(
+            List<CourseRecommendationCandidate> candidates,
+            RerankingContext context
+    ) {
+        return candidates.stream()
                 .map(c -> new ScoredCandidate(c, computeBaseScore(c, context)))
                 .sorted(Comparator.comparingDouble(ScoredCandidate::score))
                 .toList();
+    }
 
+    private List<Course> selectWithCategoryQuota(List<ScoredCandidate> scored, int limit) {
         Map<String, Integer> categoryCount = new HashMap<>();
         List<Course> result = new ArrayList<>();
 
@@ -34,14 +44,9 @@ public class CourseRecommendationRanker {
             if (result.size() >= limit) {
                 break;
             }
-
             String category = sc.candidate().dominantCategory();
-            int count = categoryCount.getOrDefault(category, 0);
-            double categoryPenalty = count >= CATEGORY_QUOTA
-                    ? PENALTY_CATEGORY_EXCESS * (count - CATEGORY_QUOTA + 1)
-                    : 0.0;
-
-            if (sc.score() + categoryPenalty < Double.MAX_VALUE) {
+            double finalScore = sc.score() + categoryPenaltyFor(category, categoryCount);
+            if (finalScore < Double.MAX_VALUE) {
                 result.add(sc.candidate().course());
                 if (category != null) {
                     categoryCount.merge(category, 1, Integer::sum);
@@ -50,6 +55,13 @@ public class CourseRecommendationRanker {
         }
 
         return result;
+    }
+
+    private double categoryPenaltyFor(String category, Map<String, Integer> categoryCount) {
+        int count = categoryCount.getOrDefault(category, 0);
+        return count >= CATEGORY_QUOTA
+                ? PENALTY_CATEGORY_EXCESS * (count - CATEGORY_QUOTA + 1)
+                : 0.0;
     }
 
     private double computeBaseScore(

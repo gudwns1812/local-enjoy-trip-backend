@@ -37,6 +37,20 @@ public class MemberProfileEmbeddingEventListener {
     public void handle(MemberProfileEmbeddingRefreshRequestedEvent event) {
         Long memberId = event.memberId();
 
+        MemberProfileInput input = loadProfileInput(memberId);
+        if (input == null) {
+            return;
+        }
+
+        String sourceHash = computeSourceHash(input);
+        if (isUnchanged(memberId, sourceHash)) {
+            return;
+        }
+
+        embed(memberId, input, sourceHash);
+    }
+
+    private MemberProfileInput loadProfileInput(Long memberId) {
         List<SavedAttractionInputRecord> attractionRecords =
                 memberProfileEmbeddingMapper.findSavedAttractionInputsByMemberId(memberId);
         List<SavedNoteInputRecord> noteRecords =
@@ -44,80 +58,52 @@ public class MemberProfileEmbeddingEventListener {
 
         if (attractionRecords.isEmpty() && noteRecords.isEmpty()) {
             log.debug("회원 프로필 임베딩 건너뜀 - 저장된 장소/쪽지 없음, memberId: {}", memberId);
-            return;
+            return null;
         }
 
-        MemberProfileInput input = buildInput(attractionRecords, noteRecords);
-        String sourceHash = computeSourceHash(input);
+        List<MemberProfileInput.SavedAttractionItem> attractions = attractionRecords.stream()
+                .map(r -> new MemberProfileInput.SavedAttractionItem(
+                        r.getTitle(), r.getAddr1(), r.getContentTypeId()))
+                .toList();
+        List<MemberProfileInput.SavedNoteItem> notes = noteRecords.stream()
+                .map(r -> new MemberProfileInput.SavedNoteItem(
+                        r.getTitle(), r.getCategory(), r.getTagNames()))
+                .toList();
+        return new MemberProfileInput(attractions, notes);
+    }
 
+    private boolean isUnchanged(Long memberId, String sourceHash) {
         String existingHash = memberProfileEmbeddingMapper.findSourceHashByMemberId(memberId);
         if (Objects.equals(existingHash, sourceHash)) {
             log.debug("회원 프로필 임베딩 건너뜀 - 변경 없음, memberId: {}", memberId);
-            return;
+            return true;
         }
+        return false;
+    }
 
+    private void embed(Long memberId, MemberProfileInput input, String sourceHash) {
         try {
             MemberProfileDescriptionResult result = memberProfileEmbeddingClient.embed(input);
             memberProfileEmbeddingMapper.upsertEmbedded(
-                    memberId,
-                    result.description(),
-                    toVectorLiteral(result.embedding()),
-                    SOURCE_VERSION,
-                    sourceHash,
-                    result.dimension(),
-                    result.provider(),
-                    result.model()
+                    memberId, result.description(), toVectorLiteral(result.embedding()),
+                    SOURCE_VERSION, sourceHash, result.dimension(), result.provider(), result.model()
             );
             log.info("회원 프로필 임베딩 저장 완료 - memberId: {}", memberId);
         } catch (MemberProfileEmbeddingException ex) {
-            log.error(
-                    "회원 프로필 임베딩 실패 - memberId: {}, code: {}, message: {}",
-                    memberId, ex.failureCode(), ex.getMessage()
-            );
-            memberProfileEmbeddingMapper.upsertFailed(
-                    memberId,
-                    SOURCE_VERSION,
-                    sourceHash,
-                    "openai",
-                    "unknown",
-                    ex.failureCode(),
-                    limitMessage(ex.getMessage())
-            );
+            log.error("회원 프로필 임베딩 실패 - memberId: {}, code: {}, message: {}",
+                    memberId, ex.failureCode(), ex.getMessage());
+            saveFailure(memberId, sourceHash, ex.failureCode(), ex.getMessage());
         } catch (RuntimeException ex) {
             log.error("회원 프로필 임베딩 예기치 않은 실패 - memberId: {}", memberId, ex);
-            memberProfileEmbeddingMapper.upsertFailed(
-                    memberId,
-                    SOURCE_VERSION,
-                    sourceHash,
-                    "openai",
-                    "unknown",
-                    "MEMBER_PROFILE_EMBEDDING_ERROR",
-                    limitMessage(ex.getMessage())
-            );
+            saveFailure(memberId, sourceHash, "MEMBER_PROFILE_EMBEDDING_ERROR", ex.getMessage());
         }
     }
 
-    private static MemberProfileInput buildInput(
-            List<SavedAttractionInputRecord> attractionRecords,
-            List<SavedNoteInputRecord> noteRecords
-    ) {
-        List<MemberProfileInput.SavedAttractionItem> attractions = attractionRecords.stream()
-                .map(r -> new MemberProfileInput.SavedAttractionItem(
-                        r.getTitle(),
-                        r.getAddr1(),
-                        r.getContentTypeId()
-                ))
-                .toList();
-
-        List<MemberProfileInput.SavedNoteItem> notes = noteRecords.stream()
-                .map(r -> new MemberProfileInput.SavedNoteItem(
-                        r.getTitle(),
-                        r.getCategory(),
-                        r.getTagNames()
-                ))
-                .toList();
-
-        return new MemberProfileInput(attractions, notes);
+    private void saveFailure(Long memberId, String sourceHash, String failureCode, String message) {
+        memberProfileEmbeddingMapper.upsertFailed(
+                memberId, SOURCE_VERSION, sourceHash, "openai", "unknown",
+                failureCode, limitMessage(message)
+        );
     }
 
     private static String computeSourceHash(MemberProfileInput input) {
