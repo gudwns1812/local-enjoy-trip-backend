@@ -40,14 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CourseController implements CourseApi {
     private final CourseService courseService;
 
-    @Override
-    @GetMapping("/recommendations")
-    public ApiResponse<CourseFeedResponse> recommendations(
-            CourseRecommendationRequest request,
-            Long authenticatedMemberId) {
-        return success(new CourseFeedResponse(List.of()));
-    }
-
     @GetMapping("/feed")
     public ApiResponse<CourseFeedResponse> feed(@Valid @ModelAttribute CourseFeedRequest request) {
         return success(CourseFeedResponse.from(courseService.findPublicFeed(request.toCondition())));
