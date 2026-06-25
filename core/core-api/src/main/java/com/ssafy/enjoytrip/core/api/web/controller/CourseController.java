@@ -9,6 +9,7 @@ import com.ssafy.enjoytrip.core.api.web.dto.request.CourseFeedRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.CourseMdFeedRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.CourseOrderRecommendationRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.CoursePopularFeedRequest;
+import com.ssafy.enjoytrip.core.api.web.dto.request.CourseRecommendationRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.request.CourseUpdateRequest;
 import com.ssafy.enjoytrip.core.api.web.dto.response.CourseFeedResponse;
 import com.ssafy.enjoytrip.core.api.web.dto.response.CourseResponse;
@@ -39,6 +40,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class CourseController implements CourseApi {
     private final CourseService courseService;
+
+    @Override
+    @GetMapping("/recommendations")
+    public ApiResponse<CourseFeedResponse> recommendations(
+            CourseRecommendationRequest request,
+            Long authenticatedMemberId) {
+        return success(new CourseFeedResponse(List.of()));
+    }
 
     @GetMapping("/feed")
     public ApiResponse<CourseFeedResponse> feed(@Valid @ModelAttribute CourseFeedRequest request) {
