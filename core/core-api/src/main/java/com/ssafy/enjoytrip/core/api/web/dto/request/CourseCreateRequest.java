@@ -25,11 +25,12 @@ public record CourseCreateRequest(
                 title.strip(),
                 blankToNull(regionName),
                 blankToNull(date),
+                false,
                 null,
                 null,
                 0,
-                "",
-                "",
+                null,
+                null,
                 normalizedStops(),
                 toCourseTags()
         );
