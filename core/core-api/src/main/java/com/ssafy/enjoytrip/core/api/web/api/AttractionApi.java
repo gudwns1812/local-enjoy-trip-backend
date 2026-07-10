@@ -72,7 +72,7 @@ public interface AttractionApi {
     @Operation(
             summary = "홈 인기 주변 관광지 조회",
             description = """
-                    동네핀 홈의 주변 인기 관광지 섹션을 조회합니다.
+                    곳곳 홈의 주변 인기 관광지 섹션을 조회합니다.
 
                     - 좌표를 전달하지 않으면 서울 시청 좌표(`mapX=126.9780`, `mapY=37.5665`)를 사용합니다.
                     - `radius` 기본값은 500m이며 쪽지 주변 조회와 동일한 기본 반경입니다.

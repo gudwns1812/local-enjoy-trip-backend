@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 
-@Tag(name = "Notes", description = "동네핀 쪽지 API")
+@Tag(name = "Notes", description = "곳곳 쪽지 API")
 public interface NoteApi {
 
     @Operation(
@@ -168,7 +168,7 @@ public interface NoteApi {
     @Operation(
             summary = "주변 최근 쪽지 조회",
             description = """
-                    동네핀 홈의 주변 최근 쪽지 섹션을 조회합니다.
+                    곳곳 홈의 주변 최근 쪽지 섹션을 조회합니다.
 
                     - 좌표를 전달하지 않으면 서울 시청 좌표(`mapX=126.9780`, `mapY=37.5665`)를 사용합니다.
                     - `radius` 기본값은 500m이며 홈 주변 관광지와 같은 기본 반경입니다.

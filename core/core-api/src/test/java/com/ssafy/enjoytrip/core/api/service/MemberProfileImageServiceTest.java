@@ -39,7 +39,7 @@ class MemberProfileImageServiceTest {
                         PROFILE_IMAGE_OBJECT_KEY,
                         "http://localhost:9000/upload?signature=abc",
                         Instant.parse("2026-06-15T01:10:00Z"),
-                        "http://localhost:9000/dongnepin-notes/" + PROFILE_IMAGE_OBJECT_KEY
+                        "http://localhost:9000/gotgot-notes/" + PROFILE_IMAGE_OBJECT_KEY
                 ));
 
         ProfileImageUploadUrl upload = service.createPresignedUpload(11L, "image/jpeg", "jpg");
@@ -53,11 +53,11 @@ class MemberProfileImageServiceTest {
     @Test
     void updatesOwnedProfileImageWithServerPublicUrl() {
         when(uploadUrlGenerator.publicUrl(PROFILE_IMAGE_OBJECT_KEY))
-                .thenReturn("http://localhost:9000/dongnepin-notes/" + PROFILE_IMAGE_OBJECT_KEY);
+                .thenReturn("http://localhost:9000/gotgot-notes/" + PROFILE_IMAGE_OBJECT_KEY);
         when(memberMapper.updateProfileImage(
                 11L,
                 PROFILE_IMAGE_OBJECT_KEY,
-                "http://localhost:9000/dongnepin-notes/" + PROFILE_IMAGE_OBJECT_KEY
+                "http://localhost:9000/gotgot-notes/" + PROFILE_IMAGE_OBJECT_KEY
         )).thenReturn(1);
 
         service.updateProfileImage(11L, PROFILE_IMAGE_OBJECT_KEY);
@@ -65,7 +65,7 @@ class MemberProfileImageServiceTest {
         verify(memberMapper).updateProfileImage(
                 11L,
                 PROFILE_IMAGE_OBJECT_KEY,
-                "http://localhost:9000/dongnepin-notes/" + PROFILE_IMAGE_OBJECT_KEY
+                "http://localhost:9000/gotgot-notes/" + PROFILE_IMAGE_OBJECT_KEY
         );
     }
 
@@ -73,11 +73,11 @@ class MemberProfileImageServiceTest {
     @Test
     void rejectsProfileImageUpdateForMissingMember() {
         when(uploadUrlGenerator.publicUrl(PROFILE_IMAGE_OBJECT_KEY))
-                .thenReturn("http://localhost:9000/dongnepin-notes/" + PROFILE_IMAGE_OBJECT_KEY);
+                .thenReturn("http://localhost:9000/gotgot-notes/" + PROFILE_IMAGE_OBJECT_KEY);
         when(memberMapper.updateProfileImage(
                 11L,
                 PROFILE_IMAGE_OBJECT_KEY,
-                "http://localhost:9000/dongnepin-notes/" + PROFILE_IMAGE_OBJECT_KEY
+                "http://localhost:9000/gotgot-notes/" + PROFILE_IMAGE_OBJECT_KEY
         )).thenReturn(0);
 
         assertThatThrownBy(() -> service.updateProfileImage(11L, PROFILE_IMAGE_OBJECT_KEY))

@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Notifications", description = "동네핀 저장형 인앱 알림 API")
+@Tag(name = "Notifications", description = "곳곳 저장형 인앱 알림 API")
 public interface NotificationApi {
     @Operation(
             summary = "내 미읽음 알림 조회",

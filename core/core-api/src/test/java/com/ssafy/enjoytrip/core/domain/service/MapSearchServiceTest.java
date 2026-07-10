@@ -54,7 +54,7 @@ class MapSearchServiceTest {
         NoteMapPinRecord noteRecord = new NoteMapPinRecord(
                 1L, "서울 산책 메모", "TIP", "PUBLIC",
                 BigDecimal.valueOf(37.5665), BigDecimal.valueOf(126.9780), "서울 중구",
-                null, 10L, "동네핀러", null, "NONE", LocalDateTime.now(), 42.0
+                null, 10L, "곳곳러", null, "NONE", LocalDateTime.now(), 42.0
         );
 
         when(attractionMapper.searchMapPlaces(eq("경복궁"), eq("경복궁"), eq(126.9780), eq(37.5665), eq(500.0), eq(10), eq(viewerMemberId)))

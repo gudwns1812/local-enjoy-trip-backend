@@ -92,7 +92,7 @@ class RepositoryBackedServicesTest {
             service.update(new Member(
                     1L,
                     "Changed Name",
-                    "동네핀러",
+                    "곳곳러",
                     "new@example.com",
                     "new-secret",
                     "https://cdn.example.com/profile.png"
@@ -100,7 +100,7 @@ class RepositoryBackedServicesTest {
             assertThat(record.getName()).isEqualTo("SSAFY");
             assertThat(record.getEmail()).isEqualTo("old@example.com");
             assertThat(record.getPassword()).isEqualTo("old");
-            assertThat(record.getNickname()).isEqualTo("동네핀러");
+            assertThat(record.getNickname()).isEqualTo("곳곳러");
             assertThat(record.getProfileImageUrl()).isEqualTo("https://cdn.example.com/old.png");
 
             service.update(new Member(1L, null, null, null, null, null));

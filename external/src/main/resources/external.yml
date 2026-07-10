@@ -20,9 +20,9 @@ enjoytrip:
       api-key: ${KMA_API_KEY:}
   minio:
     endpoint: ${ENJOYTRIP_MINIO_ENDPOINT:http://localhost:9000}
-    bucket: ${ENJOYTRIP_MINIO_BUCKET:dongnepin-notes}
+    bucket: ${ENJOYTRIP_MINIO_BUCKET:gotgot-notes}
     access-key: ${ENJOYTRIP_MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${ENJOYTRIP_MINIO_SECRET_KEY:minioadmin}
     region: ${ENJOYTRIP_MINIO_REGION:ap-northeast-2}
-    public-base-url: ${ENJOYTRIP_MINIO_PUBLIC_BASE_URL:http://localhost:9000/dongnepin-notes}
+    public-base-url: ${ENJOYTRIP_MINIO_PUBLIC_BASE_URL:http://localhost:9000/gotgot-notes}
     upload-expiry: ${ENJOYTRIP_MINIO_UPLOAD_EXPIRY:10m}

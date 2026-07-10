@@ -45,7 +45,7 @@ class MemberAuthMapperH2Test extends H2MapperTestSupport {
         memberMapper.updateProfileImage(
                 memberId,
                 "profiles/" + memberId + "/sample.jpg",
-                "http://localhost:9000/dongnepin-notes/profiles/" + memberId + "/sample.jpg"
+                "http://localhost:9000/gotgot-notes/profiles/" + memberId + "/sample.jpg"
         );
         MemberRecord profileUpdated = memberMapper.findById(memberId);
 
@@ -57,7 +57,7 @@ class MemberAuthMapperH2Test extends H2MapperTestSupport {
                 "profiles/" + memberId + "/sample.jpg"
         );
         assertThat(profileUpdated.getProfileImageUrl()).isEqualTo(
-                "http://localhost:9000/dongnepin-notes/profiles/" + memberId + "/sample.jpg"
+                "http://localhost:9000/gotgot-notes/profiles/" + memberId + "/sample.jpg"
         );
 
         profileUpdated.updateNickname(null);
@@ -69,7 +69,7 @@ class MemberAuthMapperH2Test extends H2MapperTestSupport {
         assertThat(cleared.getPassword()).isEqualTo("encoded-password");
         assertThat(cleared.getNickname()).isNull();
         assertThat(cleared.getProfileImageUrl()).isEqualTo(
-                "http://localhost:9000/dongnepin-notes/profiles/" + memberId + "/sample.jpg"
+                "http://localhost:9000/gotgot-notes/profiles/" + memberId + "/sample.jpg"
         );
         assertThat(cleared.getProfileImageObjectKey()).isEqualTo(
                 "profiles/" + memberId + "/sample.jpg"

@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Note Images", description = "동네핀 쪽지 이미지 업로드 API")
+@Tag(name = "Note Images", description = "곳곳 쪽지 이미지 업로드 API")
 public interface NoteImageApi {
     @Operation(
             summary = "쪽지 이미지 presigned 업로드 URL 발급",

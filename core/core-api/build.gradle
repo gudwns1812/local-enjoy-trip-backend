@@ -30,8 +30,6 @@ dependencies {
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${rootProject.ext.springdocOpenapiVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind"
 
-    otelJavaAgent "io.opentelemetry.javaagent:opentelemetry-javaagent:${rootProject.ext.opentelemetryJavaagentVersion}"
-
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.springframework.restdocs:spring-restdocs-mockmvc"

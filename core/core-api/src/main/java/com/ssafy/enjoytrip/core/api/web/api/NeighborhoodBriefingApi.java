@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 
-@Tag(name = "Neighborhood", description = "동네핀 홈 AI 브리핑 API")
+@Tag(name = "Neighborhood", description = "곳곳 홈 AI 브리핑 API")
 public interface NeighborhoodBriefingApi {
 
     @Operation(

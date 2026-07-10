@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 
-@Tag(name = "Map", description = "동네핀 지도 탐색 API")
+@Tag(name = "Map", description = "곳곳 지도 탐색 API")
 public interface MapApi {
     @Operation(
             summary = "지도 탐색",

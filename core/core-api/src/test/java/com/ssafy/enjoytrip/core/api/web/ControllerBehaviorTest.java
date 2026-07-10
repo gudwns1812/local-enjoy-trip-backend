@@ -591,9 +591,9 @@ class ControllerBehaviorTest {
             when(memberProfileImageService.createPresignedUpload(any(), any(), any()))
                     .thenReturn(new ProfileImageUploadUrl(
                             "profiles/42/sample.jpg",
-                            "http://localhost:9000/dongnepin-notes/profiles/42/sample.jpg?signature=abc",
+                            "http://localhost:9000/gotgot-notes/profiles/42/sample.jpg?signature=abc",
                             Instant.parse("2026-06-15T01:10:00Z"),
-                            "http://localhost:9000/dongnepin-notes/profiles/42/sample.jpg"
+                            "http://localhost:9000/gotgot-notes/profiles/42/sample.jpg"
                     ));
 
             mockMvc.perform(post("/api/members/me/profile-image/presigned-upload")
@@ -690,9 +690,9 @@ class ControllerBehaviorTest {
             when(noteImageUploadService.createPresignedUpload(any(), any(), any()))
                     .thenReturn(new NoteImageUploadUrl(
                     "notes/42/sample.jpg",
-                    "http://localhost:9000/dongnepin-notes/notes/42/sample.jpg?signature=abc",
+                    "http://localhost:9000/gotgot-notes/notes/42/sample.jpg?signature=abc",
                     Instant.parse("2026-06-15T01:10:00Z"),
-                    "http://localhost:9000/dongnepin-notes/notes/42/sample.jpg"
+                    "http://localhost:9000/gotgot-notes/notes/42/sample.jpg"
             ));
 
             mockMvc.perform(post("/api/note-images/presigned-upload")
@@ -751,7 +751,7 @@ class ControllerBehaviorTest {
                                     {
                                       "email": "ssafy@example.com",
                                       "password": "new-secret1",
-                                      "nickname": "동네핀러"
+                                      "nickname": "곳곳러"
                                     }
                                     """))
                     .andExpect(status().isOk());
@@ -762,7 +762,7 @@ class ControllerBehaviorTest {
             assertThat(captor.getValue().name()).isNull();
             assertThat(captor.getValue().email()).isNull();
             assertThat(captor.getValue().password()).isNull();
-            assertThat(captor.getValue().nickname()).isEqualTo("동네핀러");
+            assertThat(captor.getValue().nickname()).isEqualTo("곳곳러");
 
             when(memberService.findRequiredById(999L)).thenThrow(new CoreException(USER_NOT_FOUND));
             mockMvc.perform(get("/api/members/me").principal(jwtPrincipal(999L)))

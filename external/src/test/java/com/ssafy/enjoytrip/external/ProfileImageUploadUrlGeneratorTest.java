@@ -20,10 +20,10 @@ class ProfileImageUploadUrlGeneratorTest {
     void generatesProfileImageUploadResult() throws Exception {
         MinioClient minioClient = mock(MinioClient.class);
         when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
-                .thenReturn("http://localhost:9000/dongnepin-notes/profiles/11/sample.jpg?signature=abc");
+                .thenReturn("http://localhost:9000/gotgot-notes/profiles/11/sample.jpg?signature=abc");
         MinioProperties properties = new MinioProperties();
-        properties.setBucket("dongnepin-notes");
-        properties.setPublicBaseUrl("http://localhost:9000/dongnepin-notes/");
+        properties.setBucket("gotgot-notes");
+        properties.setPublicBaseUrl("http://localhost:9000/gotgot-notes/");
         properties.setUploadExpiry(Duration.ofMinutes(10));
         ProfileImageUploadUrlGenerator generator = new ProfileImageUploadUrlGenerator(
                 minioClient,
@@ -35,7 +35,7 @@ class ProfileImageUploadUrlGeneratorTest {
         assertThat(result.objectKey()).startsWith("profiles/11/").endsWith(".jpg");
         assertThat(result.uploadUrl()).contains("signature=abc");
         assertThat(result.publicUrl()).isEqualTo(
-                "http://localhost:9000/dongnepin-notes/" + result.objectKey()
+                "http://localhost:9000/gotgot-notes/" + result.objectKey()
         );
         assertThat(result.expiresAt()).isNotNull();
     }

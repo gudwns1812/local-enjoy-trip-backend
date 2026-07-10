@@ -137,7 +137,7 @@ final class ApiExamples {
               "data": {
                 "users": [{
                   "name": "김싸피",
-                  "nickname": "동네핀러",
+                  "nickname": "곳곳러",
                   "email": "ssafy@example.com",
                   "profileImageUrl": "https://cdn.example.com/profile.png"
                 }]
@@ -152,7 +152,7 @@ final class ApiExamples {
               "data": {
                 "user": {
                   "name": "김싸피",
-                  "nickname": "동네핀러",
+                  "nickname": "곳곳러",
                   "email": "Case@Test.example",
                   "profileImageUrl": "https://cdn.example.com/profile.png"
                 },
@@ -170,7 +170,7 @@ final class ApiExamples {
               "data": {
                 "user": {
                   "name": "김싸피",
-                  "nickname": "동네핀러",
+                  "nickname": "곳곳러",
                   "email": "ssafy@example.com",
                   "profileImageUrl": null
                 },
@@ -188,7 +188,7 @@ final class ApiExamples {
               "data": {
                 "user": {
                   "name": "김싸피",
-                  "nickname": "동네핀러",
+                  "nickname": "곳곳러",
                   "email": "ssafy@example.com",
                   "profileImageUrl": "https://cdn.example.com/profile.png"
                 }
@@ -385,7 +385,7 @@ final class ApiExamples {
     static final String MEMBER_SIGNUP_REQUEST = """
             {
               "name": "김싸피",
-              "nickname": "동네핀러",
+              "nickname": "곳곳러",
               "email": "ssafy@example.com",
               "password": "passw0rd!",
               "profileImageUrl": "https://cdn.example.com/profile.png"
@@ -403,14 +403,14 @@ final class ApiExamples {
             {
               "oauthSignupTicket": "oauth-signup-ticket-value",
               "name": "김싸피",
-              "nickname": "동네핀러"
+              "nickname": "곳곳러"
             }
             """;
 
 
     static final String MEMBER_UPDATE_REQUEST = """
             {
-              "nickname": "새동네핀러"
+              "nickname": "새곳곳러"
             }
             """;
 
@@ -550,7 +550,7 @@ final class ApiExamples {
                   "regionName": "서울 중구",
                   "distanceMeters": 42.0,
                   "imageObjectKey": null,
-                  "authorNickname": "동네핀러",
+                  "authorNickname": "곳곳러",
                   "authorProfileImageUrl": null,
                   "relationshipToViewer": "NONE",
                   "createdAt": "2026-06-22T10:00:00",

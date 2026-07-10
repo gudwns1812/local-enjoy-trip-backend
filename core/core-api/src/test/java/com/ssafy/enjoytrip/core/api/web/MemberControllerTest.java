@@ -96,7 +96,7 @@ class MemberControllerTest {
     @DisplayName("로그인은 JWT 토큰을 반환하고 userId를 응답하지 않는다")
     @Test
     void loginReturnsJwtToken() throws Exception {
-        Member member = new Member(1L, "SSAFY", "동네핀러", "Case@Test.com", "hidden", null);
+        Member member = new Member(1L, "SSAFY", "곳곳러", "Case@Test.com", "hidden", null);
         when(memberService.login("Case@Test.com", "secret")).thenReturn(member);
         when(tokenService.issue(member)).thenReturn(new IssuedToken("jwt-token", "Bearer", 7200));
 
@@ -231,7 +231,7 @@ class MemberControllerTest {
         Member member = new Member(
                 1L,
                 "SSAFY",
-                "동네핀러",
+                "곳곳러",
                 "ssafy@example.com",
                 "hidden",
                 "https://cdn.example.com/profile.png"
@@ -242,7 +242,7 @@ class MemberControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.user.userId").doesNotExist())
                 .andExpect(jsonPath("$.data.user.email").value("ssafy@example.com"))
-                .andExpect(jsonPath("$.data.user.nickname").value("동네핀러"))
+                .andExpect(jsonPath("$.data.user.nickname").value("곳곳러"))
                 .andExpect(jsonPath("$.data.user.profileImageUrl")
                         .value("https://cdn.example.com/profile.png"));
     }
@@ -255,7 +255,7 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "nickname": "동네핀러"
+                                  "nickname": "곳곳러"
                                 }
                                 """))
                 .andExpect(status().isOk());
@@ -265,7 +265,7 @@ class MemberControllerTest {
         Member member = memberCaptor.getValue();
         assertThat(member.memberId()).isEqualTo(1L);
         assertThat(member.name()).isNull();
-        assertThat(member.nickname()).isEqualTo("동네핀러");
+        assertThat(member.nickname()).isEqualTo("곳곳러");
         assertThat(member.email()).isNull();
         assertThat(member.password()).isNull();
         assertThat(member.profileImageUrl()).isNull();

@@ -15,11 +15,11 @@ class MinioPropertiesTest {
             .withUserConfiguration(TestConfig.class)
             .withPropertyValues(
                     "enjoytrip.minio.endpoint=http://localhost:9000",
-                    "enjoytrip.minio.bucket=dongnepin-notes",
+                    "enjoytrip.minio.bucket=gotgot-notes",
                     "enjoytrip.minio.access-key=minioadmin",
                     "enjoytrip.minio.secret-key=minioadmin",
                     "enjoytrip.minio.region=ap-northeast-2",
-                    "enjoytrip.minio.public-base-url=http://localhost:9000/dongnepin-notes",
+                    "enjoytrip.minio.public-base-url=http://localhost:9000/gotgot-notes",
                     "enjoytrip.minio.upload-expiry=15m"
             );
 
@@ -30,11 +30,11 @@ class MinioPropertiesTest {
             MinioProperties properties = context.getBean(MinioProperties.class);
 
             assertThat(properties.getEndpoint()).isEqualTo("http://localhost:9000");
-            assertThat(properties.getBucket()).isEqualTo("dongnepin-notes");
+            assertThat(properties.getBucket()).isEqualTo("gotgot-notes");
             assertThat(properties.getAccessKey()).isEqualTo("minioadmin");
             assertThat(properties.getSecretKey()).isEqualTo("minioadmin");
             assertThat(properties.getRegion()).isEqualTo("ap-northeast-2");
-            assertThat(properties.getPublicBaseUrl()).isEqualTo("http://localhost:9000/dongnepin-notes");
+            assertThat(properties.getPublicBaseUrl()).isEqualTo("http://localhost:9000/gotgot-notes");
             assertThat(properties.getUploadExpiry()).isEqualTo(Duration.ofMinutes(15));
         });
     }

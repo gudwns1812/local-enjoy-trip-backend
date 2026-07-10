@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Friendships", description = "동네핀 친구 요청/수락 API")
+@Tag(name = "Friendships", description = "곳곳 친구 요청/수락 API")
 public interface FriendshipApi {
     @Operation(
             summary = "친구 요청 보내기",

@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "enjoytrip.minio")
 public class MinioProperties {
     private String endpoint = "http://localhost:9000";
-    private String bucket = "dongnepin-notes";
+    private String bucket = "gotgot-notes";
     private String accessKey = "minioadmin";
     private String secretKey = "minioadmin";
     private String region = "ap-northeast-2";
-    private String publicBaseUrl = "http://localhost:9000/dongnepin-notes";
+    private String publicBaseUrl = "http://localhost:9000/gotgot-notes";
     private Duration uploadExpiry = Duration.ofMinutes(10);
 
     public String getEndpoint() {

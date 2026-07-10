@@ -9,7 +9,6 @@ ext {
     lombokVersion = findProperty("lombokVersion")
     junitVersion = findProperty("junitVersion")
     springdocOpenapiVersion = findProperty("springdocOpenapiVersion")
-    opentelemetryJavaagentVersion = findProperty("opentelemetryJavaagentVersion")
     minioVersion = findProperty("minioVersion")
 }
 

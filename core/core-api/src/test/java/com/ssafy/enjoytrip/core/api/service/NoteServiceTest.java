@@ -27,7 +27,7 @@ class NoteServiceTest {
     private static final String NOTE_IMAGE_OBJECT_KEY =
             "notes/11/018f0a2a-55c1-7a7c-b3f5-fb2ed9e6b51b.jpg";
     private static final String NOTE_IMAGE_PUBLIC_URL =
-            "http://localhost:9000/dongnepin-notes/" + NOTE_IMAGE_OBJECT_KEY;
+            "http://localhost:9000/gotgot-notes/" + NOTE_IMAGE_OBJECT_KEY;
 
     private NoteMapper noteMapper;
     private MinioNoteImageUploadUrlGenerator uploadUrlGenerator;
