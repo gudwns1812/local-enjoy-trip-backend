@@ -21,26 +21,26 @@ class CourseTest {
 
     @DisplayName("총 거리는 각 정류장의 distanceToNext 합산이다")
     @Test
-    void totalDistanceMetersIsSumOfNextDistances() {
+    void routeDistanceMetersIsSumOfNextDistances() {
         Course course = courseWithStops(
                 stopWithMetrics(1, 100, 60),
                 stopWithMetrics(2, 200, 120),
                 stopNoMetrics(3)
         );
 
-        assertThat(course.totalDistanceMeters()).isEqualTo(300);
+        assertThat(course.routeDistanceMeters()).isEqualTo(300);
     }
 
     @DisplayName("총 소요 시간은 각 정류장의 durationToNext 합산이다")
     @Test
-    void totalDurationSecondsIsSumOfNextDurations() {
+    void routeDurationSecondsIsSumOfNextDurations() {
         Course course = courseWithStops(
                 stopWithMetrics(1, 100, 60),
                 stopWithMetrics(2, 200, 120),
                 stopNoMetrics(3)
         );
 
-        assertThat(course.totalDurationSeconds()).isEqualTo(180);
+        assertThat(course.routeDurationSeconds()).isEqualTo(180);
     }
 
     @DisplayName("null인 distanceToNext/durationToNext는 0으로 취급한다")
@@ -48,8 +48,8 @@ class CourseTest {
     void nullMetricsTreatedAsZero() {
         Course course = courseWithStops(stopNoMetrics(1));
 
-        assertThat(course.totalDistanceMeters()).isZero();
-        assertThat(course.totalDurationSeconds()).isZero();
+        assertThat(course.routeDistanceMeters()).isZero();
+        assertThat(course.routeDurationSeconds()).isZero();
     }
 
     @DisplayName("withStops는 stops를 교체한 새 Course를 반환한다")
@@ -83,11 +83,11 @@ class CourseTest {
         List<CourseStop> stops = IntStream.rangeClosed(1, stopCount)
                 .mapToObj(i -> stopNoMetrics(i))
                 .toList();
-        return new Course("c1", 1L, "테스트 코스", "서울", null, null, null, 0, "", "",stops, List.of());
+        return new Course("c1", 1L, new CourseInfo("테스트 코스", "서울", null), null, null, 0, "", "",stops, List.of());
     }
 
     private static Course courseWithStops(CourseStop... stops) {
-        return new Course("c1", 1L, "테스트 코스", "서울", null, null, null, 0, "", "",List.of(stops), List.of());
+        return new Course("c1", 1L, new CourseInfo("테스트 코스", "서울", null), null, null, 0, "", "",List.of(stops), List.of());
     }
 
     private static CourseStop stopWithMetrics(int position, int distanceToNext, int durationToNext) {

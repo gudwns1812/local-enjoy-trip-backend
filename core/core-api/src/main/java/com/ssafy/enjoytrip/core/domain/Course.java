@@ -8,16 +8,14 @@ import java.util.List;
 public record Course(
         String id,
         Long ownerMemberId,
-        String title,
-        String regionName,
-        String date,
+        CourseInfo info,
         Coordinate startLocation,
         Double distanceMeters,
         int saveCount,
         String createdAt,
         String updatedAt,
         List<CourseStop> stops,
-        List<CourseTag> tags
+        List<Tag> tags
 ) {
     public Course {
         stops = List.copyOf(stops == null ? List.of() : stops);
@@ -30,6 +28,18 @@ public record Course(
         }
     }
 
+    public String title() {
+        return info.title();
+    }
+
+    public String regionName() {
+        return info.regionName();
+    }
+
+    public String date() {
+        return info.date();
+    }
+
     public List<CourseStop> items() {
         return stops;
     }
@@ -38,9 +48,7 @@ public record Course(
         return new Course(
                 id,
                 ownerMemberId,
-                title,
-                regionName,
-                date,
+                info,
                 startLocation,
                 distanceMeters,
                 saveCount,
@@ -58,9 +66,7 @@ public record Course(
         return new Course(
                 id,
                 ownerMemberId,
-                title,
-                regionName,
-                date,
+                info,
                 location,
                 distanceMeters,
                 saveCount,
@@ -68,6 +74,21 @@ public record Course(
                 updatedAt,
                 stops,
                 tags
+        );
+    }
+
+    public Course withTags(List<Tag> nextTags) {
+        return new Course(
+                id,
+                ownerMemberId,
+                info,
+                startLocation,
+                distanceMeters,
+                saveCount,
+                createdAt,
+                updatedAt,
+                stops,
+                nextTags
         );
     }
 
@@ -79,13 +100,13 @@ public record Course(
         return Math.max(stops.size() - 1, 0);
     }
 
-    public int totalDistanceMeters() {
+    public int routeDistanceMeters() {
         return stops.stream()
                 .mapToInt(stop -> stop.distanceToNext() == null ? 0 : stop.distanceToNext())
                 .sum();
     }
 
-    public int totalDurationSeconds() {
+    public int routeDurationSeconds() {
         return stops.stream()
                 .mapToInt(stop -> stop.durationToNext() == null ? 0 : stop.durationToNext())
                 .sum();

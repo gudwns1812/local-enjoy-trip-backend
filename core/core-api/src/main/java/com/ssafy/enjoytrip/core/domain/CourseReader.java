@@ -129,15 +129,13 @@ public class CourseReader {
             List<CourseItemDetailRecord> items,
             List<CourseTagRecord> tagRecords
     ) {
-        List<CourseTag> tags = tagRecords.stream()
-                .map(t -> new CourseTag(t.tagId(), t.tagName()))
+        List<Tag> tags = tagRecords.stream()
+                .map(t -> new Tag(t.tagId(), t.tagName()))
                 .toList();
         return new Course(
                 r.getId(),
                 r.getOwnerMemberId(),
-                r.getTitle(),
-                r.getRegionName(),
-                r.getDate(),
+                new CourseInfo(r.getTitle(), r.getRegionName(), r.getDate()),
                 null,
                 null,
                 r.getSaveCount() != null ? r.getSaveCount() : 0,
@@ -172,16 +170,14 @@ public class CourseReader {
             startLocation = new Coordinate(record.getStartLatitude(), record.getStartLongitude());
         }
 
-        List<CourseTag> tags = tagRecords.stream()
-                .map(t -> new CourseTag(t.tagId(), t.tagName()))
+        List<Tag> tags = tagRecords.stream()
+                .map(t -> new Tag(t.tagId(), t.tagName()))
                 .toList();
 
         return new Course(
                 record.getId(),
                 record.getOwnerMemberId(),
-                record.getTitle(),
-                record.getRegionName(),
-                record.getDate(),
+                new CourseInfo(record.getTitle(), record.getRegionName(), record.getDate()),
                 startLocation,
                 record.getDistanceMeters(),
                 countValue(record.getSaveCount()),
