@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.ssafy.enjoytrip.core.domain.AiCourseOrderOptimizer;
 import com.ssafy.enjoytrip.core.domain.CoordinateRouteOrderOptimizer;
 import com.ssafy.enjoytrip.core.domain.Course;
+import com.ssafy.enjoytrip.core.domain.CourseInfo;
 import com.ssafy.enjoytrip.core.domain.CourseOrderOptimizationContext;
 import com.ssafy.enjoytrip.core.domain.CourseOrderPreviewReader;
 import com.ssafy.enjoytrip.core.domain.CourseReader;
@@ -21,6 +22,7 @@ import com.ssafy.enjoytrip.core.domain.CourseStopTarget;
 import com.ssafy.enjoytrip.core.domain.CourseStopPointResolver;
 import com.ssafy.enjoytrip.core.domain.CourseWriter;
 import com.ssafy.enjoytrip.core.domain.DefaultCourseRoutePlanner;
+import com.ssafy.enjoytrip.core.domain.Tag;
 import com.ssafy.enjoytrip.core.domain.query.DistanceSearchCondition;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.external.courseorder.CourseOrderRecommendationException;
@@ -31,6 +33,7 @@ import com.ssafy.enjoytrip.storage.db.core.model.AttractionRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.CourseItemDetailRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.CourseItemRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.CourseRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.CourseTagRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.NoteRecord;
 import com.ssafy.enjoytrip.core.domain.CourseRecommendationRanker;
 import com.ssafy.enjoytrip.core.domain.NoteTagReader;
@@ -108,6 +111,45 @@ class CourseServiceTest {
         assertThat(created.stops()).isEmpty();
         verify(courseMapper).insert(any(CourseRecord.class));
         verify(courseMapper).updateStartLocation("course-empty", null, null);
+    }
+
+    @DisplayName("코스 생성은 태그 id만 담긴 요청이어도 저장된 태그 이름을 응답에 채운다")
+    @Test
+    void createCoursePopulatesSavedTagNames() {
+        Course course = new Course(
+                "course-tag", 11L, new CourseInfo("서울 산책", "서울", null),
+                null, null, 0, "", "",
+                List.of(), List.of(new Tag(5L, null))
+        );
+        when(courseMapper.findTagsByCourseId("course-tag")).thenReturn(List.of(
+                new CourseTagRecord("course-tag", 5L, "야경")
+        ));
+
+        Course created = service.createCourse(course);
+
+        assertThat(created.tags()).containsExactly(new Tag(5L, "야경"));
+        verify(courseMapper).insertCourseTag("course-tag", 5L);
+    }
+
+    @DisplayName("코스 수정은 태그 id만 담긴 요청이어도 저장된 태그 이름을 응답에 채운다")
+    @Test
+    void updateCoursePopulatesSavedTagNames() {
+        Course course = new Course(
+                "course-1", 11L, new CourseInfo("서울 산책", "서울", null),
+                null, null, 0, "", "",
+                List.of(), List.of(new Tag(5L, null))
+        );
+        when(courseMapper.findById("course-1")).thenReturn(courseRecord("course-1", 11L, 0));
+        when(courseMapper.findItemsByCourseId("course-1")).thenReturn(List.of());
+        when(courseMapper.updateOwned(any(CourseRecord.class))).thenReturn(1);
+        when(courseMapper.findTagsByCourseId("course-1")).thenReturn(List.of(
+                new CourseTagRecord("course-1", 5L, "야경")
+        ));
+
+        Course updated = service.updateCourse(11L, course);
+
+        assertThat(updated.tags()).containsExactly(new Tag(5L, "야경"));
+        verify(courseMapper).insertCourseTag("course-1", 5L);
     }
 
 
@@ -586,9 +628,7 @@ class CourseServiceTest {
         return new Course(
                 id,
                 ownerMemberId,
-                id,
-                "서울",
-                null,
+                new CourseInfo(id, "서울", null),
                 null,
                 null,
                 0,

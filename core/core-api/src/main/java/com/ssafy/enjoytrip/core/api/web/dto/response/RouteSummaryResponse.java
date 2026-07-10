@@ -12,8 +12,8 @@ public record RouteSummaryResponse(
         return new RouteSummaryResponse(
                 course.stopCount(),
                 course.segmentCount(),
-                course.totalDurationSeconds(),
-                course.totalDistanceMeters()
+                course.routeDurationSeconds(),
+                course.routeDistanceMeters()
         );
     }
 }

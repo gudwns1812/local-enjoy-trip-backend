@@ -4,6 +4,7 @@ import com.ssafy.enjoytrip.core.api.web.controller.*;
 
 import com.ssafy.enjoytrip.core.domain.Attraction;
 import com.ssafy.enjoytrip.core.domain.Course;
+import com.ssafy.enjoytrip.core.domain.CourseInfo;
 import com.ssafy.enjoytrip.core.domain.vo.Address;
 import com.ssafy.enjoytrip.core.domain.vo.Coordinate;
 import com.ssafy.enjoytrip.core.domain.vo.RatingStats;
@@ -366,9 +367,7 @@ class ApiDocumentationTest {
         return new Course(
                 id,
                 ownerMemberId,
-                "서울 산책",
-                "서울",
-                "2026-06-23",
+                new CourseInfo("서울 산책", "서울", "2026-06-23"),
                 null,
                 null,
                 0,

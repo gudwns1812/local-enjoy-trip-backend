@@ -1,7 +1,6 @@
 package com.ssafy.enjoytrip.core.api.web.dto.response;
 
 import com.ssafy.enjoytrip.core.domain.Course;
-import com.ssafy.enjoytrip.core.domain.CourseTag;
 import java.util.List;
 
 public record CourseResponse(
@@ -34,7 +33,7 @@ public record CourseResponse(
                         .map(CourseItemResponse::from)
                         .toList(),
                 course.tags().stream()
-                        .map(tag -> new TagResponse(tag.tagId(), tag.tagName()))
+                        .map(tag -> new TagResponse(tag.id(), tag.name()))
                         .toList()
         );
     }

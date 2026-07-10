@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.ssafy.enjoytrip.core.api.web.controller.CourseController;
 import com.ssafy.enjoytrip.core.domain.Course;
+import com.ssafy.enjoytrip.core.domain.CourseInfo;
 import com.ssafy.enjoytrip.core.domain.CourseStop;
 import com.ssafy.enjoytrip.core.domain.CourseStopTarget;
 import com.ssafy.enjoytrip.core.domain.CourseOrderOptimizationContext;
@@ -302,9 +303,7 @@ class CourseControllerTest {
         return new Course(
                 id,
                 ownerMemberId,
-                id,
-                "서울",
-                null,
+                new CourseInfo(id, "서울", null),
                 new Coordinate(37.5665, 126.9780),
                 null,
                 saveCount,
@@ -322,9 +321,7 @@ class CourseControllerTest {
         return new Course(
                 id,
                 ownerMemberId,
-                id,
-                "서울",
-                null,
+                new CourseInfo(id, "서울", null),
                 new Coordinate(37.5665, 126.9780),
                 distanceMeters,
                 0,
@@ -345,9 +342,7 @@ class CourseControllerTest {
         return new Course(
                 id,
                 ownerMemberId,
-                id,
-                "서울",
-                null,
+                new CourseInfo(id, "서울", null),
                 null,
                 null,
                 0,

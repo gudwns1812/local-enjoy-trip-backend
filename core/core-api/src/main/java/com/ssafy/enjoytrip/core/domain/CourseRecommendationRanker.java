@@ -65,15 +65,15 @@ public class CourseRecommendationRanker {
             score += PENALTY_RECENT_30D;
         }
 
-        if (hasTagBias(candidate.course(), context.memberTagFrequency())) {
+        if (hasTagBias(candidate.course().tags(), context.memberTagFrequency())) {
             score += PENALTY_TAG_BIAS;
         }
 
         return score;
     }
 
-    private boolean hasTagBias(Course course, Map<Long, Long> tagFrequency) {
-        if (tagFrequency.isEmpty() || course.tags().isEmpty()) {
+    private boolean hasTagBias(List<Tag> tags, Map<Long, Long> tagFrequency) {
+        if (tagFrequency.isEmpty() || tags.isEmpty()) {
             return false;
         }
 
@@ -83,8 +83,8 @@ public class CourseRecommendationRanker {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        Set<Long> courseTagIds = course.tags().stream()
-                .map(CourseTag::tagId)
+        Set<Long> courseTagIds = tags.stream()
+                .map(Tag::id)
                 .collect(Collectors.toSet());
 
         return !courseTagIds.isEmpty() && topTagIds.containsAll(courseTagIds);

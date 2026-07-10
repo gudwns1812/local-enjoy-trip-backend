@@ -7,6 +7,7 @@ import com.ssafy.enjoytrip.core.domain.event.CourseEmbeddingRequestedEvent;
 import com.ssafy.enjoytrip.core.support.error.CoreException;
 import com.ssafy.enjoytrip.storage.db.core.model.CourseItemRecord;
 import com.ssafy.enjoytrip.storage.db.core.model.CourseRecord;
+import com.ssafy.enjoytrip.storage.db.core.model.CourseTagRecord;
 import com.ssafy.enjoytrip.storage.db.core.mybatis.mapper.CourseMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,8 @@ public class CourseWriter {
         saveCourseTags(course.id(), course.tags());
 
         Course created = course.withStartLocation(startPoint)
-                .withStops(saveStops(course.id(), plannedStops));
+                .withStops(saveStops(course.id(), plannedStops))
+                .withTags(findTags(course.id()));
         eventPublisher.publishEvent(new CourseEmbeddingRequestedEvent(course.id()));
         return created;
     }
@@ -54,7 +56,8 @@ public class CourseWriter {
 
         courseMapper.deleteItemsByCourseId(course.id());
         Course updated = course.withStartLocation(startPoint)
-                .withStops(saveStops(course.id(), plannedStops));
+                .withStops(saveStops(course.id(), plannedStops))
+                .withTags(findTags(course.id()));
         eventPublisher.publishEvent(new CourseEmbeddingRequestedEvent(course.id()));
         return updated;
     }
@@ -84,10 +87,20 @@ public class CourseWriter {
         }
     }
 
-    private void saveCourseTags(String courseId, List<CourseTag> tags) {
-        for (CourseTag tag : tags) {
-            courseMapper.insertCourseTag(courseId, tag.tagId());
+    private void saveCourseTags(String courseId, List<Tag> tags) {
+        for (Tag tag : tags) {
+            courseMapper.insertCourseTag(courseId, tag.id());
         }
+    }
+
+    private List<Tag> findTags(String courseId) {
+        return courseMapper.findTagsByCourseId(courseId).stream()
+                .map(CourseWriter::toTag)
+                .toList();
+    }
+
+    private static Tag toTag(CourseTagRecord record) {
+        return new Tag(record.tagId(), record.tagName());
     }
 
     private List<CourseStop> saveStops(String courseId, List<CourseStop> stops) {
